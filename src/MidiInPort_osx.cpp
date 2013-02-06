@@ -422,6 +422,11 @@ int MidiInPort_osx::open(void) {
    if (getPort() == -1)   return 0;
 
    pauseQ[getPort()] = 0;
+
+   // should flush the input buffer at this point so that the 
+   // initial opening of the port does not have a backlog of
+   // MIDI messages to parse.
+
    return !pauseQ[getPort()];
 }
 

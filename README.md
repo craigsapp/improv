@@ -1,10 +1,10 @@
 
-To download with git:
+* To download with git:  
    git clone git://github.com/craigsapp/improv.git
-To check for changes:
+* To check for changes:  
    get status
-To store changes:
+* To store changes:  
    git commit -a
-To upload with git:
-   git push git://github.com/craigsapp/improv.git
+* To upload with git:  
+   git push http://github.com/craigsapp/improv.git
 

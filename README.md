@@ -5,6 +5,6 @@
    get status
 * To store changes:  
    git commit -a
-* To upload with git:  
-   git push http://github.com/craigsapp/improv.git
+* To upload back to github:
+   git push 
 

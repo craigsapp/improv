@@ -2,10 +2,11 @@
 // Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: 22 Nov 1998
 // Last Modified: Sun Jan 10 00:05:07 PST 1999
-// Last Modified: Mon Jun 28 15:22:08 PDT 1999 (added sysex display capability)
-// Last Modified: Fri Jul  2 18:10:43 PDT 1999 (added keyboard commands)
-// Last Modified: Fri Nov  2 14:07:19 PST 2001 (added midi.open() before while)
-// Last Modified: Sun Nov 20 02:09:20 PST 2005 (added cpu speed display)
+// Last Modified: Mon Jun 28 15:22:08 PDT 1999 added sysex display capability
+// Last Modified: Fri Jul  2 18:10:43 PDT 1999 added keyboard commands
+// Last Modified: Fri Nov  2 14:07:19 PST 2001 added midi.open() before while
+// Last Modified: Sun Nov 20 02:09:20 PST 2005 added cpu speed display
+// Last Modified: Tue Feb  5 22:02:18 PST 2013 fixed delta times for -A
 // Filename:      ...sig/doc/examples/improv/improv/cinmidi.cpp
 // Syntax:        C++; improv 2.2
 //
@@ -97,7 +98,6 @@ int main(int argc, char** argv) {
    options.setOptions(argc, argv);
    checkOptions(options);
 
-
    displayHeader(cout);
    if (fileQ) {
       displayHeader(outputfile);
@@ -112,6 +112,11 @@ int main(int argc, char** argv) {
    while (1) {
       while (midi.getCount() > 0) {
          message = midi.extract();
+
+         if ((!activeSensingQ) && (message.p0() == 0xfe)) {
+            // don't display incoming active-sensing messages
+            continue;
+         }
 
          // filter any specified message types
          if (suppressOffQ && ((message.p0() & 0xf0) == 0x90) &&
@@ -410,10 +415,6 @@ void displayHeader(ostream& out) {
 //
 
 void displayMessage(ostream& out, MidiMessage message, int style) {
-   if ((!activeSensingQ) && (message.p0() == 0xfe)) {
-      // don't display incoming active-sensing messages
-      return;
-   }
    if (secondsQ) {
       out << dec << message.time / 1000.0 << "\t";
    } else {

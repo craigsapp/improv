@@ -245,7 +245,9 @@ int MidiOutPort_osx::rawsend(int command, int p1, int p2) {
    status = ::MIDISend(midioutputs[getPort()], dest, packetlist);
    status = !status;
 
-   if (getTrace()) {
+// ggg
+cout << "PORT STATUS: " << getPortStatus() << endl;
+   if (1 || getTrace()) {
       if (status == 1) {
          cout << "(" << hex << (int)mdata[0] << dec << ":"
               << (int)mdata[1] << "," << (int)mdata[2] << ")";
@@ -279,7 +281,8 @@ int MidiOutPort_osx::rawsend(int command, int p1) {
    status = ::MIDISend(midioutputs[getPort()], dest, packetlist);
    status = !status;
 
-   if (getTrace()) {
+cout << "PORT STATUS: " << getPortStatus() << endl;
+   if (1 || getTrace()) {
       if (status == 1) {
          cout << "(" << hex << (int)mdata[0] << dec << ":"
               << (int)mdata[1] << ")";
@@ -313,7 +316,8 @@ int MidiOutPort_osx::rawsend(int command) {
    status = ::MIDISend(midioutputs[getPort()], dest, packetlist);
    status = !status;
 
-   if (getTrace()) {
+cout << "PORT STATUS: " << getPortStatus() << endl;
+   if (1 || getTrace()) {
       if (status == 1) {
          cout << "(" << hex << (int)mdata[0] << ")";
          cout.flush();
@@ -347,7 +351,8 @@ int MidiOutPort_osx::rawsend(uchar* array, int size) {
    status = ::MIDISend(midioutputs[getPort()], dest, packetlist);
    status = !status;
 
-   if (getTrace()) {
+cout << "PORT STATUS: " << getPortStatus() << endl;
+   if (1 || getTrace()) {
       if (status == 1) {
          cout << "(array)";
          cout.flush();

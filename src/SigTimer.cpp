@@ -47,7 +47,7 @@
 // define OSXTIMER below if you want nanosecond timer in OSX.
 // This might be better method of timing if the computer can change
 // CPU speeds, but that case has not been tested.
-//#define OSXTIMER 
+#define OSXTIMER 
 #ifdef OSXTIMER
    #include <mach/mach_time.h>
 #endif

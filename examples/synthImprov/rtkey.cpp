@@ -188,6 +188,10 @@ void finishup(void) {
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
+      if ((message.command() & 0xf0) != 0x90) {
+         // ignore note-off messages
+         continue;
+      }
       if (message.p2() != 0) {
          storeNote(message.p1(), t_time);
       }

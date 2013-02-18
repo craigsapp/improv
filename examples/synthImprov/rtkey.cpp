@@ -5,10 +5,10 @@
 // Filename:      .../improv/examples/synthImprov/rtkey/rtkey.cpp
 // Syntax:        C++; synthImprov 2.1
 //  
-// Description:   analyze the key of musical input and output the determined
-//                key as a note on the tonic of the key.  The certainty of
-//                the measurement is mapped to the loudness on the analysis
-//                note.
+// Description:   real-time analysis of the musical key MIDI input, and output
+//                the measured key as a note on the tonic of the key.  
+// 		  The certainty of the measurement is mapped to loudness of 
+//		  the analysis note.
 //
 // References:    Key analysis is done using the Krumhansl-Schmuckler
 //                key-finding algorithm which measures Pearson correlation
@@ -33,17 +33,18 @@
 /*----------------- beginning of improvization algorithms ---------------*/
 
 
-MidiMessage message;            // for extracting notes from the synthesizer
 
 CircularBuffer<char> notes;     // storage for notes being played
 CircularBuffer<long> times;     // storage for note times being played
-double occurrences[12] = {0};    // number of notes occurrences
+double occurrences[12] = {0};   // number of notes occurrences
+MidiMessage message;            // for extracting notes from the synthesizer
 int fadeNote          = 0;      // next to to go out of scope
 int fadeTime          = 0;      // next time to go out of scope
 int keyoctave         = 7;      // the analysis key performance octave
 int displayKey2       = 0;      // display the second key possibility
 int octave            = 4;      // used for keyboard keyboard
 int freezeQ           = 0;      // used with 'f' keyboard command
+int echoQ             = 0;      // echo input MIDI to output
 SigTimer metronome;             // for display period of key analysis
 double analysisDuration;        // duration in seconds of analysis window
 double tempo;                   // tempo of the rtkeyalysis
@@ -123,13 +124,15 @@ double      pearsonCorrelation   (int size, double* x, double* y);
 
 void description(void) {
    printboxtop();
-   psl("Keyan -- analyze musical input for key");
+   psl("RTkey -- analyze musical input for key");
    psl("");
    psl(" < = Slow down analysis note tempo      > = Speed up analysis note tempo");
    psl(" @ = Toggle playing of secondary choice - = Clear note memory");
    psl(" A = Use Aarden-Essen key profiles      B = Use Bellman-Budge key profiles");
    psl(" P = Use Simple key profiles            T = Use Temperley key profiles");
-   psl(" K = Use Krumhansl-Kessler key profiles");
+   psl(" K = Use Krumhansl-Kessler key profiles f = freeze input note buffer");
+   psl(" E = Echo MIDI input notes to output    - = clear note buffer");
+   psl(" [ = Shorten analysis window by 1 sec.  ] = length analysis window by 1 sec.");
    psl(" ");
    psl(
 "      \"0\"-\"9\" = octave number of computer keyboard notes");
@@ -150,14 +153,13 @@ void description(void) {
 //
 
 void initialization(void) { 
+   tempo = 60.0;                    // tempo of analysis playback 
    analysisDuration = 7.0;          // duration in seconds of analysis window
-   tempo = 60.0;                     // tempo of the rtkeyalysis
    metronome.setTempo(tempo);
    firstVoice.setChannel(0);
    secondVoice.setChannel(0);
    notes.setSize(10000);
    times.setSize(10000);
-
 }
 
 
@@ -188,6 +190,9 @@ void finishup(void) {
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
+      if (echoQ) {
+         synth.send(message);
+      }
       if ((message.command() & 0xf0) != 0x90) {
          // ignore note-off messages
          continue;
@@ -279,6 +284,14 @@ void keyboardchar(int key) {
          majorKey = TemperleyMajor;
          minorKey = TemperleyMinor;
          cout << "Temperley weights" << endl;
+         break;
+      case 'E':            // Toggle echo of MIDI intput to output
+         echoQ = !echoQ;
+         if (echoQ) {
+            cout << "MIDI echo turned on" << endl;
+         } else {
+            cout << "MIDI echo turned off" << endl;
+         }
          break;
       case '-':            // Clear note memory
          notes.reset();

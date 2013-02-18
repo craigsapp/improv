@@ -108,7 +108,7 @@ MidiMessage& Synthesizer::operator[](int index) {
 
 //////////////////////////////
 //
-// Synthesizer::processIncomingMessages
+// Synthesizer::processIncomingMessages --
 //
 
 void Synthesizer::processIncomingMessages(void) {

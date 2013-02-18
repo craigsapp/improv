@@ -108,7 +108,7 @@ int Event::getActionTime(void) const {
 
 //////////////////////////////
 //
-// Event::getGroup  -- returns the group number assiciated with
+// Event::getGroup -- returns the group number assiciated with
 //     the Event.
 //
 
@@ -120,7 +120,7 @@ int Event::getGroup(void) const {
 
 //////////////////////////////
 //
-// getP0 -- return zeroth parameter
+// getP0 -- return zeroth parameter (command byte).
 //
 
 int Event::getP0(void) const {
@@ -131,7 +131,7 @@ int Event::getP0(void) const {
 
 //////////////////////////////
 //
-// getP1 -- return zeroth parameter
+// getP1 -- return first data byte.
 //
 
 int Event::getP1(void) const {
@@ -142,7 +142,7 @@ int Event::getP1(void) const {
 
 //////////////////////////////
 //
-// getP2 -- return zeroth parameter
+// getP2 -- return second data byte.
 //
 
 int Event::getP2(void) const {
@@ -153,7 +153,7 @@ int Event::getP2(void) const {
 
 //////////////////////////////
 //
-// getP3 -- return zeroth parameter
+// getP3 -- return third data byte.
 //
 
 int Event::getP3(void) const {
@@ -197,7 +197,7 @@ int Event::getTime2(void) const {
 
 //////////////////////////////
 //
-// Event::getType  -- returns the type of Event that the object is.
+// Event::getType -- returns the type of Event that the object is.
 //    OneStageEvent: bit(0)  is turned on
 //    OneStageEvent: bit(1)  is turned on
 //    OneStageEvent: bit(2)  is turned on
@@ -341,7 +341,7 @@ void Event::off(EventBuffer* midiOutput) {
 
 //////////////////////////////
 //
-// Event::operator=
+// Event::operator= --
 //
 
 Event& Event::operator=(const Event& anEvent) {
@@ -361,7 +361,7 @@ Event& Event::operator=(const Event& anEvent) {
 
 //////////////////////////////
 //
-// p0 -- return zeroth parameter
+// p0 -- return zeroth parameter reference (command byte).
 //
 
 uchar& Event::p0(void) {
@@ -372,7 +372,7 @@ uchar& Event::p0(void) {
 
 //////////////////////////////
 //
-// p1 -- return zeroth parameter
+// p1 -- return first data byte reference.
 //
 
 uchar& Event::p1(void) {
@@ -383,7 +383,7 @@ uchar& Event::p1(void) {
 
 //////////////////////////////
 //
-// p2 -- return zeroth parameter
+// p2 -- return second data byte reference.
 //
 
 uchar& Event::p2(void) {
@@ -394,7 +394,7 @@ uchar& Event::p2(void) {
 
 //////////////////////////////
 //
-// p3 -- return zeroth parameter
+// p3 -- return third data byte reference.
 //
 
 uchar& Event::p3(void) {
@@ -428,7 +428,7 @@ void Event::print(void) {
 
 //////////////////////////////
 //
-// Event::setGroup 
+// Event::setGroup --
 //
 
 void Event::setGroup(int aGroup) {
@@ -439,7 +439,7 @@ void Event::setGroup(int aGroup) {
 
 //////////////////////////////
 //
-// setP0 -- sets zeroth parameter
+// setP0 -- sets zeroth parameter (command byte).
 //
 
 void Event::setP0(int aValue) {
@@ -450,7 +450,7 @@ void Event::setP0(int aValue) {
 
 //////////////////////////////
 //
-// setP1 -- sets zeroth parameter
+// setP1 -- sets first data byte.
 //
 
 void Event::setP1(int aValue) {
@@ -461,7 +461,7 @@ void Event::setP1(int aValue) {
 
 //////////////////////////////
 //
-// setP2 -- sets zeroth parameter
+// setP2 -- sets second data byte.
 //
 
 void Event::setP2(int aValue) {
@@ -472,7 +472,7 @@ void Event::setP2(int aValue) {
 
 //////////////////////////////
 //
-// setP3 -- sets zeroth parameter
+// setP3 -- sets third data byte.
 //
 
 void Event::setP3(int aValue) {
@@ -483,7 +483,7 @@ void Event::setP3(int aValue) {
 
 //////////////////////////////
 //
-// Event::setTime1 -- sets the first time variable
+// Event::setTime1 -- sets the first time variable.
 //
 
 void Event::setTime1(int aTime) {
@@ -494,7 +494,7 @@ void Event::setTime1(int aTime) {
 
 //////////////////////////////
 //
-// Event::setTime2 -- sets the second time variable
+// Event::setTime2 -- sets the second time variable.
 //
 
 void Event::setTime2(int aTime) {
@@ -505,7 +505,7 @@ void Event::setTime2(int aTime) {
 
 //////////////////////////////
 //
-// Event::setType 
+// Event::setType --
 //
  
 void Event::setType(int aType) {
@@ -524,7 +524,7 @@ void Event::setType(int aType) {
 
 //////////////////////////////
 //
-// Event::printBits == prints a byte in binary form
+// Event::printBits -- prints a byte in binary form
 //
 
 void Event::printBits(uchar aByte, ostream& output) const {
@@ -541,7 +541,7 @@ void Event::printBits(uchar aByte, ostream& output) const {
 
 //////////////////////////////
 //
-// Event::setStatus == prints a byte in binary form
+// Event::setStatus -- prints a byte in binary form
 //
 
 void Event::setStatus(int aStatus) {

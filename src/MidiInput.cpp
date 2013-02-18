@@ -43,7 +43,7 @@ MidiInput::MidiInput(int aPort, int autoOpen) : MidiInPort(aPort, autoOpen) {
 
 //////////////////////////////
 //
-// MidiInput::~MidiInput
+// MidiInput::~MidiInput --
 //
 
 MidiInput::~MidiInput() {
@@ -57,7 +57,7 @@ MidiInput::~MidiInput() {
 
 //////////////////////////////
 //
-// MidiInput::getBufferSize 
+// MidiInput::getBufferSize --
 //
 
 int MidiInput::getBufferSize(void) {
@@ -72,7 +72,7 @@ int MidiInput::getBufferSize(void) {
 
 //////////////////////////////
 //
-// MidiInput::getCount
+// MidiInput::getCount --
 //
 
 int MidiInput::getCount(void) {
@@ -87,7 +87,7 @@ int MidiInput::getCount(void) {
 
 //////////////////////////////
 //
-// MidiInput::extract
+// MidiInput::extract --
 //
 
 MidiMessage MidiInput::extract(void) {
@@ -127,7 +127,7 @@ double MidiInput::fscale14(int value, double min, double max) {
 
 //////////////////////////////
 //
-// MidiInput::insert
+// MidiInput::insert --
 //
 
 void MidiInput::insert(const MidiMessage& aMessage) {
@@ -142,7 +142,7 @@ void MidiInput::insert(const MidiMessage& aMessage) {
 
 //////////////////////////////
 //
-// MidiInput::isOrphan
+// MidiInput::isOrphan --
 //
 
 int MidiInput::isOrphan(void) const {
@@ -157,7 +157,7 @@ int MidiInput::isOrphan(void) const {
 
 //////////////////////////////
 //
-// MidiInput::makeOrphanBuffer
+// MidiInput::makeOrphanBuffer --
 //     default value: aSize = 1024
 //
 
@@ -175,7 +175,7 @@ void MidiInput::makeOrphanBuffer(int aSize) {
 
 //////////////////////////////
 //
-// MidiInput::removeOrphanBuffer
+// MidiInput::removeOrphanBuffer --
 //
 
 void MidiInput::removeOrphanBuffer(void) {
@@ -214,7 +214,7 @@ int MidiInput::scale14(int value, int min, int max) {
 
 //////////////////////////////
 //
-// MidiInput::setBufferSize
+// MidiInput::setBufferSize --
 //
 
 void MidiInput::setBufferSize(int aSize) {

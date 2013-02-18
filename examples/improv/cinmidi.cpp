@@ -53,18 +53,19 @@ const char *GMinstrument[128] = {
 
 // global variables for command-line options:
 Options   options;            // for command-line processing
-int       absoluteQ = 0;      // for -a command-line option (time display)
-int       interpretQ = 1;     // for -i command-line option (interpret input)
+int       absoluteQ = 0;      // for -a option (time display)
+int       interpretQ = 1;     // for -i option (interpret input)
 int       bytesQ = 1;         // no longer used, set to 1
-int       style = 0;          // for -d, -x, and -2 command-line options
-int       secondsQ = 0;       // for -s command-line option
-int       keyboardQ = 1;      // for -k command-line option
-int       activeSensingQ = 1; // for -A command-line option
-int       fileQ = 0;          // for -o command-line option
-int       suppressOffQ = 0;   // for -n command-line option
-int       filter[8] = {0};    // for -f command-line option
-int       cfilter[16] = {0};  // for -c command-line option
-fstream   outputfile;         // for -o command-line option
+int       style = 0;          // for -d, -x, and -2 options
+int       secondsQ = 0;       // for -s option
+int       keyboardQ = 1;      // for -k option
+int       activeSensingQ = 1; // for -A option
+int       fileQ = 0;          // for -o option
+int       suppressOffQ = 0;   // for -n option
+int       filter[8] = {0};    // for -f option
+int       cfilter[16] = {0};  // for -c option
+fstream   outputfile;         // for -o option
+int       echoQ      = 0;     // for -e option
 
 #define   MAX_KEY_BUFF (1024)
 char      inputBuffer[MAX_KEY_BUFF+1] = {0}; // for keyboard input buffer
@@ -112,6 +113,9 @@ int main(int argc, char** argv) {
    while (1) {
       while (midi.getCount() > 0) {
          message = midi.extract();
+         if (echoQ) {
+            midi.send(message);
+         }
 
          if ((!activeSensingQ) && (message.p0() == 0xfe)) {
             // don't display incoming active-sensing messages
@@ -345,6 +349,7 @@ void checkOptions(Options& opts) {     // options are:
 
    midi.setInputPort(opts.getInteger("inport"));
    midi.setOutputPort(opts.getInteger("outport"));
+   echoQ = opts.getBoolean("outport");
    midi.openInput();
    midi.openOutput();
 

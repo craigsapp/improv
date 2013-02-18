@@ -3,9 +3,10 @@
 // Creation Date: 18 December 1997
 // Last Modified: Mon Jan 26 23:54:36 GMT-0800 1998
 // Last Modified: Tue Feb  2 08:30:28 PST 1999
-// Last Modified: Sun Jul 18 18:52:29 PDT 1999 (added RPN functions)
-// Last Modified: Sun Dec  9 15:01:33 PST 2001 (switched con/des code)
-// Last Modified: Wed Jun  4 20:06:46 PDT 2003 (initial MIDI file recording)
+// Last Modified: Sun Jul 18 18:52:29 PDT 1999 added RPN functions
+// Last Modified: Sun Dec  9 15:01:33 PST 2001 switched con/des code
+// Last Modified: Wed Jun  4 20:06:46 PDT 2003 initial MIDI file recording
+// Last Modified: Sun Feb 17 14:11:15 PST 2013 added MidiMessage send
 // Filename:      ...sig/code/control/MidiOutput/MidiOutput.cpp
 // Web Address:   http://sig.sapp.org/src/sig/MidiOutput.cpp
 // Syntax:        C++
@@ -334,6 +335,27 @@ int MidiOutput::send(int command) {
       lastFlushTime = timer.getTime();  // only keep track if recording
    }
    return rawsend(command);
+}
+
+
+int MidiOutput::send(MidiMessage& message) {
+   int parameters = message.getArgCount();
+   switch (parameters) {
+      case 0:  
+         return send(message.command()); 
+         break;
+      case 1:  
+         return send(message.command(), message.p1()); 
+         break;
+      case 2:  
+         return send(message.command(), message.p1(), message.p2()); 
+         break;
+      default:
+         // sytem exclusive or meta message which are ignored for now
+         break;
+   }
+
+   return 0;
 }
 
 

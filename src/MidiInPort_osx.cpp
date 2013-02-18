@@ -638,8 +638,7 @@ void MidiInPort_osx::initialize(void) {
          delete [] trace;
       }
       trace = new int[numDevices];
-cout << "TRACE = " << numDevices << endl;
-   
+
       // allocate space for the Midi input buffers
       if (midiBuffer != NULL) {
          delete [] midiBuffer;

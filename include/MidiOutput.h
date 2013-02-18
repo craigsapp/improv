@@ -19,6 +19,7 @@
 
 #include "MidiOutPort.h"
 #include "MidiFileWrite.h"
+#include "MidiMessage.h"
 #include "FileIO.h"
 #include "SigTimer.h"
 #include "Array.h"
@@ -48,6 +49,7 @@ class MidiOutput : public MidiOutPort {
       int       send           (int command, int p1, int p2);
       int       send           (int command, int p1);
       int       send           (int command);
+      int       send           (MidiMessage& message);
       void      silence        (int aChannel = -1);
       void      sustain        (int channel, int status);
       int       sysex          (char* data, int length);

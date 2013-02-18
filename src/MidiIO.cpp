@@ -16,7 +16,7 @@
 
 //////////////////////////////
 //
-// MidiIO::MidiIO
+// MidiIO::MidiIO --
 //
 
 MidiIO::MidiIO(void) : MidiOutput(), MidiInput() {
@@ -33,7 +33,7 @@ MidiIO::MidiIO(int outPort, int inPort) :
 
 //////////////////////////////
 //
-// MidiIO::~MidiIO
+// MidiIO::~MidiIO --
 //
 
 MidiIO::~MidiIO() {
@@ -44,7 +44,7 @@ MidiIO::~MidiIO() {
 
 //////////////////////////////
 //
-// MidiIO::close
+// MidiIO::close --
 //
 
 void MidiIO::close(void) {
@@ -56,7 +56,7 @@ void MidiIO::close(void) {
 
 //////////////////////////////
 //
-// MidiIO::closeInput
+// MidiIO::closeInput --
 //
 
 void MidiIO::closeInput(void) {
@@ -67,7 +67,7 @@ void MidiIO::closeInput(void) {
 
 //////////////////////////////
 //
-// MidiIO::closeOutput
+// MidiIO::closeOutput --
 //
 
 void MidiIO::closeOutput(void) {
@@ -102,7 +102,7 @@ int MidiIO::getChannelOutOffset (void) const {
 
 //////////////////////////////
 //
-// MidiIO::getInputPort
+// MidiIO::getInputPort --
 //
 
 int MidiIO::getInputPort(void) {
@@ -113,7 +113,7 @@ int MidiIO::getInputPort(void) {
 
 //////////////////////////////
 //
-// MidiIO::getInputTrace
+// MidiIO::getInputTrace --
 //
 
 int MidiIO::getInputTrace(void) {
@@ -124,7 +124,7 @@ int MidiIO::getInputTrace(void) {
 
 //////////////////////////////
 //
-// MidiIO::getNumInputPorts
+// MidiIO::getNumInputPorts --
 //
 
 int MidiIO::getNumInputPorts(void) {
@@ -135,7 +135,7 @@ int MidiIO::getNumInputPorts(void) {
 
 //////////////////////////////
 //
-// MidiIO::getNumOutputPorts
+// MidiIO::getNumOutputPorts --
 //
 
 int MidiIO::getNumOutputPorts(void) {
@@ -146,7 +146,7 @@ int MidiIO::getNumOutputPorts(void) {
 
 //////////////////////////////
 //
-// MidiIO::getOutputPort
+// MidiIO::getOutputPort --
 //
  
 int MidiIO::getOutputPort(void) {
@@ -157,7 +157,7 @@ int MidiIO::getOutputPort(void) {
 
 //////////////////////////////
 //
-// MidiIO::getOutputTrace
+// MidiIO::getOutputTrace --
 //
 
 int MidiIO::getOutputTrace(void) {
@@ -168,7 +168,7 @@ int MidiIO::getOutputTrace(void) {
 
 //////////////////////////////
 //
-// MidiIO::open
+// MidiIO::open --
 //
 
 int MidiIO::open(void) {
@@ -183,7 +183,7 @@ int MidiIO::open(void) {
 
 //////////////////////////////
 //
-// MidiIO::openInput
+// MidiIO::openInput --
 //
 
 int MidiIO::openInput(void) {
@@ -194,7 +194,7 @@ int MidiIO::openInput(void) {
 
 //////////////////////////////
 //
-// MidiIO::openOutput
+// MidiIO::openOutput --
 //
 
 int MidiIO::openOutput(void) {
@@ -217,7 +217,7 @@ void MidiIO::setChannelOffset(int anOffset) {
 
 //////////////////////////////
 //
-// MidiIO::setInputPort
+// MidiIO::setInputPort --
 //   
  
 void MidiIO::setInputPort(int aPort) {
@@ -228,7 +228,7 @@ void MidiIO::setInputPort(int aPort) {
 
 //////////////////////////////
 //
-// MidiIO::setInputTrace
+// MidiIO::setInputTrace --
 //
 
 void MidiIO::setInputTrace(int aState) {
@@ -239,7 +239,7 @@ void MidiIO::setInputTrace(int aState) {
 
 //////////////////////////////
 //
-// MidiIO::setOutputPort
+// MidiIO::setOutputPort --
 //
 
 void MidiIO::setOutputPort(int aPort) {
@@ -250,7 +250,7 @@ void MidiIO::setOutputPort(int aPort) {
 
 //////////////////////////////
 //
-// MidiIO::setOutputTrace
+// MidiIO::setOutputTrace --
 //
 
 void MidiIO::setOutputTrace(int aState) {
@@ -261,7 +261,7 @@ void MidiIO::setOutputTrace(int aState) {
 
 //////////////////////////////
 //
-// MidiIO::toggleInputTrace
+// MidiIO::toggleInputTrace --
 //
 
 void MidiIO::toggleInputTrace(void) {
@@ -271,7 +271,7 @@ void MidiIO::toggleInputTrace(void) {
 
 //////////////////////////////
 //
-// MidiIO::toggleOutputTrace
+// MidiIO::toggleOutputTrace --
 //
 
 void MidiIO::toggleOutputTrace(void) {

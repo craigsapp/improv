@@ -7,6 +7,7 @@
 // Last Modified: Thu Jun  4 10:24:13 EDT 2009 added colorizing
 // Last Modified: Fri Jun 12 18:25:00 PDT 2009 added muting/hiding/marking
 // Last Modified: Thu Mar 24 04:22:03 PDT 2011 fixes for 64-bit compiling
+// Last Modified: Wed Mar  6 20:35:15 PST 2013 setKey() was missing?
 // Filename:      ...sig/doc/examples/all/hplay/hplay.cpp
 // Syntax:        C++ 
 //
@@ -1028,6 +1029,7 @@ void processNotes(HumdrumRecord& record) {
             if (staccatoQ) {
                note.setDur((int)(0.5 * note.getDur()));
             }
+            note.setKey(pitch);
             note.setVelocity(velocity);
             if (accentQ) {
                note.setVelocity((int)(note.getVelocity() * 1.3));

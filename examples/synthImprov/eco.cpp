@@ -31,7 +31,7 @@ int duration;             // duration of the echoing note
 int period;               // time between echoing notes
 int command;              // the current MIDI command
 int velocity;             // the current MIDI attack velocity
-int decay;                // decay rate for the echo algorithm
+int xdecay;                // decay rate for the echo algorithm
 
 Array<int> ontimes(128);  // time when the last note turned on for each pitch
 Array<int> offtimes(128); // time with the last note turned off for each pitch
@@ -40,7 +40,7 @@ Array<int> attack(128);   // attack velocity of the first note in the echo
 
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
-void playecho(int key, int velocity, int decay, int channel, int duration, 
+void playecho(int key, int velocity, int xdecay, int channel, int duration, 
       int period);
 
 /*--------------------- Event Algorithms --------------------------------*/
@@ -55,7 +55,7 @@ void playecho(int key, int velocity, int decay, int channel, int duration,
 //
 // Local variables needed by this function:
 //     12 int   = duration
-//     8 float  = decay
+//     8 float  = xdecay
 //     4 float  = newvelocity
 //
 
@@ -136,17 +136,17 @@ void mainloopalgorithms(void) {
          // note on message
          duration = offtimes[key] - ontimes[key];
          period = t_time - ontimes[key];
-         decay = attack[key] - velocity;
-         if (decay < 0) {
-            decay = -decay;
+         xdecay = attack[key] - velocity;
+         if (xdecay < 0) {
+            xdecay = -xdecay;
             velocity = attack[key];
          }
-         if (decay < 1) {
-            decay = 1;
+         if (xdecay < 1) {
+            xdecay = 1;
          }
          
          if (period < MAXECHOTIME && ontimes[key] != 0) {
-            playecho(key, velocity, decay, channel, duration, period);
+            playecho(key, velocity, xdecay, channel, duration, period);
             ontimes[key] = 0;
          } else {
             ontimes[key] = t_time;
@@ -164,13 +164,13 @@ void mainloopalgorithms(void) {
 //     plays an echo. 
 //
 
-void playecho(int key, int velocity, int decay, int channel, int duration, 
+void playecho(int key, int velocity, int xdecay, int channel, int duration, 
       int period) { 
    static FunctionEvent tn;   // a Temporary Note for copying into eventBuffer
    
    // setting the fields of the function note
    tn.intValue(12) = duration;
-   tn.floatValue(8) = 1.0 - decay/128.0;
+   tn.floatValue(8) = 1.0 - xdecay/128.0;
    tn.floatValue(4) = (float)velocity;
 
    tn.setFunction(EchoFunction);
@@ -187,7 +187,7 @@ void playecho(int key, int velocity, int decay, int channel, int duration,
 
    cout << "Key = "        << key
         << "\tLoudness = " << velocity
-        << "\tdecay = "    << decay
+        << "\tdecay = "    << xdecay
         << "\tduration = " << duration
         << "\tperiod = "   << period
         << endl;

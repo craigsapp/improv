@@ -1,4 +1,6 @@
+!.gitignore
+.*
 *.o
-^lib
-^obj
-^bin
+bin/
+obj/
+lib/

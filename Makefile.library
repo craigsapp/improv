@@ -2,7 +2,7 @@
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 ## Creation Date: Fri Jan 15 04:47:24 PST 1999
-## Last Modified: Wed Jun 17 17:40:11 PDT 2009
+## Last Modified: Mon Feb  2 19:19:45 PST 2015
 ## Filename:      ...improv/Makefile.library
 ##
 ## Description: This Makefile creates the improv library lib/libimprov.a
@@ -70,9 +70,12 @@
 # whether to compile OSS or ALSA MIDI interface code.                     #
 #                                                                         #
 
+ENV =
+
 ifeq ($(origin OSTYPE), undefined)
    ifneq ($(wildcard /mach_kernel*),)
       OSTYPE = OSXPC
+      ENV = MACOSX_DEPLOYMENT_TARGET=10.6
    else 
       OSTYPE = LINUX
    endif
@@ -107,7 +110,7 @@ INCDIR    = include
 LIBDIR    = lib
 LIBFILE   = libimprov.a
 # LANG=C: Nuts to the GCC error beautification committee.
-COMPILER  = LANG=C g++
+COMPILER  = LANG=C $(ENV) g++ 
 
 DEFINES   = $(addprefix -D,$(OSTYPE)) $(addprefix -D,$(OSSUBTYPE))
 PREFLAGS  = -Wall -c -g -O3 $(DEFINES) -I$(INCDIR)

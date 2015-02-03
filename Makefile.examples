@@ -2,7 +2,7 @@
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 ## Creation Date: Fri Jan 15 05:23:55 PST 1999
-## Last Modified: Wed Jun 17 17:35:29 PDT 2009
+## Last Modified: Mon Feb  2 19:19:37 PST 2015
 ## Filename:      ...improv/Makefile.examples
 ##
 ## Description: This Makefile creates example programs which use the
@@ -78,9 +78,12 @@
 # whether to compile OSS or ALSA MIDI interface code.                     #
 #                                                                         #
 
+ENV =
+
 ifeq ($(origin OSTYPE), undefined)
    ifneq ($(wildcard /mach_kernel*),)
       OSTYPE = OSXPC
+      ENV = MACOSX_DEPLOYMENT_TARGET=10.6
    else 
       OSTYPE = LINUX
    endif
@@ -116,7 +119,7 @@ LIBDIR    = lib
 LIBFILE   = improv
 TARGDIR   = bin
 # LANG=C: Nuts to the GCC error beautification committee.
-COMPILER  = LANG=C g++
+COMPILER  = LANG=C $(ENV) g++ 
 
 DEFINES   = $(addprefix -D,$(OSTYPE))
 DEFINES  += $(addprefix -D,$(OSSUBTYPE))
@@ -150,8 +153,13 @@ endif
 # Extra setup for compiling humplay:
 ifneq ($(wildcard ../humextra/lib/libhumextra.a),)
    PREFLAGS  += -I../humextra/include
-   POSTFLAGS += -L../humextra/lib -lhumextra
+   POSTFLAGS += -L../humextra/lib -lhumextra -lcslxml
    HUMEXTRA  := yes
+endif
+
+ifneq ($(wildcard ../humextra/external/pcre-*.*),)
+   PREFLAGS    += -I$(wildcard ../humextra/external/pcre-*.*)
+   POSTFLAGS   += -lpcre
 endif
 
 #                                                                         #

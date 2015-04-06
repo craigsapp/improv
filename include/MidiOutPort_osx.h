@@ -26,7 +26,12 @@
 
 #include "Array.h"
 
-#include <CoreMIDI/CoreMIDI.h> /* interface to MIDI in Macintosh OS X */
+#include <CoreMIDI/CoreMIDI.h>         /* interface to MIDI in Macintosh OS X */
+#include <CoreServices/CoreServices.h> /* for file stuff */
+#include <AudioToolbox/AudioToolbox.h> /* for AUGraph */
+#include <AudioUnit/AudioUnit.h>
+
+
 
 typedef unsigned char uchar;
 
@@ -65,6 +70,10 @@ class MidiOutPort_osx {
       static int*     trace;           // for printing messages to output
       static ostream* tracedisplay;    // for printing trace messages
 
+      // OS X software synth variables:
+      static AUGraph   graph;
+      static AudioUnit synthUnit;
+
    private:
       static void     deinitialize        (void); 
       static void     initialize          (void); 
@@ -72,6 +81,12 @@ class MidiOutPort_osx {
 
       static int      channelOffset;   // channel offset, either 0 or 1.
                                        // not being used right now.
+ 
+      // OS X software synth setup functions:
+      static OSStatus createAUGraph (AUGraph& outGraph, AudioUnit& outSynth);
+      static int      deinitialize_softsynth (void);
+      static int      initialize_softsynth   (void);
+      int             rawsend_softsynth(int command, int p1, int p2);
 
       // usually found in Sequencer classes:
       static int      getNumOutputs       (void);

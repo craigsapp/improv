@@ -4,7 +4,7 @@
 // Last Modified: Thu Mar 24 03:11:39 PDT 2011 some fixes for 64-bit compiling
 // Filename:      ...sig/code/control/MidiInPort/linux/MidiInPort_osx.cpp
 // Web Address:   http://sig.sapp.org/src/sig/MidiInPort_osx.cpp
-// Syntax:        C++ 
+// Syntax:        C++
 //
 // Description:   An interface for MIDI input capabilities of
 //                linux OSS sound driver's specific MIDI input methods.
@@ -46,7 +46,7 @@ Array<MIDIPortRef>  MidiInPort_osx::midiinputs;
 
 
 //////////////////////////////
-// 
+//
 // MidiInPort_osx::MidiInPort_osx
 //	default values: autoOpen = 1
 //
@@ -58,7 +58,9 @@ MidiInPort_osx::MidiInPort_osx(void) {
    objectCount++;
 
    port = -1;
-   setPort(0);
+   if (getNumPorts() > 0) {
+      setPort(0);
+   }
 }
 
 
@@ -87,7 +89,7 @@ MidiInPort_osx::~MidiInPort_osx() {
    if (objectCount == 0) {
       deinitialize();
    } else if (objectCount < 0) {
-      cerr << "Error: bad MidiInPort_osx object count!: " 
+      cerr << "Error: bad MidiInPort_osx object count!: "
            << objectCount << endl;
       exit(1);
    }
@@ -107,7 +109,7 @@ void MidiInPort_osx::clearSysex(int buffer) {
    if (getPort() == -1) {
       return;
    }
-   
+
    sysexBuffers[getPort()][buffer].setSize(0);
    if (sysexBuffers[getPort()][buffer].getAllocSize() != 32) {
       // shrink the storage buffer's size if necessary
@@ -183,7 +185,7 @@ int MidiInPort_osx::getBufferSize(void) {
 
 //////////////////////////////
 //
-// MidiInPort_osx::getChannelOffset -- returns zero if MIDI channel 
+// MidiInPort_osx::getChannelOffset -- returns zero if MIDI channel
 //     offset is 0, or 1 if offset is 1.
 //
 
@@ -219,9 +221,9 @@ const char* MidiInPort_osx::getName(void) {
 }
 
 const char* MidiInPort_osx::getName(int port) {
-   if (port == -1) { 
+   if (port == -1) {
       return "Null OSX MIDI Output";
-   } else if (port < 0 || port > inputnames.getSize()-1) { 
+   } else if (port < 0 || port > inputnames.getSize()-1) {
       return "";
    } else {
       return inputnames[port].getBase();
@@ -309,7 +311,7 @@ uchar* MidiInPort_osx::getSysex(int buffer) {
 //////////////////////////////
 //
 // MidiInPort_osx::getSysexSize -- returns the sysex message byte
-//    count of a given buffer.   Buffers are in the range from 
+//    count of a given buffer.   Buffers are in the range from
 //    0 to 127.
 //
 
@@ -383,7 +385,7 @@ int MidiInPort_osx::installSysexPrivate(int port, uchar* anArray, int aSize) {
    sysexBuffers[port][bufferNumber].setSize(aSize);
    uchar* dataptr = sysexBuffers[port][bufferNumber].getBase();
    uchar* indataptr = anArray;
-   for (int i=0; i<aSize; i++) { 
+   for (int i=0; i<aSize; i++) {
       *dataptr = *indataptr;
       dataptr++;
       indataptr++;
@@ -423,7 +425,7 @@ int MidiInPort_osx::open(void) {
 
    pauseQ[getPort()] = 0;
 
-   // should flush the input buffer at this point so that the 
+   // should flush the input buffer at this point so that the
    // initial opening of the port does not have a backlog of
    // MIDI messages to parse.
 
@@ -463,7 +465,7 @@ void MidiInPort_osx::setBufferSize(int aSize) {
 
 //////////////////////////////
 //
-// MidiInPort_osx::setChannelOffset -- sets the MIDI chan offset, 
+// MidiInPort_osx::setChannelOffset -- sets the MIDI chan offset,
 //     either 0 or 1.
 //
 
@@ -487,9 +489,10 @@ void MidiInPort_osx::setChannelOffset(int anOffset) {
 void MidiInPort_osx::setPort(int aPort) {
 //   if (aPort == -1) return;
    if (aPort < -1 || aPort >= getNumPorts()) {
-      cerr << "Error: maximum port number is: " << getNumPorts()-1
+      cerr << "Warning: maximum input port number is: " << getNumPorts()-1
            << ", but you tried to access port: " << aPort << endl;
-      exit(1);
+      // exit(1);
+      return;
    }
 
    if (port != -1) {
@@ -535,19 +538,19 @@ void MidiInPort_osx::toggleTrace(void) {
 
    trace[getPort()] = !trace[getPort()];
 }
-   
+
 
 
 //////////////////////////////
 //
-// MidiInPort_osx::unpause -- enables the Midi input port 
-//	to inserting MIDI messages into the buffer after the 
+// MidiInPort_osx::unpause -- enables the Midi input port
+//	to inserting MIDI messages into the buffer after the
 //	port is already open.
 //
 
 void MidiInPort_osx::unpause(void) {
    if (getPort() == -1)   return;
-  
+
    pauseQ[getPort()] = 0;
 }
 
@@ -619,126 +622,126 @@ void MidiInPort_osx::initialize(void) {
    int i;
    if  (getNumPorts() <= 0) {
       cerr << "Warning: no MIDI input devices" << endl;
-   } else {
-   
-      // allocate space for pauseQ, the port pause status
-      if (pauseQ != NULL) {
-         delete [] pauseQ;
-      }
-      pauseQ = new int[numDevices];
-   
-      // allocate space for object count on each port:
-      if (portObjectCount != NULL) {
-         delete [] portObjectCount;
-      }
-      portObjectCount = new int[numDevices];
-   
-      // allocate space for object count on each port:
-      if (trace != NULL) {
-         delete [] trace;
-      }
-      trace = new int[numDevices];
+      return;
+   }
 
-      // allocate space for the Midi input buffers
-      if (midiBuffer != NULL) {
-         delete [] midiBuffer;
-      }
-      midiBuffer = new CircularBuffer<MidiMessage>*[numDevices];
+   // allocate space for pauseQ, the port pause status
+   if (pauseQ != NULL) {
+      delete [] pauseQ;
+   }
+   pauseQ = new int[numDevices];
 
-      // allocate space for Midi input sysex buffer write indices
-      if (sysexWriteBuffer != NULL) {
-         delete [] sysexWriteBuffer;
-      }
-      sysexWriteBuffer = new int[numDevices];
+   // allocate space for object count on each port:
+   if (portObjectCount != NULL) {
+      delete [] portObjectCount;
+   }
+   portObjectCount = new int[numDevices];
 
-      // allocate space for Midi input sysex buffers
-      if (sysexBuffers != NULL) {
-         cout << "Error: memory leak on sysex buffers initialization" << endl;
-         exit(1);
-      }
-      sysexBuffers = new Array<uchar>*[numDevices];
-   
-      // initialize the static arrays
-      for (i=0; i<getNumPorts(); i++) {
-         portObjectCount[i] = 0;
-         trace[i] = 0;
-         pauseQ[i] = 0;
-         midiBuffer[i] = new CircularBuffer<MidiMessage>;
-         midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
+   // allocate space for object count on each port:
+   if (trace != NULL) {
+      delete [] trace;
+   }
+   trace = new int[numDevices];
 
-         sysexWriteBuffer[i] = 0;
-         sysexBuffers[i] = new Array<uchar>[128];
-         for (int n=0; n<128; n++) {
-            sysexBuffers[i][n].allowGrowth(0);      // shouldn't need to grow
-            sysexBuffers[i][n].setAllocSize(32);
-            sysexBuffers[i][n].setSize(0);
-            sysexBuffers[i][n].setGrowth(32);       // in case it will ever grow
-         }
-      }
+   // allocate space for the Midi input buffers
+   if (midiBuffer != NULL) {
+      delete [] midiBuffer;
+   }
+   midiBuffer = new CircularBuffer<MidiMessage>*[numDevices];
 
-      OSStatus status;
-      if ((status = ::MIDIClientCreate(CFSTR("ImprovMIDIin"), NULL, NULL, 
-            &midiclient) != 0)) {
-         cout << "Error trying to create MIDI Client structure: " 
-              << status << "\n";
-         cout << ::GetMacOSStatusErrorString(status) << endl;
-         exit(status);
-      }
+   // allocate space for Midi input sysex buffer write indices
+   if (sysexWriteBuffer != NULL) {
+      delete [] sysexWriteBuffer;
+   }
+   sysexWriteBuffer = new int[numDevices];
 
-      midiinputs.setSize(numDevices);
-      midiinputs.setAll(0);
-      midiinputs.allowGrowth(0);
-      for (i=0; i<midiinputs.getSize(); i++) {
+   // allocate space for Midi input sysex buffers
+   if (sysexBuffers != NULL) {
+      cout << "Error: memory leak on sysex buffers initialization" << endl;
+      exit(1);
+   }
+   sysexBuffers = new Array<uchar>*[numDevices];
 
-         if ((status = ::MIDIInputPortCreate(midiclient, CFSTR("ImprovIn"), 
-               improvReadProc, (void*)i, &midiinputs[i])) != 0) {
-            // opening output port was not successful
-            midiinputs[i] = NULL;
-            cout << "OPENING PORT " << i << " FAILED" << endl;
-         }
-      }
+   // initialize the static arrays
+   for (i=0; i<getNumPorts(); i++) {
+      portObjectCount[i] = 0;
+      trace[i] = 0;
+      pauseQ[i] = 0;
+      midiBuffer[i] = new CircularBuffer<MidiMessage>;
+      midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
-      MIDIEndpointRef source;
-      for (i=0; i<midiinputs.getSize(); i++) {
-         source = MIDIGetSource(i);
-         ::MIDIPortConnectSource(midiinputs[i], source, (void*)i);
+      sysexWriteBuffer[i] = 0;
+      sysexBuffers[i] = new Array<uchar>[128];
+      for (int n=0; n<128; n++) {
+         sysexBuffers[i][n].allowGrowth(0);      // shouldn't need to grow
+         sysexBuffers[i][n].setAllocSize(32);
+         sysexBuffers[i][n].setSize(0);
+         sysexBuffers[i][n].setGrowth(32);       // in case it will ever grow
       }
-      
-      // store the names of the MIDI input ports
+   }
 
-      MIDIEndpointRef destination;
-      CFStringRef pname;
-      CFStringRef pmanu;
-      CFStringRef pmodel;
-      char name[128]         = {0};
-      char manu[128]         = {0};
-      char model[128]        = {0};
-      inputnames.setSize(numDevices);
-      inputnames.allowGrowth(0);
-      for (i=0; i<inputnames.getSize(); i++) {
-         destination = ::MIDIGetSource(i);
-         if (destination == NULL) {
-            inputnames[i].setSize(strlen("ERROR")+1);
-            strcpy(inputnames[i].getBase(), "ERROR");
-            continue;
-         }
-         ::MIDIObjectGetStringProperty(destination, kMIDIPropertyName, &pname);
-         ::MIDIObjectGetStringProperty(destination, kMIDIPropertyManufacturer, 
-               &pmanu);
-         ::MIDIObjectGetStringProperty(destination, kMIDIPropertyModel, &pmodel);
-         ::CFStringGetCString(pname, name, sizeof(name), 0);
-         ::CFStringGetCString(pmanu, manu, sizeof(manu), 0);
-         ::CFStringGetCString(pmodel, model, sizeof(model), 0);
-         ::CFRelease(pname);
-         ::CFRelease(pmanu);
-         ::CFRelease(pmodel);
-         inputnames[i].setSize(strlen(name)+strlen(manu)+strlen(model)+3);
-         strcpy(inputnames[i].getBase(), name);
-         strcat(inputnames[i].getBase(), ":");
-         strcat(inputnames[i].getBase(), manu);
-         strcat(inputnames[i].getBase(), ":");
-         strcat(inputnames[i].getBase(), model);
+   OSStatus status;
+   if ((status = ::MIDIClientCreate(CFSTR("ImprovMIDIin"), NULL, NULL,
+         &midiclient) != 0)) {
+      cout << "Error trying to create MIDI Client structure: "
+           << status << "\n";
+      cout << ::GetMacOSStatusErrorString(status) << endl;
+      exit(status);
+   }
+
+   midiinputs.setSize(numDevices);
+   midiinputs.setAll(0);
+   midiinputs.allowGrowth(0);
+   for (i=0; i<midiinputs.getSize(); i++) {
+
+      if ((status = ::MIDIInputPortCreate(midiclient, CFSTR("ImprovIn"),
+            improvReadProc, (void*)i, &midiinputs[i])) != 0) {
+         // opening output port was not successful
+         midiinputs[i] = NULL;
+         cout << "OPENING PORT " << i << " FAILED" << endl;
       }
+   }
+
+   MIDIEndpointRef source;
+   for (i=0; i<midiinputs.getSize(); i++) {
+      source = MIDIGetSource(i);
+      ::MIDIPortConnectSource(midiinputs[i], source, (void*)i);
+   }
+
+   // store the names of the MIDI input ports
+
+   MIDIEndpointRef destination;
+   CFStringRef pname;
+   CFStringRef pmanu;
+   CFStringRef pmodel;
+   char name[128]         = {0};
+   char manu[128]         = {0};
+   char model[128]        = {0};
+   inputnames.setSize(numDevices);
+   inputnames.allowGrowth(0);
+   for (i=0; i<inputnames.getSize(); i++) {
+      destination = ::MIDIGetSource(i);
+      if (destination == NULL) {
+         inputnames[i].setSize(strlen("ERROR")+1);
+         strcpy(inputnames[i].getBase(), "ERROR");
+         continue;
+      }
+      ::MIDIObjectGetStringProperty(destination, kMIDIPropertyName, &pname);
+      ::MIDIObjectGetStringProperty(destination, kMIDIPropertyManufacturer,
+            &pmanu);
+      ::MIDIObjectGetStringProperty(destination, kMIDIPropertyModel, &pmodel);
+      ::CFStringGetCString(pname, name, sizeof(name), 0);
+      ::CFStringGetCString(pmanu, manu, sizeof(manu), 0);
+      ::CFStringGetCString(pmodel, model, sizeof(model), 0);
+      ::CFRelease(pname);
+      ::CFRelease(pmanu);
+      ::CFRelease(pmodel);
+      inputnames[i].setSize(strlen(name)+strlen(manu)+strlen(model)+3);
+      strcpy(inputnames[i].getBase(), name);
+      strcat(inputnames[i].getBase(), ":");
+      strcat(inputnames[i].getBase(), manu);
+      strcat(inputnames[i].getBase(), ":");
+      strcat(inputnames[i].getBase(), model);
    }
 }
 
@@ -746,7 +749,7 @@ void MidiInPort_osx::initialize(void) {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// friendly functions 
+// friendly functions
 //
 
 

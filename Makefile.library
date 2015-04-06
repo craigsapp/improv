@@ -2,7 +2,7 @@
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 ## Creation Date: Fri Jan 15 04:47:24 PST 1999
-## Last Modified: Mon Feb  2 19:19:45 PST 2015
+## Last Modified: Mon Apr  6 00:53:36 PDT 2015
 ## Filename:      ...improv/Makefile.library
 ##
 ## Description: This Makefile creates the improv library lib/libimprov.a
@@ -73,9 +73,9 @@
 ENV =
 
 ifeq ($(origin OSTYPE), undefined)
-   ifneq ($(wildcard /mach_kernel*),)
+   ifeq ($(shell uname),Darwin)
       OSTYPE = OSXPC
-      ENV = MACOSX_DEPLOYMENT_TARGET=10.6
+      # ENV = MACOSX_DEPLOYMENT_TARGET=10.6
    else 
       OSTYPE = LINUX
    endif
@@ -151,20 +151,12 @@ all: makeobjdir $(OBJS)
 	ranlib $(LIBDIR)/$(LIBFILE)
    endif
 
-   ifeq ($(OSTYPE),OSXOLD)
-	@echo "Making museinfo library file for OSX (PowerPC)..."
-	-mkdir $(LIBDIR)
-	-rm -f $(LIBDIR)/$(LIBFILE)
-	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version
-	ranlib $(LIBDIR)/$(LIBFILE)
-   endif
-
    ifeq ($(OSTYPE),OSXPC)
 	@echo "Making museinfo library file for OSX (Intel)..."
 	-mkdir $(LIBDIR)
 	-rm -f $(LIBDIR)/$(LIBFILE)
 	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version
-	ranlib $(LIBDIR)/$(LIBFILE)
+	# ranlib $(LIBDIR)/$(LIBFILE)
    endif
 
    ifeq ($(OSTYPE),VISUAL)

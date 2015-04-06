@@ -81,9 +81,9 @@
 ENV =
 
 ifeq ($(origin OSTYPE), undefined)
-   ifneq ($(wildcard /mach_kernel*),)
+   ifeq ($(shell uname),Darwin)
       OSTYPE = OSXPC
-      ENV = MACOSX_DEPLOYMENT_TARGET=10.6
+      # ENV = MACOSX_DEPLOYMENT_TARGET=10.6
    else 
       OSTYPE = LINUX
    endif
@@ -136,9 +136,7 @@ POSTFLAGS  = -L$(LIBDIR) -l$(LIBFILE)
 
 ifeq ($(OSTYPE),OSXPC)
    POSTFLAGS += -framework CoreMIDI -framework CoreServices
-endif
-ifeq ($(OSTYPE),OSXOLD)
-   POSTFLAGS += -framework CoreMIDI -framework CoreServices
+   POSTFLAGS += -framework AudioUnit -framework AudioToolbox
 endif
 
 ifeq ($(OSTYPE),LINUX)

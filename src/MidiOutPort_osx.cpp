@@ -2,6 +2,7 @@
 // Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: Wed Jun 10 17:22:37 PDT 2009
 // Last Modified: Thu Jun 11 11:36:53 PDT 2009
+// Last Modified: Sun Apr  5 23:27:42 PDT 2015 Added software synth
 // Filename:      ...sig/code/control/MidiOutPort/linux/MidiOutPort_osx.cpp
 // Web Address:   http://sig.sapp.org/src/sig/MidiOutPort_osx.cpp
 // Syntax:        C++ 
@@ -10,6 +11,8 @@
 //                capabilities in Apple Macintosh using the CoreMIDI 
 //                interface.  This class is Privately inherited by the
 //                MidiOutPort class.
+// Reference:
+// https://developer.apple.com/library/mac/documentation/AudioToolbox/Reference/MusicPlayerServices_Reference/index.html
 // 
 
 #if defined(OSXPC) || defined(OSXOLD)
@@ -39,6 +42,9 @@ ostream*            MidiOutPort_osx::tracedisplay    = &cout;
 MIDIClientRef       MidiOutPort_osx::midiclient      = NULL;
 Array<MIDIPortRef>  MidiOutPort_osx::midioutputs; 
 Array<Array<char> > MidiOutPort_osx::outputnames(0);
+
+AUGraph             MidiOutPort_osx::graph           = 0;
+AudioUnit           MidiOutPort_osx::synthUnit;
 
 
 //////////////////////////////
@@ -130,6 +136,12 @@ const char* MidiOutPort_osx::getName(void) {
 const char* MidiOutPort_osx::getName(int port) {
    static char buffer[1024] = {0};
    buffer[0] = '\0';
+
+   if (port == 0) {
+      strcpy(buffer, "OS X softsynth");
+      return buffer;
+   }
+
    if (port == -1) { 
       return "Null OSX MIDI Output";
    } else if (port < 0 || port > getNumOutputs()-1) { 
@@ -232,6 +244,9 @@ int MidiOutPort_osx::rawsend(int command, int p1, int p2) {
    if (getPort() < 0 || getPort() > numDevices-1) {
       return 0;
    }
+   if (getPort() == 0) {
+      return rawsend_softsynth(command, p1, p2);
+   }
 
    int status;
    MIDIEndpointRef dest;
@@ -264,6 +279,10 @@ int MidiOutPort_osx::rawsend(int command, int p1, int p2) {
 int MidiOutPort_osx::rawsend(int command, int p1) {
    if (getPort() == -1) return 1;
    if (getPort() < 0 || getPort() > numDevices-1) {
+      return 0;
+   }
+   if (getPort() == 0) {
+      cerr << "NOT YET Implemented" << endl;
       return 0;
    }
 
@@ -300,6 +319,10 @@ int MidiOutPort_osx::rawsend(int command) {
    if (getPort() < 0 || getPort() > numDevices-1) {
       return 0;
    }
+   if (getPort() == 0) {
+      cerr << "NOT YET Implemented" << endl;
+      return 0;
+   }
 
    int status;
    MIDIEndpointRef dest;
@@ -334,6 +357,10 @@ int MidiOutPort_osx::rawsend(uchar* array, int size) {
 
    if (getPort() == -1) return 1;
    if (getPort() < 0 || getPort() > numDevices-1) {
+      return 0;
+   }
+   if (getPort() == 0) {
+      cerr << "NOT YET Implemented" << endl;
       return 0;
    }
 
@@ -409,7 +436,7 @@ void MidiOutPort_osx::setChannelOffset(int anOffset) {
 
 void MidiOutPort_osx::setPort(int aPort) {
    if (aPort < -1 || aPort >= getNumPorts()) {
-      cerr << "Error: maximum port number is: " << getNumPorts()-1
+      cerr << "Error: maximum output port number is: " << getNumPorts()-1
            << ", but you tried to access port: " << aPort << endl;
       exit(1);
    }
@@ -524,8 +551,10 @@ void MidiOutPort_osx::initialize(void) {
    if (initializeQ != 0) {
       deinitialize();
    }
+   initialize_softsynth();
    // get the number of ports
    numDevices = getNumOutputs();
+   numDevices++;  // device 0 set to softsynth
    int i;
 
    if  (getNumPorts() <= 0) {
@@ -547,7 +576,7 @@ void MidiOutPort_osx::initialize(void) {
       midioutputs.setSize(numDevices);
       midioutputs.setAll(0);
       midioutputs.allowGrowth(0);
-      for (i=0; i<midioutputs.getSize(); i++) {
+      for (i=1; i<midioutputs.getSize(); i++) {
          if ((status = ::MIDIOutputPortCreate(midiclient, CFSTR("ImprovOut"), 
                &midioutputs[i])) != 0) {
             // opening output port was not successful
@@ -565,7 +594,11 @@ void MidiOutPort_osx::initialize(void) {
       char model[128]        = {0};
       MidiOutPort_osx::outputnames.setSize(numDevices);
       MidiOutPort_osx::outputnames.allowGrowth(0);
-      for (i=0; i<MidiOutPort_osx::outputnames.getSize(); i++) {
+
+      MidiOutPort_osx::outputnames[0].setSize(strlen("OS X synth")+1);
+      strcpy(MidiOutPort_osx::outputnames[0].getBase(), "OS X synth");
+
+      for (i=1; i<MidiOutPort_osx::outputnames.getSize(); i++) {
          destination = ::MIDIGetDestination(i);
          if (destination == NULL) {
             MidiOutPort_osx::outputnames[i].setSize(strlen("ERROR")+1);
@@ -604,6 +637,110 @@ void MidiOutPort_osx::initialize(void) {
          trace[i] = 0;
       }
    }
+}
+
+
+
+//////////////////////////////
+//
+// MidiOutPort_osx::initialize_softsynth --
+//
+
+int MidiOutPort_osx::initialize_softsynth(void) {
+   OSStatus result;
+   if (graph) {
+      deinitialize_softsynth();
+   }
+   require_noerr( result = MidiOutPort_osx::createAUGraph(graph, synthUnit), InitError );
+   require_noerr( result = ::AUGraphInitialize(graph), InitError );
+   // CAShow(graph);
+   require_noerr( result = ::AUGraphStart(graph), InitError );
+
+   return 1;
+   InitError:
+      return 0;
+}
+
+
+
+//////////////////////////////
+//
+// MidiOutPort_osx::deinitialize_softsynth --
+//
+
+int MidiOutPort_osx::deinitialize_softsynth(void) {
+   if (graph) {
+      // stop playback -- AUGraphDispose will do that, but to be explicit:
+      AUGraphStop(graph);
+      DisposeAUGraph(graph);
+   }
+   graph = 0;
+   return 1;
+}
+
+
+
+//////////////////////////////
+//
+// MidiOutPort_osx::createAuGraph -- Create Graph and Synth unit for 
+//    internal MIDI playback.
+//
+// https://developer.apple.com/library/mac/samplecode/PlaySoftMIDI
+//
+
+OSStatus MidiOutPort_osx::createAUGraph(AUGraph& outGraph, AudioUnit& outSynth) {
+   OSStatus result;
+
+   //create the nodes of the graph:
+   AUNode synthNode, limiterNode, outNode;
+
+   AudioComponentDescription cd;
+   cd.componentManufacturer = kAudioUnitManufacturer_Apple;
+   cd.componentFlags     = 0;
+   cd.componentFlagsMask = 0;
+
+   require_noerr (result = NewAUGraph (&outGraph), home);
+
+   cd.componentType      = kAudioUnitType_MusicDevice;
+   cd.componentSubType   = kAudioUnitSubType_DLSSynth;
+
+   require_noerr (result = AUGraphAddNode (outGraph, &cd, &synthNode), home);
+
+   cd.componentType      = kAudioUnitType_Effect;
+   cd.componentSubType   = kAudioUnitSubType_PeakLimiter;
+
+   require_noerr (result = AUGraphAddNode (outGraph, &cd, &limiterNode), home);
+
+   cd.componentType      = kAudioUnitType_Output;
+   cd.componentSubType   = kAudioUnitSubType_DefaultOutput;
+   require_noerr (result = AUGraphAddNode (outGraph, &cd, &outNode), home);
+
+   require_noerr (result = AUGraphOpen (outGraph), home);
+
+   require_noerr (result = AUGraphConnectNodeInput (outGraph, synthNode,
+        0, limiterNode, 0), home);
+   require_noerr (result = AUGraphConnectNodeInput (outGraph, limiterNode,
+        0, outNode, 0), home);
+
+   require_noerr (result = AUGraphNodeInfo(outGraph, synthNode, 0, &outSynth),
+         home);
+
+home:
+   return result;
+}
+
+
+
+//////////////////////////////
+//
+// MidiOutPort_osx::rawsend_softsynth --
+//
+
+int MidiOutPort_osx::rawsend_softsynth(int command, int p1, int p2) {
+   OSStatus result;
+   result = MusicDeviceMIDIEvent(synthUnit, (unsigned int)command, 
+         (unsigned int)p1, (unsigned int)p2, 0);
+   return (int)result;
 }
 
 

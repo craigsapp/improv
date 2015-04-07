@@ -95,12 +95,12 @@ int runImprovInterface(void) {
    int command = 0;              // a key from the keyboard
 
    initialization_automatic();
-   if (!options.optionsArg()) {
-      print_commands();
-   }
    initialization();             // user defined behavior
    options.process();            // process options checking for errors
                                  // and enabling --options option
+   if ((!options.getBoolean("Q"))) {
+      print_commands();
+   }
 
    while (1) {                        // event loop
       synth.processIncomingMessages();
@@ -448,9 +448,10 @@ void initialization_automatic(void) {
    options.define("version=b");         // display version of interface
    options.define("help=b");            // display usage synopsis
    options.define("ports=b");           // display MIDI I/O ports
+   options.define("Q=b");               // suppress info panel on startup
    options.define("description=b");     // display the description message
-   options.process(0, 1);               // process options but don't
                                         // complain about undefined options
+   options.process(0, 1);               // process options but don't
    if (options.getBoolean("author")) {
       cout << "synthImprov interface written by Craig Stuart Sapp, "
               "craig@ccrma.stanford.edu, February 1998" << endl;

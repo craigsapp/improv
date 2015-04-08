@@ -241,7 +241,7 @@ int determineDirection(CircularBuffer<int>& history, int curr) {
       decision = 0;
    }
 
-   if (decision == 0 && curr > highregion || curr < lowregion) {
+   if (((decision == 0) && (curr > highregion)) || curr < lowregion) {
       if (a == b && a == c && a == d) {
          decision = a;
       } else {

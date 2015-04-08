@@ -33,7 +33,6 @@
 
 #OSTYPE = LINUX
 #OSTYPE = OSXPC
-#OSTYPE = OSXOLD
 #OSTYPE = VISUAL
 
 
@@ -75,6 +74,8 @@ ENV =
 ifeq ($(origin OSTYPE), undefined)
    ifeq ($(shell uname),Darwin)
       OSTYPE = OSXPC
+      # Uncomment the following line to compile for a particular version
+      # of OS X (and should also run on OS X later versions).
       # ENV = MACOSX_DEPLOYMENT_TARGET=10.6
    else 
       OSTYPE = LINUX
@@ -155,8 +156,7 @@ all: makeobjdir $(OBJS)
 	@echo "Making museinfo library file for OSX (Intel)..."
 	-mkdir $(LIBDIR)
 	-rm -f $(LIBDIR)/$(LIBFILE)
-	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version
-	# ranlib $(LIBDIR)/$(LIBFILE)
+	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version >& /dev/null
    endif
 
    ifeq ($(OSTYPE),VISUAL)
@@ -174,7 +174,8 @@ makeobjdir:
 
 # defining an explicit rule for object file dependencies
 %.o : %.cpp 
-	$(COMPILER) $(PREFLAGS) -o $(OBJDIR)/$(notdir $@) $<
+	@echo [CC] $@
+	@$(COMPILER) $(PREFLAGS) -o $(OBJDIR)/$(notdir $@) $<
 
 
 #                                                                         #

@@ -16,13 +16,16 @@
 MAKE = make
 
 # targets which don't actually refer to files
-.PHONY : all clean examples library dynamic improv synthImprov batonImprov
+.PHONY : all clean superclean programs examples library improv synthImprov batonImprov info help
 
 ###########################################################################
 #                                                                         #
 #                                                                         #
 
-all:
+all: library examples
+
+info: help
+help:
 	@echo ""
 	@echo This makefile will create either the improv library file
 	@echo or will compile the improv example programs.  You may
@@ -46,6 +49,11 @@ library:
 clean:
 	$(MAKE) -f Makefile.library clean
 
+superclean: clean
+	-rm -rf bin
+	-rm -rf lib
+
+programs: examples
 examples:
 	$(MAKE) -f Makefile.examples
 
@@ -60,10 +68,6 @@ batonImprov:
 
 batonSynthImprov:
 	$(MAKE) -f Makefile.examples batonSynthImprov
-
-dynamic:
-	@echo Making dynamic library
-	$(MAKE) -f Makefile.dynamic
 
 %: 
 	@echo compiling file $@

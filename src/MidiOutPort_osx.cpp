@@ -18,9 +18,8 @@
 #if defined(OSXPC) || defined(OSXOLD)
 
 // needed for GetMacOSStatusErrorString:
-#include "/System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/CarbonCore.framework/Versions/Current/Headers/Debugging.h"
+//#include "/System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/CarbonCore.framework/Versions/Current/Headers/Debugging.h"
 
-using namespace std;
 #include "MidiOutPort_osx.h"
 
 #include <stdlib.h>
@@ -39,7 +38,7 @@ int*                MidiOutPort_osx::portObjectCount = NULL;
 int                 MidiOutPort_osx::channelOffset   = 0;
 int*                MidiOutPort_osx::trace           = NULL;
 ostream*            MidiOutPort_osx::tracedisplay    = &cout;
-MIDIClientRef       MidiOutPort_osx::midiclient      = NULL;
+MIDIClientRef       MidiOutPort_osx::midiclient      = 0;
 Array<MIDIPortRef>  MidiOutPort_osx::midioutputs; 
 Array<Array<char> > MidiOutPort_osx::outputnames(0);
 
@@ -156,8 +155,8 @@ const char* MidiOutPort_osx::getName(int port) {
       char manu[128]   = {0};
       char model[128]  = {0};
       
-      destination = ::MIDIGetDestination(port);
-      if (destination == NULL) {
+      destination = ::MIDIGetDestination(port-1);
+      if (destination == 0) {
          strcpy(buffer, "ERROR");
          return buffer;
       }
@@ -402,7 +401,7 @@ int MidiOutPort_osx::open(void) {
       return 0;
    }
 
-   if (midioutputs[getPort()] != NULL) {
+   if (midioutputs[getPort()] != 0) {
       return 1;
    } else {
       return 0;
@@ -527,15 +526,15 @@ void MidiOutPort_osx::deinitialize(void) {
 
    int i;
    for (i=0; i<midioutputs.getSize(); i++) {
-      if (midioutputs[i] != NULL) {
+      if (midioutputs[i] != 0) {
          ::MIDIPortDispose(midioutputs[i]);
-         midioutputs[i] = NULL;
+         midioutputs[i] = 0;
       }
    }
    midioutputs.setSize(0);
 
    ::MIDIClientDispose(midiclient); 
-   midiclient = NULL;
+   midiclient = 0;
 }
 
 
@@ -567,7 +566,9 @@ void MidiOutPort_osx::initialize(void) {
             &midiclient)) != 0) {
          cout << "Error trying to create MIDI Client structure: " 
               << status << "\n";
-         cout << GetMacOSStatusErrorString(status) << endl;
+         // GetMacOSStatusErrorString is "deprecated" in 10.8, no substitute.
+         //cout << GetMacOSStatusErrorString(status) << endl;
+         cout << "OSStatus:" << status << endl;
          exit(status);
       }
       // For MIDI output in OSX, there is no reason to wait to open
@@ -580,7 +581,7 @@ void MidiOutPort_osx::initialize(void) {
          if ((status = ::MIDIOutputPortCreate(midiclient, CFSTR("ImprovOut"), 
                &midioutputs[i])) != 0) {
             // opening output port was not successful
-            midioutputs[i] = NULL;
+            midioutputs[i] = 0;
          }
       }
 
@@ -600,7 +601,7 @@ void MidiOutPort_osx::initialize(void) {
 
       for (i=1; i<MidiOutPort_osx::outputnames.getSize(); i++) {
          destination = ::MIDIGetDestination(i);
-         if (destination == NULL) {
+         if (destination == 0) {
             MidiOutPort_osx::outputnames[i].setSize(strlen("ERROR")+1);
             strcpy(MidiOutPort_osx::outputnames[i].getBase(), "ERROR");
             continue;
@@ -782,7 +783,7 @@ int MidiOutPort_osx::is_open(void) {
       return 1;
    } else if (getPort() < 0 || getPort() > midioutputs.getSize()-1) {
       return 0;
-   } else if (midioutputs[getPort()] != NULL) {
+   } else if (midioutputs[getPort()] != 0) {
       return 1;
    } else {
       return 0;

@@ -24,7 +24,7 @@ class MidiEvent : public OneStageEvent {
 
       void        action            (EventBuffer& midiOutput);
       void        action            (EventBuffer* midiOutput);
-      void        off               (void);
+      void        off               (EventBuffer* midiOutput = NULL);
 
    protected:
       // no data members allowed

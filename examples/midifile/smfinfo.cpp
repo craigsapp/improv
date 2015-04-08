@@ -77,7 +77,7 @@ void fixTrackByteCounts(const char* filename) {
    int trackcount = (contents[10] << 8) | contents[11];
    int trackoffset = 14;
    int realtrackcount = 0;
-   while (trackoffset = processTrack(contents, trackoffset)) {
+   while ((trackoffset = processTrack(contents, trackoffset))) {
       realtrackcount++;
    }
    cout << "TRACKS PROCESSED " << realtrackcount << endl;

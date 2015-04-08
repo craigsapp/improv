@@ -49,7 +49,7 @@ void mainloopalgorithms(void) { }
 
 void mididata(int intime, int command, int p1, int p2) { 
    int channel = command & 0x0f;
-   if (command & 0xf0 == 0xf0) {   // system messages
+   if ((command & 0xf0) == 0xf0) {   // system messages
       channel = 16;
    }
    if (channel == channelDisplay || channelDisplay < 0) {

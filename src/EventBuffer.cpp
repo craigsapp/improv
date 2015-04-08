@@ -218,7 +218,7 @@ int EventBuffer::insert(const Event* newEvent) {
 
 int EventBuffer::insert(const Event& newEvent) {
    int freeSpot = freeSlots.extract();
-   memcpy(&eventStorage[freeSpot], &newEvent, sizeof(Event));
+   memcpy((void*)&eventStorage[freeSpot], (void*)&newEvent, sizeof(Event));
    activate(freeSpot);
    return freeSpot;
 }

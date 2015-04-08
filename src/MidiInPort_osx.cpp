@@ -13,9 +13,8 @@
 
 #if defined(OSXPC) || defined(OSXOLD)
 
-#include <Carbon/Carbon.h>          /* for GetMacOSStatusErrorString */
+//#include <Carbon/Carbon.h>          /* for GetMacOSStatusErrorString */
 
-using namespace std;
 #include "MidiInPort_osx.h"
 #include <stdlib.h>
 
@@ -41,7 +40,7 @@ ostream*            MidiInPort_osx::tracedisplay         = &cout;
 int*                MidiInPort_osx::sysexWriteBuffer     = NULL;
 Array<uchar>**      MidiInPort_osx::sysexBuffers         = NULL;
 Array<Array<char> > MidiInPort_osx::inputnames;
-MIDIClientRef       MidiInPort_osx::midiclient           = NULL;
+MIDIClientRef       MidiInPort_osx::midiclient           = 0;
 Array<MIDIPortRef>  MidiInPort_osx::midiinputs;
 
 
@@ -276,7 +275,7 @@ int MidiInPort_osx::is_open(void) {
       return 1;
    } else if (getPort() < 0 || getPort() > midiinputs.getSize()-1) {
       return 0;
-   } else if (midiinputs[getPort()] != NULL) {
+   } else if (midiinputs[getPort()] != 0) {
       return 1;
    } else {
       return 0;
@@ -685,7 +684,9 @@ void MidiInPort_osx::initialize(void) {
          &midiclient) != 0)) {
       cout << "Error trying to create MIDI Client structure: "
            << status << "\n";
-      cout << ::GetMacOSStatusErrorString(status) << endl;
+      // GetMacOSStatusErrorString is "deprecated" in 10.8, no substitute.
+      // cout << ::GetMacOSStatusErrorString(status) << endl;
+      cout << "OSStatus:" << status << endl;
       exit(status);
    }
 
@@ -693,11 +694,10 @@ void MidiInPort_osx::initialize(void) {
    midiinputs.setAll(0);
    midiinputs.allowGrowth(0);
    for (i=0; i<midiinputs.getSize(); i++) {
-
       if ((status = ::MIDIInputPortCreate(midiclient, CFSTR("ImprovIn"),
-            improvReadProc, (void*)i, &midiinputs[i])) != 0) {
+            improvReadProc, (void*)((long long)i), &midiinputs[i])) != 0) {
          // opening output port was not successful
-         midiinputs[i] = NULL;
+         midiinputs[i] = 0;
          cout << "OPENING PORT " << i << " FAILED" << endl;
       }
    }
@@ -705,7 +705,7 @@ void MidiInPort_osx::initialize(void) {
    MIDIEndpointRef source;
    for (i=0; i<midiinputs.getSize(); i++) {
       source = MIDIGetSource(i);
-      ::MIDIPortConnectSource(midiinputs[i], source, (void*)i);
+      ::MIDIPortConnectSource(midiinputs[i], source, (void*)((long long)i));
    }
 
    // store the names of the MIDI input ports
@@ -721,7 +721,7 @@ void MidiInPort_osx::initialize(void) {
    inputnames.allowGrowth(0);
    for (i=0; i<inputnames.getSize(); i++) {
       destination = ::MIDIGetSource(i);
-      if (destination == NULL) {
+      if (destination == 0) {
          inputnames[i].setSize(strlen("ERROR")+1);
          strcpy(inputnames[i].getBase(), "ERROR");
          continue;
@@ -758,7 +758,6 @@ void MidiInPort_osx::initialize(void) {
 // improvReadProc -- does not handle system exclusives yet.
 //
 
-
 void improvReadProc(const MIDIPacketList *packetList, void* readProcRefCon,
    void* srcConnRefCon) {
    static int zeroSigTime = -1;
@@ -766,7 +765,8 @@ void improvReadProc(const MIDIPacketList *packetList, void* readProcRefCon,
       zeroSigTime = MidiInPort_osx::midiTimer.getTime();
    }
    size_t port = (size_t)(readProcRefCon);
-   if (port >= 0 && port < MidiInPort_osx::numDevices) {
+   // if (port >= 0 && port < MidiInPort_osx::numDevices) {
+   if (port < MidiInPort_osx::numDevices) {
       if (MidiInPort_osx::pauseQ[port]) {
          return;
       }

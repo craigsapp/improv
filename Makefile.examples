@@ -268,7 +268,8 @@ endif
 # defining an explicit rules for program sourcefile dependencies:
 
 $(TARGDIR)/% : $(notdir %.cpp)
-	$(COMPILER) $(PREFLAGS) -o $@ $< $(POSTFLAGS) \
+	@echo [CC] $@
+	@$(COMPILER) $(PREFLAGS) -o $@ $< $(POSTFLAGS) \
 	   && strip $@
 
 % : $(notdir %.cpp)

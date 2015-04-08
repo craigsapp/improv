@@ -114,7 +114,7 @@ void finishup(void) { }
 
 
 void mainloopalgorithms(void) { 
-   if (eventBuffer.checkPoll());        // see if any notes to play
+   eventBuffer.checkPoll();        // see if any notes to play
 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();

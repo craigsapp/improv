@@ -102,7 +102,7 @@ void finishup(void) { }
 
 
 void mainloopalgorithms(void) { 
-   if (eventBuffer.checkPoll());        // see if any notes to play
+   eventBuffer.checkPoll();        // see if any notes to play
 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
@@ -110,7 +110,7 @@ void mainloopalgorithms(void) {
          playgliss(message);
 
          // lowest A on the keyboard will switch the gliss directions
-         if ((message.p0() & 0xf0 == 0x90) && (message.p1() == A0)) {
+         if (((message.p0() & 0xf0) == 0x90) && (message.p1() == A0)) {
             direction = -direction;
          }
       }

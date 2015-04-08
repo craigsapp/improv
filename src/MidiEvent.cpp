@@ -57,8 +57,10 @@ void MidiEvent::action(EventBuffer* midiOutput) {
 //
 // MidiEvent::off -- turn off the event (i.e., don't play it)
 //
+// default value: midiOutput = NULL
+//
 
-void MidiEvent::off(void) {
+void MidiEvent::off(EventBuffer* midiOutput) {
    setStatus(0);
 }
 

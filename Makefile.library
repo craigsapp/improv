@@ -153,7 +153,7 @@ all: makeobjdir $(OBJS)
    endif
 
    ifeq ($(OSTYPE),OSXPC)
-	@echo "Making museinfo library file for OSX (Intel)..."
+	@echo "Making improv library file for OSX (Intel)..."
 	-mkdir $(LIBDIR)
 	-rm -f $(LIBDIR)/$(LIBFILE)
 	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version >& /dev/null

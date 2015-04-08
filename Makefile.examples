@@ -155,8 +155,8 @@ ifneq ($(wildcard ../humextra/lib/libhumextra.a),)
    HUMEXTRA  := yes
 endif
 
-ifneq ($(wildcard ../humextra/external/pcre-*.*),)
-   PREFLAGS    += -I$(wildcard ../humextra/external/pcre-*.*)
+ifneq ($(wildcard ../humextra/external/pcre-8.35),)
+   PREFLAGS    += -I$(wildcard ../humextra/external/pcre-8.35)
    POSTFLAGS   += -lpcre
 endif
 

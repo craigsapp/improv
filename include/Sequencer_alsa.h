@@ -68,9 +68,9 @@ class Sequencer_alsa {
       void          closeInput           (int index);
       void          closeOutput          (int index);
       void          displayInputs        (ostream& out = cout, 
-                                            char* initial = "\t");
+                                            const char* initial = "\t");
       void          displayOutputs       (ostream& out = cout, 
-                                            char* initial = "\t");
+                                            const char* initial = "\t");
       static const char*   getInputName  (int aDevice);
       static const char*   getOutputName (int aDevice);
       static int    getNumInputs         (void);

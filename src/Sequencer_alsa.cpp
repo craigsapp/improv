@@ -152,7 +152,7 @@ void Sequencer_alsa::closeOutput(int index) {
 //	default values: out = cout, initial = "\t"
 //
  
-void Sequencer_alsa::displayInputs(ostream& out, char* initial) {
+void Sequencer_alsa::displayInputs(ostream& out, const char* initial) {
    for (int i=0; i<getNumInputs(); i++) {
       out << initial << i << ": " << getInputName(i) << '\n';
    }
@@ -167,7 +167,7 @@ void Sequencer_alsa::displayInputs(ostream& out, char* initial) {
 //	default values: out = cout, initial = "\t"
 //
  
-void Sequencer_alsa::displayOutputs(ostream& out, char* initial) {
+void Sequencer_alsa::displayOutputs(ostream& out, const char* initial) {
    for (int i=0; i<getNumOutputs(); i++) {
       out << initial << i << ": " << getOutputName(i) << '\n';
    }

@@ -36,9 +36,9 @@ class Sequencer_oss {
 
       void          close                (void);
       void          displayInputs        (ostream& out = cout, 
-                                            char* initial = "\t");
+                                            const char* initial = "\t");
       void          displayOutputs       (ostream& out = cout, 
-                                            char* initial = "\t");
+                                            const char* initial = "\t");
       static int    getNumInputs         (void);
       static int    getNumOutputs        (void);
       static const char*   getInputName  (int aDevice);

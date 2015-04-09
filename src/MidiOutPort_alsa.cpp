@@ -234,7 +234,7 @@ int MidiOutPort_alsa::rawsend(int command, int p1) {
          cout.flush();
       } else {
          cout << "(" << hex << (int)mdata[0] << dec << "X"
-              << (int)mdata[1] << "," << (int)mdata[2] << ")";
+              << (int)mdata[1] << ")";
          cout.flush();
       }
    }

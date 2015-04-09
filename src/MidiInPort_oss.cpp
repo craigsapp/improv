@@ -738,7 +738,7 @@ void *interpretMidiInputStreamPrivate(void *) {
    uchar packet[4];              // bytes for sequencer driver
    MidiMessage* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
-   int lastSigTime = -1;         // for millisecond timer
+   // int lastSigTime = -1;         // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
    int device = -1;              // for sorting out the bytes by input device
    Array<uchar>* sysexIn;        // MIDI Input sysex temporary storage
@@ -950,7 +950,7 @@ top_of_loop:
                         // 0xe0 expects two arguments
                   }
 
-                  lastSigTime = newSigTime;
+                  // lastSigTime = newSigTime;
 
                   sysex_done:      // come here when a sysex is completely done
 

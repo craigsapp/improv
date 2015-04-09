@@ -115,6 +115,7 @@ COMPILER  = LANG=C $(ENV) g++
 
 DEFINES   = $(addprefix -D,$(OSTYPE)) $(addprefix -D,$(OSSUBTYPE))
 PREFLAGS  = -Wall -c -g -O3 $(DEFINES) -I$(INCDIR)
+PREFLAGS += -fno-strict-aliasing
 
 # Add the following define if using an older C++ compler:
 #PREFLAGS   += -DOLDCPP

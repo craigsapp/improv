@@ -115,7 +115,7 @@ void Sequencer_oss::close(void) {
 //	default values: out = cout, initial = "\t"
 //
  
-void Sequencer_oss::displayInputs(ostream& out, char* initial) {
+void Sequencer_oss::displayInputs(ostream& out, const char* initial) {
    for (int i=0; i<getNumInputs(); i++) {
       out << initial << i << ": " << getInputName(i) << '\n';
    }
@@ -130,7 +130,7 @@ void Sequencer_oss::displayInputs(ostream& out, char* initial) {
 //	default values: out = cout, initial = "\t"
 //
  
-void Sequencer_oss::displayOutputs(ostream& out, char* initial) {
+void Sequencer_oss::displayOutputs(ostream& out, const char* initial) {
    for (int i=0; i<getNumOutputs(); i++) {
       out << initial << i << ": " << getOutputName(i) << '\n';
    }

@@ -157,7 +157,7 @@ all: makeobjdir $(OBJS)
 	@echo "Making improv library file for OSX (Intel)..."
 	-mkdir $(LIBDIR)
 	-rm -f $(LIBDIR)/$(LIBFILE)
-	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version >& /dev/null
+	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version &> /dev/null
    endif
 
    ifeq ($(OSTYPE),VISUAL)

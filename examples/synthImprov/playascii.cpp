@@ -132,9 +132,9 @@ cout << buffer << endl;
    dataz = strtok(NULL, "\t ");
    while ((dataz != NULL && dataz[0] != ';') && (isdigit(dataz[0]))) {
       if (dataz[0] == '0' && dataz[1] == 'x') {
-         sscanf(dataz, "%x", &datum); // %D doesn't work in Visual C++ 6.0
+         sscanf(dataz, "%x", &datum); 
       } else {
-         sscanf(dataz, "%D", &datum);
+         sscanf(dataz, "%d", &datum);
       }
       uchardatum = (uchar)datum;
       data.append(uchardatum); 

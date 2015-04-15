@@ -269,15 +269,15 @@ endif
 
 $(TARGDIR)/% : $(notdir %.cpp)
 	@echo [CC] $@
-	@$(COMPILER) $(PREFLAGS) -o $@ $< $(POSTFLAGS) \
-	   && strip $@
+	@$(COMPILER) $(PREFLAGS) -o $@ $< $(POSTFLAGS) 
+#	   && strip $@
 
 % : $(notdir %.cpp)
 ifeq ($(wildcard $(TARGDIR)),)
 	-mkdir $(TARGDIR)
 endif
-	$(COMPILER) $(PREFLAGS) -o $(TARGDIR)/$@ $< $(POSTFLAGS) \
-	   && strip $(TARGDIR)/$@
+	$(COMPILER) $(PREFLAGS) -o $(TARGDIR)/$@ $< $(POSTFLAGS) 
+#	   && strip $(TARGDIR)/$@
 
 #                                                                         #
 #                                                                         #

@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
    legend_controller.allowGrowth(0);
 
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1));
+   MidiFile midifile(options.getArg(1).data());
 
    convertMidiFile(midifile, matlabarray);
    if (!verboseQ) {
@@ -509,7 +509,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
       cout << "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -522,7 +522,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    numQ     = opts.getBoolean("num");
 
    if (opts.getArgCount() != 1) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    }
 
@@ -530,7 +530,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    secQ  = opts.getBoolean("seconds");
    msecQ = opts.getBoolean("milliseconds");
    beatQ = opts.getBoolean("beats");
-   strcpy(arrayname, opts.getString("name"));
+   strcpy(arrayname, opts.getString("name").data());
 
    if (tickQ) {
       timetype = TICK;

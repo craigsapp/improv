@@ -36,7 +36,7 @@
 // use this include for newer versions of ALSA 0.9 and higher:
 #include <alsa/asoundlib.h>
 
-#include "SigCollection.h"
+#include <vector>
 
 #define MIDI_EXTERNAL  (1)
 #define MIDI_INTERNAL  (2)
@@ -64,7 +64,7 @@ class Sequencer_alsa {
                     Sequencer_alsa       (int autoOpen = 1);
                    ~Sequencer_alsa       ();
 
-      void          close                (void);
+      static void   close                (void);
       void          closeInput           (int index);
       void          closeOutput          (int index);
       void          displayInputs        (ostream& out = cout, 
@@ -82,7 +82,6 @@ class Sequencer_alsa {
       int           openInput            (int index);
       int           openOutput           (int index);
       void          read                 (int dev, uchar* buf, int count);
-      void          rebuildInfoDatabase  (void);
       int           write                (int aDevice, int aByte);
       int           write                (int aDevice, uchar* bytes, int count);
       int           write                (int aDevice, char* bytes, int count);
@@ -96,20 +95,22 @@ class Sequencer_alsa {
       static int    outdevcount;            // number of MIDI output devices
       static int    initialized;            // for starting buileinfodatabase
 
-      static SigCollection<snd_rawmidi_t*> rawmidi_in;
-      static SigCollection<snd_rawmidi_t*> rawmidi_out;
-      static SigCollection<ALSA_ENTRY>     rawmidi_info;
-      static SigCollection<int>            midiin_index;
-      static SigCollection<int>            midiout_index;
+      static vector<snd_rawmidi_t*> rawmidi_in;
+      static vector<snd_rawmidi_t*> rawmidi_out;
+      static vector<ALSA_ENTRY>     rawmidi_info;
+      static vector<int>            midiin_index;
+      static vector<int>            midiout_index;
 
    private:
       static void   buildInfoDatabase     (void);
-      static void   getDeviceInfo         (SigCollection<ALSA_ENTRY>& info);
+      static void   rebuildInfoDatabase   (void);
+      static void   removeInfoDatabase    (void);
+      static void   getDeviceInfo         (vector<ALSA_ENTRY>& info);
       static void   searchForMidiDevicesOnCard(int card,
-                                           SigCollection<ALSA_ENTRY>& info);
+                                           vector<ALSA_ENTRY>& info);
       static void   searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, 
                                            int card, int device, 
-                                           SigCollection<ALSA_ENTRY>& info);
+                                           vector<ALSA_ENTRY>& info);
       static int    is_input              (snd_ctl_t *ctl, int card, 
                                            int device, int sub);
       static int    is_output             (snd_ctl_t *ctl, int card, 
@@ -120,7 +121,6 @@ class Sequencer_alsa {
       int           getOutSubdeviceValue  (int aDevice) const;
       int           getOutDeviceValue     (int aDevice) const;
       int           getOutputType         (int aDevice) const;
-      void          removeInfoDatabase    (void);
 
 
    friend void *interpretMidiInputStreamPrivateALSA(void * x);

@@ -365,7 +365,11 @@ void MidiPerform::play(void) {
 // MidiPerform::read --
 //
 
-void MidiPerform::read(char* aFile) { 
+void MidiPerform::read(const string& aFile) { 
+   read(aFile.data());
+}
+
+void MidiPerform::read(const char* aFile) { 
    int status = midifile.read(aFile);
    if (status == 0) {
       cout << "Error: midifile " << aFile << " is bad." << endl;

@@ -77,6 +77,9 @@ Idler eventIdler(1.0);           // to control CPU usage for multiprocessing
 
 #ifndef SUPPRESS_MAIN_FUNCTION
    int main(int argc, char** argv) {
+MidiIO x;
+//cout << "MIDI In COUNT = " << x.getNumInputPorts() << endl;
+//cout << "MIDI Out COUNT = " << x.getNumInputPorts() << endl;
       options.setOptions(argc, argv);
       return runImprovInterface();
    }
@@ -463,7 +466,7 @@ void initialization_automatic(void) {
               "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (options.getBoolean("help")) {
-      usage(options.getCommand());
+      usage(options.getCommand().data());
       exit(0);
    } else if (options.getBoolean("description")) {
       description();

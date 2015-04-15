@@ -155,6 +155,7 @@ void SigCollection<type>::append(type *element) {
 
 template<class type>
 void SigCollection<type>::grow(long growamt) {
+
    this->allocSize += growamt > 0 ? growamt : this->growthAmount;
    if (this->maxSize != 0 && this->getAllocSize() > this->maxSize) {
       std::cerr << "Error: Maximum size allowed for array exceeded." << std::endl;

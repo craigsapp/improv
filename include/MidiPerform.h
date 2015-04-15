@@ -45,7 +45,8 @@ class MidiPerform : public MidiOutput {
       int       getBeatLocation       (void);
       void      pause                 (void);
       void      play                  (void);
-      void      read                  (char* aFile);
+      void      read                  (const char* aFile);
+      void      read                  (const string& aFile);
       void      rewind                (void);
       void      setAmp                (double anAmp);
       void      setMaxAmp             (int aMax);

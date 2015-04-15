@@ -256,7 +256,10 @@ int Sequencer_oss::open(void) {
 void Sequencer_oss::read(uchar* buf, uchar* dev, int count) {
    int i = 0;
    while (i < count) {
-      ::read(getFd(), midi_read_packet, sizeof(midi_read_packet));
+      int status = ::read(getFd(), midi_read_packet, sizeof(midi_read_packet));
+      if (status < 0) {
+         continue;
+      }
       if (midi_read_packet[1] == SEQ_MIDIPUTC) {
          buf[i] = midi_read_packet[1];
          dev[i] = midi_read_packet[2];
@@ -274,7 +277,11 @@ void Sequencer_oss::read(uchar* buf, uchar* dev, int count) {
 //
 
 void Sequencer_oss::rawread(uchar* buf, int packetCount) {
-   ::read(getFd(), buf, packetCount * 4);
+   int status = ::read(getFd(), buf, packetCount * 4);
+   if (status < 0) {
+      // suppress compiler warning
+      return;
+   }
 }
 
 

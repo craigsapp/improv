@@ -106,7 +106,7 @@ void checkOptions(Options& opts) {    // options are:
               "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -134,7 +134,7 @@ void checkOptions(Options& opts) {    // options are:
    }
 
    if (opts.getArgCount() == 0) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    } else if (opts.getArgCount() == 1) {     // encoding into VLV values
       direction = ENCODE; 
@@ -154,8 +154,8 @@ void checkOptions(Options& opts) {    // options are:
    if (input != NULL)   delete [] input;
    input = new int[inCount];
 
-   for (int i=1; i<=opts.getArgCount(); i++) {
-      input[i-1] = strtol(opts.getArg(i), NULL, inputStyle);
+   for (int i=1; i<=(int)opts.getArgCount(); i++) {
+      input[i-1] = strtol(opts.getArg(i).data(), NULL, inputStyle);
  
       if (direction == DECODE && i != inCount) {
          if (input[i-1] < 0x80 || input[i-1] > 255) {

@@ -748,7 +748,7 @@ void initialization_automatic(void) {
               "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (options.getBoolean("help")) {
-      usage(options.getCommand());
+      usage(options.getCommand().data());
       exit(0);
    } else if (options.getBoolean("description")) {
       description();

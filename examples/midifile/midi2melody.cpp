@@ -37,7 +37,7 @@ int       notecompare       (const void* a, const void* b);
 
 int main(int argc, char* argv[]) {
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1));
+   MidiFile midifile(options.getArg(1).data());
 
    SigCollection<Melody> melody;
    convertToMelody(midifile, melody);
@@ -188,7 +188,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
       cout << "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -196,7 +196,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    }
 
    if (opts.getArgCount() != 1) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    }
 

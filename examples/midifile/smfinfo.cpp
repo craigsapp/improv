@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
    int i;
    const char* filename;
    for (i=1; i<=options.getArgCount(); i++) {
-      filename = options.getArg(i);
+      filename = options.getArg(i).data();
       if (fixQ) {
          fixTrackByteCounts(filename);
       } else {
@@ -295,7 +295,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
       cout << "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();

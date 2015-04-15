@@ -72,10 +72,14 @@ void displayInputPorts(void) {
 //
 
 void displayOutputPorts(void) {
-   MidiOutPort tempmidi;
-   for (int i=0; i<tempmidi.getNumPorts(); i++) {
-      tempmidi.setPort(i);
-      cout << "   " << i << ": " << tempmidi.getName() << endl;
+   // MidiOutPort tempmidi;
+   //for (int i=0; i<tempmidi.getNumPorts(); i++) {
+   //   tempmidi.setPort(i);
+   //   cout << "   " << i << ": " << tempmidi.getName() << endl;
+   //}
+
+   for (int m=0; m<MidiOutput::getNumPorts(); m++) {
+      cout << "\t" << m << ": " << MidiOutput::getName(m) << endl;
    }
 }
 

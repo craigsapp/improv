@@ -91,7 +91,7 @@ void initialization(void) {
    options.define("o|output=s:/tmp/tempojnd.dat", "data reporting file");
    options.process();
 
-//   outputfile = options.getString("output");
+//   outputfile = options.getString("output").data();
    startTempo = options.getDouble("tempo");
    cout << "Base tempo is: " << startTempo << endl;
    startPeriod = 60000.0/startTempo;

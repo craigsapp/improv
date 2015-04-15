@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
    checkOptions(options);
    for (int i=1; i<=options.getArgCount(); i++) {
-      status = inputfile.read(options.getArg(i));
+      status = inputfile.read(options.getArg(i).data());
       if (options.getArgCount() > 1) {
          cout << "\n\n\n+++ FILE " << i << "++++++++++++++++++++++++++++\n\n";
       }
@@ -84,7 +84,7 @@ void checkOptions(Options& opts) {
       cout << "compiled: " << __DATE__ << endl;
    }
    if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    }
    if (opts.getBoolean("example")) {
@@ -95,7 +95,7 @@ void checkOptions(Options& opts) {
    // can only have one output filename
    if (opts.getArgCount() == 0) {
       cout << "Error: need one input MIDI file." << endl;
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    } 
 

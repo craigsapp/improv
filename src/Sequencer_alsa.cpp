@@ -12,10 +12,13 @@
 //                is inherited by the classes MidiInPort_alsa and
 //                MidiOutPort_alsa.
 //
+// References:    http://tldp.org/HOWTO/MIDI-HOWTO-10.html
+//                http://alsa.opensrc.org/AlsaTips
+//
 
 #if defined(LINUX) && defined(ALSA)
  
-#include "SigCollection.h"
+#include <vector>
 #include "Sequencer_alsa.h"
 
 #include <unistd.h>
@@ -47,11 +50,11 @@ int    Sequencer_alsa::initialized          =  0;
 int    Sequencer_alsa::indevcount      = 0;
 int    Sequencer_alsa::outdevcount     = 0;
 
-SigCollection<snd_rawmidi_t*> Sequencer_alsa::rawmidi_in;
-SigCollection<snd_rawmidi_t*> Sequencer_alsa::rawmidi_out;
-SigCollection<ALSA_ENTRY>     Sequencer_alsa::rawmidi_info;
-SigCollection<int>            Sequencer_alsa::midiin_index;
-SigCollection<int>            Sequencer_alsa::midiout_index;
+vector<snd_rawmidi_t*> Sequencer_alsa::rawmidi_in;
+vector<snd_rawmidi_t*> Sequencer_alsa::rawmidi_out;
+vector<ALSA_ENTRY>     Sequencer_alsa::rawmidi_info;
+vector<int>            Sequencer_alsa::midiin_index;
+vector<int>            Sequencer_alsa::midiout_index;
 
 
 ///////////////////////////////
@@ -61,16 +64,16 @@ SigCollection<int>            Sequencer_alsa::midiout_index;
 //
 
 Sequencer_alsa::Sequencer_alsa(int autoOpen) {
-   if (class_count < 0) {
+   class_count++;
+   if (class_count < 1) {
       cerr << "Unusual class instantiation count: " << class_count << endl;
       exit(1);
-   } else if (class_count == 0) {
+   } else if (class_count == 1) {
       buildInfoDatabase();
-   }
+   } 
 
    // will not autoOpen
 
-   class_count++;
 }
 
 
@@ -81,7 +84,6 @@ Sequencer_alsa::Sequencer_alsa(int autoOpen) {
 //
 
 Sequencer_alsa::~Sequencer_alsa() {
-
    if (class_count == 1) {
       close();
       removeInfoDatabase();
@@ -106,40 +108,40 @@ void Sequencer_alsa::close(void) {
 
    for (i=0; i<getNumInputs(); i++) {
       if (rawmidi_in[i] != NULL) {
-         snd_rawmidi_close(rawmidi_in[i]);
-         rawmidi_in[i] = NULL;
+//         snd_rawmidi_close(rawmidi_in[i]);
+//         rawmidi_in[i] = NULL;
       }
    }
 
    for (i=0; i<getNumOutputs(); i++) {
       if (rawmidi_out[i] != NULL) {
-         snd_rawmidi_close(rawmidi_out[i]);
-         rawmidi_out[i] = NULL;
+//         snd_rawmidi_close(rawmidi_out[i]);
+//         rawmidi_out[i] = NULL;
       }
    }
 }
 
 
 void Sequencer_alsa::closeInput(int index) {
-   if (index < 0 || index >= rawmidi_in.getSize()) {
+   if (index < 0 || index >= (int)rawmidi_in.size()) {
       return;
    }
 
    if (rawmidi_in[index] != NULL) {
-      snd_rawmidi_close(rawmidi_in[index]); 
-      rawmidi_in[index] = NULL;
+//      snd_rawmidi_close(rawmidi_in[index]); 
+//      rawmidi_in[index] = NULL;
    }
 }
 
 
 void Sequencer_alsa::closeOutput(int index) {
-   if (index < 0 || index >= rawmidi_out.getSize()) {
+   if (index < 0 || index >= (int)rawmidi_out.size()) {
       return;
    }
 
    if (rawmidi_out[index] != NULL) {
-      snd_rawmidi_close(rawmidi_out[index]); 
-      rawmidi_out[index] = NULL;
+//      snd_rawmidi_close(rawmidi_out[index]); 
+//      rawmidi_out[index] = NULL;
    }
 }
 
@@ -186,6 +188,17 @@ const char* Sequencer_alsa::getInputName(int aDevice) {
    if (initialized == 0) {
       buildInfoDatabase();
    }
+
+   if (aDevice < 0) {
+      return "ERROR IN NEGATIVE";
+   }
+   if (aDevice >= (int)midiout_index.size()) {
+      return "ERROR_IN_TOO_LARGE_INPUT";
+   }
+   if (midiout_index[aDevice] >= (int)rawmidi_info.size()) {
+      return "ERROR_IN_TOO_LARGE_FOR_LIST";
+   }
+
    return rawmidi_info[midiin_index[aDevice]].name;
 }
 
@@ -201,7 +214,11 @@ int Sequencer_alsa::getNumInputs(void) {
    if (initialized == 0) {
       buildInfoDatabase();
    }
-   return indevcount;
+   if (rawmidi_info.size() == 0) {
+    Sequencer_alsa::rebuildInfoDatabase();
+   }
+   //return indevcount;
+   return rawmidi_in.size();
 }
 
 
@@ -232,6 +249,17 @@ const char* Sequencer_alsa::getOutputName(int aDevice) {
    if (initialized == 0) {
       buildInfoDatabase();
    }
+
+   if (aDevice < 0) {
+      return "ERROR NEGATIVE";
+   }
+   if (aDevice >= (int)midiout_index.size()) {
+      return "ERROR_TOO_LARGE_INPUT";
+   }
+   if (midiout_index[aDevice] >= (int)rawmidi_info.size()) {
+      return "ERROR_TOO_LARGE_FOR_LIST";
+   }
+
    return rawmidi_info[midiout_index[aDevice]].name;
 }
 
@@ -303,7 +331,8 @@ int Sequencer_alsa::openInput(int index) {
    }
 
    int mode = 0;
-   status = snd_rawmidi_open(&rawmidi_in[index], NULL, devname, mode);
+   // status = snd_rawmidi_open(&rawmidi_in[index], NULL, devname, mode);
+   status = snd_rawmidi_open(&rawmidi_in[index], NULL, "virtual", mode);
    if (status == 0) {
       return 1;
    } else { 
@@ -328,7 +357,8 @@ int Sequencer_alsa::openOutput(int index) {
       sprintf(devname, "hw:%d,%d", card, device);
    }
    int mode = SND_RAWMIDI_SYNC;
-   status = snd_rawmidi_open(NULL, &rawmidi_out[index], devname, mode);
+   // status = snd_rawmidi_open(NULL, &rawmidi_out[index], devname, mode);
+   status = snd_rawmidi_open(NULL, &rawmidi_out[index], "virtual", mode);
    if (status == 0) {
       return 1;
    } else { 
@@ -385,15 +415,16 @@ int Sequencer_alsa::write(int aDevice, int aByte) {
 
 
 int Sequencer_alsa::write(int aDevice, uchar* bytes, int count) {
+cout << "> AAA " << hex << (int)bytes[0] << dec << " " << (int)bytes[1] << " " << (int)bytes[2] << endl;
    if (is_open_out(aDevice)) {
       int status = snd_rawmidi_write(rawmidi_out[aDevice], bytes, count);
       return status == count ? 1 : 0;
    } else {
-      cerr << "Warning: MIDI output port " << aDevice << " is not open for writing" 
+      cerr << "Warning: MIDI output port " 
+           << aDevice << " is not open for writing" 
            << endl;
       return 0;
    }
-
    return 0;
 }
 
@@ -431,7 +462,7 @@ void Sequencer_alsa::buildInfoDatabase(void) {
    if (initialized) {
       return;
    }
-   initialized = 1;
+   initialized = 0;
   
    if (indevcount != 0 || outdevcount != 0) {
       cout << "Error: Sequencer_alsa is already running" << endl;
@@ -447,35 +478,37 @@ void Sequencer_alsa::buildInfoDatabase(void) {
    getDeviceInfo(rawmidi_info);
 
    // store data into separate input/output arrays:
-   midiin_index.setSize(rawmidi_info.getSize());
-   midiin_index.setSize(0);
-   midiin_index.allowGrowth(1);
-   midiout_index.setSize(rawmidi_info.getSize());
-   midiout_index.setSize(0);
-   midiout_index.allowGrowth(1);
+   midiin_index.resize(rawmidi_info.size());
+   midiin_index.resize(0);
+   // midiin_index.allowGrowth(1);
+   midiout_index.resize(rawmidi_info.size());
+   midiout_index.resize(0);
+   // midiout_index.allowGrowth(1);
 
    int i;
-   for (i=0; i<rawmidi_info.getSize(); i++) {
+   for (i=0; i<(int)rawmidi_info.size(); i++) {
       if (rawmidi_info[i].output) {
-         midiout_index.append(i);
+         midiout_index.push_back(i);
       }
       if (rawmidi_info[i].input) {
-         midiin_index.append(i);
+         midiin_index.push_back(i);
       }
    }
-   midiin_index.allowGrowth(0);
-   midiout_index.allowGrowth(0);
-   indevcount  = midiin_index.getSize();
-   outdevcount = midiout_index.getSize();
+   //midiin_index.allowGrowth(0);
+   //midiout_index.allowGrowth(0);
+   indevcount  = midiin_index.size();
+   outdevcount = midiout_index.size();
 
-   rawmidi_in.setSize(indevcount);
-   for (i=0; i<rawmidi_in.getSize(); i++) {
+   rawmidi_in.resize(indevcount);
+   for (i=0; i<(int)rawmidi_in.size(); i++) {
       rawmidi_in[i] = NULL;
    }
-   rawmidi_out.setSize(outdevcount);
-   for (i=0; i<rawmidi_out.getSize(); i++) {
+   rawmidi_out.resize(outdevcount);
+   for (i=0; i<(int)rawmidi_out.size(); i++) {
       rawmidi_out[i] = NULL;
    }
+
+   initialized = 1;
 }
 
 
@@ -552,19 +585,20 @@ int Sequencer_alsa::getOutCardValue(int aDevice) const {
 //
 
 void Sequencer_alsa::removeInfoDatabase(void) {
-   if (rawmidi_in.getSize() != 0) {
+
+   if (rawmidi_in.size() != 0) {
       close();
    }
 
-   if (rawmidi_out.getSize() != 0) {
+   if (rawmidi_out.size() != 0) {
       close();
    }
 
-   rawmidi_in.setSize(0);
-   rawmidi_out.setSize(0);
-   rawmidi_info.setSize(0);
-   midiin_index.setSize(0);
-   midiout_index.setSize(0);
+   rawmidi_in.resize(0);
+   rawmidi_out.resize(0);
+   rawmidi_info.resize(0);
+   midiin_index.resize(0);
+   midiout_index.resize(0);
 
    indevcount = 0;
    outdevcount = 0;
@@ -578,9 +612,9 @@ void Sequencer_alsa::removeInfoDatabase(void) {
 // getDeviceInfo --  
 //
 
-void Sequencer_alsa::getDeviceInfo(SigCollection<ALSA_ENTRY>& info) {
-   info.setSize(0);
-   info.allowGrowth(1);
+void Sequencer_alsa::getDeviceInfo(vector<ALSA_ENTRY>& info) {
+   info.resize(0);
+   // info.allowGrowth(1);
 
    int status;
    int card = -1;
@@ -602,7 +636,7 @@ void Sequencer_alsa::getDeviceInfo(SigCollection<ALSA_ENTRY>& info) {
       }
    }
 
-   info.allowGrowth(0);
+   // info.allowGrowth(0);
 }
 
 
@@ -615,13 +649,14 @@ void Sequencer_alsa::getDeviceInfo(SigCollection<ALSA_ENTRY>& info) {
 //
 
 void Sequencer_alsa::searchForMidiDevicesOnCard(int card, 
-      SigCollection<ALSA_ENTRY>& info) {
+      vector<ALSA_ENTRY>& info) {
    snd_ctl_t *ctl;
    char name[64] = {0};
    int device = -1;
    int status;
 
    sprintf(name, "hw:%d", card);
+
    if ((status = snd_ctl_open(&ctl, name, 0)) < 0) {
       cerr << "Cannot open control for card " << card << ": " 
            << snd_strerror(status) << endl;
@@ -649,7 +684,7 @@ void Sequencer_alsa::searchForMidiDevicesOnCard(int card,
 //
 
 void Sequencer_alsa::searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, int card, 
-      int device, SigCollection<ALSA_ENTRY>& rawmidi_info) {
+      int device, vector<ALSA_ENTRY>& rawmidi_info) {
    snd_rawmidi_info_t *info;
    const char *name;
    const char *sub_name;
@@ -670,33 +705,35 @@ void Sequencer_alsa::searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, int card,
 
    sub = 0;
    in = out = 0;
-   if ((status = is_output(ctl, card, device, sub)) < 0) {
+   status = is_output(ctl, card, device, sub);
+   if (status <= 0) {
       cerr << "Cannot get rawmidi information " << card << ":"
            << device << ": " << snd_strerror(status) << endl;
       return;
-   } else if (status)
+   } else {
       out = 1;
+   }
 
-   if (status == 0) {
-      if ((status = is_input(ctl, card, device, sub)) < 0) {
-         cerr << "Cannot get rawmidi information " << card << ":" 
-              << device <<": " << snd_strerror(status) << endl;
-         return;
-      }
-   } else if (status)
-      in = 1;
-
-   if (status == 0)
+   status = is_input(ctl, card, device, sub);
+   if (status < 0) {
+      cerr << "Cannot get rawmidi information " << card << ":" 
+           << device <<": " << snd_strerror(status) << endl;
       return;
+   } else {
+      in = 1;
+   }
+
+   if ((in == 0) && (out == 0)) {
+      return;
+   }
 
    int index;
    name = snd_rawmidi_info_get_name(info);
    sub_name = snd_rawmidi_info_get_subdevice_name(info);
    if (sub_name[0] == '\0') {
       if (subs == 1) {
-
-         rawmidi_info.setSize(rawmidi_info.getSize()+1);
-         index = rawmidi_info.getSize()-1;
+         rawmidi_info.resize(rawmidi_info.size()+1);
+         index = rawmidi_info.size()-1;
          rawmidi_info[index].card = card;
          rawmidi_info[index].device = device;
          rawmidi_info[index].subdevice = -1;
@@ -704,21 +741,19 @@ void Sequencer_alsa::searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, int card,
          rawmidi_info[index].input = in;
          rawmidi_info[index].output = out;
       } else
-
-         rawmidi_info.setSize(rawmidi_info.getSize()+1);
-         index = rawmidi_info.getSize()-1;
+         rawmidi_info.resize(rawmidi_info.size()+1);
+         index = rawmidi_info.size()-1;
          rawmidi_info[index].card = card;
          rawmidi_info[index].device = device;
          rawmidi_info[index].subdevice = -1;
-         strcpy(rawmidi_info[index].name, name);
+         sprintf(rawmidi_info[index].name, "Virtual MIDI %d", index);
          rawmidi_info[index].input = in;
          rawmidi_info[index].output = out;
-
    } else {
       sub = 0;
       for (;;) {
-         rawmidi_info.setSize(rawmidi_info.getSize()+1);
-         index = rawmidi_info.getSize()-1;
+         rawmidi_info.resize(rawmidi_info.size()+1);
+         index = rawmidi_info.size()-1;
          rawmidi_info[index].card = card;
          rawmidi_info[index].device = device;
          rawmidi_info[index].subdevice = sub;
@@ -729,7 +764,7 @@ void Sequencer_alsa::searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, int card,
          if (++sub >= subs)
             break;
 
-         in = is_input(ctl, card, device, sub);
+         in  = is_input(ctl, card, device, sub);
          out = is_output(ctl, card, device, sub);
          snd_rawmidi_info_set_subdevice(info, sub);
          if (out) {
@@ -771,7 +806,8 @@ int Sequencer_alsa::is_input(snd_ctl_t *ctl, int card, int device, int sub) {
    snd_rawmidi_info_set_subdevice(info, sub);
    snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_INPUT);
   
-   if ((status = snd_ctl_rawmidi_info(ctl, info)) < 0 && status != -ENXIO) {
+   status = snd_ctl_rawmidi_info(ctl, info);
+   if ((status < 0) && (status != -ENXIO)) {
       return status;
    } else if (status == 0) {
       return 1;
@@ -797,7 +833,8 @@ int Sequencer_alsa::is_output(snd_ctl_t *ctl, int card, int device, int sub) {
    snd_rawmidi_info_set_subdevice(info, sub);
    snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_OUTPUT);
 
-   if ((status = snd_ctl_rawmidi_info(ctl, info)) < 0 && status != -ENXIO) {
+   status = snd_ctl_rawmidi_info(ctl, info);
+   if ((status < 0) && (status != -ENXIO)) {
       return status;
    } else if (status == 0) {
       return 1;

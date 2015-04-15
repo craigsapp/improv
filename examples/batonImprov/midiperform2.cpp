@@ -168,7 +168,7 @@ void checkOptions(Options& opts) {
       cout << "compiled: " << __DATE__ << endl;
    }
    if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    }
    if (opts.getBoolean("example")) {
@@ -179,7 +179,7 @@ void checkOptions(Options& opts) {
    // can only have one output filename
    if (opts.getArgCount() != 1) {
       cout << "Error: need one input MIDI file for performance." << endl;
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    } 
 

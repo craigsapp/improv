@@ -250,7 +250,7 @@ void checkOptions(Options& opts) {     // options are:
               "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -302,7 +302,7 @@ void checkOptions(Options& opts) {     // options are:
       keyboardQ = 0;
    }
    
-   const char *filterString = opts.getString("filter");
+   const char *filterString = opts.getString("filter").data();
    char current;
    for (int i=0; i<(int)strlen(filterString); i++) {
       current = filterString[i];
@@ -321,7 +321,7 @@ void checkOptions(Options& opts) {     // options are:
       }
    }
    
-   const char *cfilterString = opts.getString("chan-filter");
+   const char *cfilterString = opts.getString("chan-filter").data();
    char stringc [2] = {0};
    int cindex;
    for (int j=0; j<(int)strlen(cfilterString); j++) {
@@ -340,9 +340,9 @@ void checkOptions(Options& opts) {     // options are:
 
    if (opts.getBoolean("output")) {
       fileQ = 1;
-      outputfile.open(opts.getString("output"), ios::out);
+      outputfile.open(opts.getString("output").data(), ios::out);
       if (!outputfile.is_open()) {
-         cout << "Error: cannot open file: "<< opts.getString("output") << endl;
+         cout << "Error: cannot open file: "<< opts.getString("output").data() << endl;
          exit(1);
       }
    }
@@ -354,7 +354,7 @@ void checkOptions(Options& opts) {     // options are:
    midi.openOutput();
 
    if (opts.getArgCount() != 0) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    }
 
@@ -371,7 +371,7 @@ void displayHeader(ostream& out) {
    out << HEADER_START << "\n";
    if (options.getBoolean("user")) {
       out << HEADER_START << "Recorded by:    ";
-      out << options.getString("user") << endl;
+      out << options.getString("user").data() << endl;
    }
    out << HEADER_START << "Style:          ";
    switch (style) {

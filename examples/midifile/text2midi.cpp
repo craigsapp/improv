@@ -41,13 +41,13 @@ void      usage                 (const char* command);
 int main(int argc, char* argv[]) {
    checkOptions(options, argc, argv);
    #ifndef OLDCPP
-      fstream textfile(options.getArg(1), ios::in);
+      fstream textfile(options.getArg(1).data(), ios::in);
    #else
-      fstream textfile(options.getArg(1), ios::in | ios::nocreate);
+      fstream textfile(options.getArg(1).data(), ios::in | ios::nocreate);
    #endif
    if (!textfile.is_open()) {
       cout << "Error: cannot read input text file." << endl;
-      usage(options.getCommand());
+      usage(options.getCommand().data());
       exit(1);
    }
    MidiFile midifile;
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
 
    midifile.sortTracks();
-   midifile.write(options.getArg(2));
+   midifile.write(options.getArg(2).data());
    
    return 0;
 }
@@ -251,7 +251,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
       cout << "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -268,7 +268,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    }
 
    if (opts.getArgCount() != 2) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    }
 

@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
    checkOptions(options);
 
    MidiFile midifile;
-   midifile.read(options.getArg(1));
+   midifile.read(options.getArg(1).data());
 
    // note: when a MIDI file is read in by the read() function,
    // the delta timings are converted to absolute timings.
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
    //  cout << midifile;
 
    // now ready to write out the new midi file to the second argument
-   midifile.write(options.getArg(2));
+   midifile.write(options.getArg(2).data());
 
    return 0;
 }
@@ -110,7 +110,7 @@ void checkOptions(Options& opts) {
       cout << "compiled: " << __DATE__ << endl;
    }
    if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    }
    if (opts.getBoolean("example")) {
@@ -121,12 +121,12 @@ void checkOptions(Options& opts) {
    // must have two filenames on the command-line
    if (opts.getArgCount() == 1) {
       cout << "Need an output file specified." << endl;
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    }
    if (opts.getArgCount() != 2) {
       cout << "Error: need one input and one output MIDI filename." << endl;
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    } 
 

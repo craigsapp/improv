@@ -263,7 +263,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
       cout << "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -312,11 +312,11 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    }
 
    if (humdrumQ == 0 && guidoQ == 0 && textQ == 0 && opts.getArgCount() != 1) {
-      usage(opts.getCommand());
+      usage(opts.getCommand().data());
       exit(1);
    }
    if (humdrumQ == 0 && textQ == 0 && guidoQ == 0) {
-      filename = opts.getArg(1);
+      filename = opts.getArg(1).data();
    }
 
 }

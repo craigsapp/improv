@@ -755,7 +755,7 @@ void checkOptions(void) {
    shortenamount = options.getInteger("shorten");
 
    colorQ = !options.getBoolean("color");
-   colormode = options.getString("color")[0];
+   colormode = options.getString("color").data()[0];
    if ((colormode != 'b') && (colormode != 'w')) {
       colormode = 'w';
    }
@@ -1104,8 +1104,9 @@ void processNotes(HumdrumRecord& record) {
                velocity = 127;
             }
             note.setVelocity(velocity);
-
+cout << "VELOCITY " << note.getVelocity() << endl;
             note.activate();
+cout << "VELOCITY2 " << note.getVelocity() << endl;
             note.action(eventBuffer);
             eventBuffer.insert(note);
          }

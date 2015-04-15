@@ -809,7 +809,7 @@ top_of_loop:
       // means that the MIDI input is not open, and we should not
       // add any MIDI data to the input buffers.  These cases are
       // handled by the following if-else statement:
-      if (Sequencer_alsa::rawmidi_in.getSize() > 0 && 
+      if (Sequencer_alsa::rawmidi_in.size() > 0 && 
             Sequencer_alsa::rawmidi_in[portToWatch] != NULL) {
          packetReadCount = snd_rawmidi_read(
                Sequencer_alsa::rawmidi_in[portToWatch], packet, 1);

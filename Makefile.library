@@ -116,6 +116,7 @@ COMPILER  = LANG=C $(ENV) g++
 DEFINES   = $(addprefix -D,$(OSTYPE)) $(addprefix -D,$(OSSUBTYPE))
 PREFLAGS  = -Wall -c -g -O3 $(DEFINES) -I$(INCDIR)
 PREFLAGS += -fno-strict-aliasing
+PREFLAGS += -std=c++11
 
 # Add the following define if using an older C++ compler:
 #PREFLAGS   += -DOLDCPP
@@ -315,9 +316,7 @@ OneStageEvent.o: OneStageEvent.cpp OneStageEvent.h Event.h TwoStageEvent.h \
   SigCollection.h SigCollection.cpp Array.cpp MidiEvent.h
 
 Options.o: Options.cpp Options.h Array.h SigCollection.h SigCollection.cpp \
-  Array.cpp Options_private.h
-
-Options_private.o: Options_private.cpp Options_private.h
+  Array.cpp 
 
 Performance.o: Performance.cpp Performance.h PerformData.h \
   PerformDataRecord.h Array.h SigCollection.h SigCollection.cpp Array.cpp \

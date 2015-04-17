@@ -454,7 +454,7 @@ const string& Options::getArg(int index) {
       cerr << "Error: argument " << index << " does not exist." << endl;
       exit(1);
    }
-   return argument[index];
+   return *argument[index];
 }
 
 // Alias:
@@ -489,14 +489,18 @@ int Options::getArgumentCount(void) {
 //     after the options have been parsed out of it.  
 //
 
-const vector<string>& Options::getArgList(void) {
-   return argument;
+vector<string>& Options::getArgList(vector<string>& output) {
+   output.resize(argument.size());
+   for (int i=0; i<argument.size(); i++) {
+      output[i] = *argument[i];
+   }
+   return output;
 }
 
 // Alias:
 
-const vector<string>& Options::getArgumentList(void) { 
-   return getArgList();
+vector<string>& Options::getArgumentList(vector<string>& output) { 
+   return getArgList(output);
 }
 
 
@@ -527,7 +531,7 @@ string Options::getCommand(void) {
    if (argument.size() == 0) {
       return "";
    } else {
-      return argument[0];
+      return *argument[0];
    }
 }
 
@@ -686,7 +690,11 @@ void Options::reset(void) {
    }
    optionRegister.clear();
 
-   argument.clear();
+   for (i=0; i<argument.size(); i++) {
+      delete argument[i];
+      argument[i] = NULL;
+   }
+   argument.resize(0);
    commandString.clear();
    extraArgv.clear();
    extraArgv_strings.clear();
@@ -962,14 +970,16 @@ void Options::xverify(int error_check, int suppress) {
    }
 
    // if calling xverify again, must remove previous argument list.
+   int i;
    if (argument.size() != 0) {
-      argument.clear();
+      for (i=0; i<argument.size(); i++) {
+         delete argument[i];
+      }
+      argument.resize(0);
    }
 
-   char* tempargument;
-   tempargument = new char[oargv[0].size()+1];
-   strcpy(tempargument, oargv[0].c_str());
-   argument.push_back(tempargument);
+   string* tempstr = new string(oargv[0]);
+   argument.push_back(tempstr);
 
    int oldgargp;
    int position = 0;
@@ -989,18 +999,16 @@ void Options::xverify(int error_check, int suppress) {
             gargp++;
             break;
          } else {                          // this is an argument
-            tempargument = new char[oargv[gargp].size()+1];
-            strcpy(tempargument, oargv[gargp].c_str());
-            argument.push_back(tempargument);
+            tempstr = new string(oargv[gargp]);
+            argument.push_back(tempstr);
             gargp++;
          }
       }
    }
 
    while (gargp < oargc) {
-      tempargument = new char[oargv[gargp].size()+1];
-      strcpy(tempargument, oargv[gargp].c_str());
-      argument.push_back(tempargument);
+      tempstr = new string(oargv[gargp]);
+      argument.push_back(tempstr);
       gargp++;
    }
 
@@ -1162,11 +1170,11 @@ int Options::storeOption(int gargp, int& position, int& running) {
       position = 0;
    } 
 
-   if ((optionForm != OPTION_FORM_LONG) && (optionType == OPTION_BOOLEAN_TYPE) 
-        && (oargv[gargp][position+1] != '\0')) {
+   if (optionForm != OPTION_FORM_LONG && optionType == OPTION_BOOLEAN_TYPE &&
+         oargv[gargp][position+1] != '\0') {
       running = 1;
-   } else if ((optionType == OPTION_BOOLEAN_TYPE) &&
-         (oargv[gargp].length() == 0)) {
+   } else if (optionType == OPTION_BOOLEAN_TYPE &&
+         oargv[gargp][position+1] == '\0') {
       running = 0;
    }
 

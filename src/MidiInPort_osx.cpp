@@ -775,16 +775,15 @@ void improvReadProc(const MIDIPacketList *packetList, void* readProcRefCon,
       return;
    }
    MidiEvent message;
-   message.time = MidiInPort_osx::midiTimer.getTime() - zeroSigTime;
-   message.data = 0;
+   message.tick = MidiInPort_osx::midiTimer.getTime() - zeroSigTime;
 
    MIDIPacket *p = (MIDIPacket*)packetList->packet;
    int i;
    int count = packetList->numPackets;
    for (i=0; i<count; i++) {
-      if (p->length > 0) { message.p0() = p->data[0]; }
-      if (p->length > 1) { message.p1() = p->data[1]; }
-      if (p->length > 2) { message.p2() = p->data[2]; }
+      if (p->length > 0) { message.setP0(p->data[0]); }
+      if (p->length > 1) { message.setP1(p->data[1]); }
+      if (p->length > 2) { message.setP2(p->data[2]); }
       MidiInPort_osx::midiBuffer[port]->insert(message);
       p = MIDIPacketNext(p);
    }

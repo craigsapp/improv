@@ -38,7 +38,7 @@ class MidiInPort_osx {
       void            close                      (void);
       void            close                      (int i) { close(); }
       void            closeAll                   (void);
-      MidiEvent       extract                    (void);
+      void            extract                    (MidiEvent& event);
       int             getBufferSize              (void);
       int             getChannelOffset           (void) const;
       int             getCount                   (void);

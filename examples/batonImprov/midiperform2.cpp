@@ -26,12 +26,12 @@
 void checkOptions(Options& opts);
 void example(void);
 void keyboardCommand(int command);
-void processMidiCommand(MidiMessage& message);
+void processMidiCommand(MidiEvent& message);
 
 // Global variables:
 MidiPerform performance;            // performance interface
 
-MidiMessage midimessage;            // for monitoring MIDI input tempo
+MidiEvent midimessage;            // for monitoring MIDI input tempo
 MidiInput midiin;                   // for monitoring MIDI input tempo
 
 
@@ -107,7 +107,7 @@ void mainloopalgorithms(void) {
    performance.xcheck();
 
    while (midiin.getCount() > 0) {
-      midimessage = midiin.extract();
+      midiin.extract(midimessage);
       processMidiCommand(midimessage);
    }
 }
@@ -320,19 +320,19 @@ void keyboardchar(int command) {
 // processMidiCommand -- how to run the textmidi program on the command line.
 //
 
-void processMidiCommand(MidiMessage& message) {
-   if (message.p0() != 0x90 || message.p2() == 0) {
+void processMidiCommand(MidiEvent& message) {
+   if (message.getP0() != 0x90 || message.getP2() == 0) {
       return;
    }
 
-   switch (message.p1()) {
+   switch (message.getP1()) {
       case 60:                     // Middle C = beat
          keyboardchar(' ');
          break;
       case 61:                     // C# = amplitude control
          {
          double amp = performance.getAmp();
-         amp = amp * message.p2() / 64;
+         amp = amp * message.getP2() / 64;
          if (amp < 0) {
             amp = 0;
          } else if (amp > 127) {

@@ -17,11 +17,9 @@
 // include MIDI definitions (channels, instruments, notenames):
 #include "mididefines.h"
 
-
 // include headers for control classes
 #include "SigTimer.h"
 #include "Idler.h"
-#include "MidiMessage.h"
 #include "MidiOutPort_unsupported.h"
 #include "MidiOutPort.h"
 #include "MidiOutput.h"

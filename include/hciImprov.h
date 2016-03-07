@@ -99,16 +99,16 @@ int runImprovInterface(void) {
    int p1;       // first parameter byte
    int p2;       // second parameter byte
   
-   MidiMessage message;
+   MidiEvent message;
    while (1) {                        // event loop
       mcount = 0;
       while(midi.getCount() > 0 && mcount < 15) {
          mcount++;
-         message  = midi.extract();
-         intime   = message.time;
-         p0       = message.p0();
-         p1       = message.p1();
-         p2       = message.p2();
+         midi.extract(message);
+         intime   = message.tick;
+         p0       = message.getP0();
+         p1       = message.getP1();
+         p2       = message.getP2();
          mididata(intime, p0, p1, p2);
       }
       t_time = mainTimer.getTime(); 
@@ -609,16 +609,16 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiMessage noteMessage;
+   static MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 
    midi.play(0, note, 0);
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = 0;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(0);
    midi.insert(noteMessage);
 
    switch (aKey) {
@@ -652,10 +652,10 @@ void charsynth(int aKey) {
    attack = rand()%47 + 81;           // random int from 1 to 127
    midi.play(0,note,attack); 
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = rand()%47 + 81;      // random int from 1 to 127
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(rand()%47 + 81);      // random int from 1 to 127
    midi.insert(noteMessage);
 
 }
@@ -670,16 +670,16 @@ void charsynth(int aKey) {
 //
 
 void octavekeyboard(int key, int octave) {
-   static MidiMessage noteMessage;
+   static MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 
    midi.play(0, note, 0);
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = 0;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(0);
    midi.insert(noteMessage);
 
    switch (key) {
@@ -704,10 +704,10 @@ void octavekeyboard(int key, int octave) {
    attack = rand()%48 + 80; 
    midi.play(0, note, attack);
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = attack;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(attack);
    midi.insert(noteMessage);
 }
 

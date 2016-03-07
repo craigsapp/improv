@@ -73,7 +73,7 @@ class TumbleParameters {
 
 EventBuffer eventBuffer;  // for future notes (2048 notes max)
 int channel = 0;          // channel to play the notes on.
-MidiMessage message;      // for reading keyno and velocity (and time)
+MidiEvent message;      // for reading keyno and velocity (and time)
 int direction = 1;        // direction of algorithm generation notes
 int length = 4;           // number of notes in a algorithm cycle
 int anticipation = 125;   // anticipation of first note in tumble for
@@ -85,7 +85,7 @@ SigCollection<TumbleParameters> tparam;  // data storage for tumble functions
 
 
 // function declarations:
-void    processNote         (MidiMessage message, int seqLength, int direction);
+void    processNote         (MidiEvent message, int seqLength, int direction);
 int     startAlgorithm      (TumbleParameters& p);
 int     storeParameters     (SigCollection<TumbleParameters>& params,
                              TumbleParameters& p);
@@ -184,14 +184,14 @@ void mainloopalgorithms(void) {
 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      if (message.is_note_on() && message.p1() == A0) {
+      if (message.isNoteOn() && message.getP1() == A0) {
          direction = -direction;
          cout << "Direction = " << direction << endl;
-      } else if (message.is_note_on() && message.p1() == C7) {
+      } else if (message.isNoteOn() && message.getP1() == C7) {
          // add one to the length of the tumble sequence
          length = limit(length+1, 2, 200);
          cout << "Sequence length = " << length << endl;
-      } else if (message.is_note_on() && message.p1() == B6) {
+      } else if (message.isNoteOn() && message.getP1() == B6) {
          // subtract one from the length of the tumble sequence
          length = limit(length-1, 2, 200);
          cout << "Sequence length = " << length << endl;
@@ -209,7 +209,7 @@ void mainloopalgorithms(void) {
 //     the algorithm if it is time to do so.
 //
 
-void processNote(MidiMessage message, int seqLength, int direction) {
+void processNote(MidiEvent message, int seqLength, int direction) {
    static Array<char>         notes;
    static Array<char>         velocities;
    static Array<int>          durations;
@@ -236,8 +236,8 @@ void processNote(MidiMessage message, int seqLength, int direction) {
    int deltatime;
    int ioi0;
    int ioix;
-   if (message.is_note_on()) {
-      attacktimes.insert(message.time);
+   if (message.isNoteOn()) {
+      attacktimes.insert(message.tick);
 
       // check to see if the ioi is in the correct range
       if (notes.getSize() == 0) {
@@ -270,8 +270,8 @@ void processNote(MidiMessage message, int seqLength, int direction) {
             temparam.d[i] = durations[i];
             temparam.n[i] = notes[i] - notes[0];
          }
-         temparam.n[0]    = message.p1() - notes[0];
-         temparam.current = message.p1();
+         temparam.n[0]    = message.getP1() - notes[0];
+         temparam.current = message.getP1();
          temparam.pos     = 1;
          temparam.max     = seqLength;
          temparam.active  = 1;
@@ -280,16 +280,16 @@ void processNote(MidiMessage message, int seqLength, int direction) {
          goto resettrigger;
       } else {
          // add the note info to the algorithm pile
-         note = message.p1();
+         note = message.getP1();
          notes.append(note);
-         vel = message.p2();
+         vel = message.getP2();
          velocities.append(vel);
-         attacktimes[message.p1()] = message.time;
+         attacktimes[message.getP1()] = message.tick;
       }
-   } else if (message.is_note_off()) {
+   } else if (message.isNoteOff()) {
       if (notes.getSize() > 0) {
-         if (notes[notes.getSize()-1] == message.p1()) {
-         deltatime = message.time - ontimes[message.p1()];
+         if (notes[notes.getSize()-1] == message.getP1()) {
+         deltatime = message.tick - ontimes[message.getP1()];
          durations.append(deltatime);
       } else {
          cout << "A funny error ocurred" << endl;
@@ -305,11 +305,11 @@ resettrigger:
    durations.setSize(0);
    iois.setSize(0);
 
-   if (message.is_note_on()) {
-      note = message.p1();
+   if (message.isNoteOn()) {
+      note = message.getP1();
       notes.append(note);
-      ontimes[message.p1()] = message.time;
-      vel = message.p2();
+      ontimes[message.getP1()] = message.tick;
+      vel = message.getP2();
       velocities.append(vel);
    }
 }
@@ -530,7 +530,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiMessage message;
+   static MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {
@@ -562,10 +562,10 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    newkey = limit(newkey, 0, 127);
 
    // put note-off message in synth's input buffer:
-   message.time = t_time;
-   message.p0() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = 0;
+   message.tick = t_time;
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(0);
    synth.insert(message);
 
    // turn off the last note:
@@ -580,9 +580,9 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    voice.play();
 
    // insert the played note into synth's input MIDI buffer:
-   message.command() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = voice.getVel();
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(voice.getVel());
    synth.insert(message);
 
 }

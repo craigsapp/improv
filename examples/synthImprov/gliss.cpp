@@ -19,12 +19,12 @@ int direction = 1;        // direction of glissandos, 1=up, -1=down
 int step = 1;		  // step to take for each note in glissando
 int rate = 300;		  // tempo of gliss notes
 int channel = 0;          // channel to play the glisses on.
-MidiMessage message;      // for reading keyno and velocity (and time)
+MidiEvent message;      // for reading keyno and velocity (and time)
 
 
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
-void playgliss(MidiMessage aMessage);
+void playgliss(MidiEvent aMessage);
 int limit(int value, int min, int max);
 
 
@@ -106,11 +106,11 @@ void mainloopalgorithms(void) {
 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      if (((message.p0() & 0xf0) == 0x90) && (message.p2() != 0)) {
+      if (((message.getP0() & 0xf0) == 0x90) && (message.getP2() != 0)) {
          playgliss(message);
 
          // lowest A on the keyboard will switch the gliss directions
-         if (((message.p0() & 0xf0) == 0x90) && (message.p1() == A0)) {
+         if (((message.getP0() & 0xf0) == 0x90) && (message.getP1() == A0)) {
             direction = -direction;
          }
       }
@@ -126,14 +126,14 @@ void mainloopalgorithms(void) {
 //     note falls off of the keyboard.
 //
 
-void playgliss(MidiMessage aMessage) { 
+void playgliss(MidiEvent aMessage) { 
    static FunctionEvent tn;   // a Temporary Note for copying into eventBuffer
 
    // setting the fields of the function note
    tn.setFunction(GlissNoteFunction);
    tn.setChannel(channel);
-   tn.setKeyno(aMessage.p1());
-   tn.setVelocity(aMessage.p2());
+   tn.setKeyno(aMessage.getP1());
+   tn.setVelocity(aMessage.getP2());
  
    tn.setStatus(EVENT_STATUS_ACTIVE);
 
@@ -142,8 +142,8 @@ void playgliss(MidiMessage aMessage) {
 
    int location = eventBuffer.insert(tn);
 
-   cout << "GLISS: StartKey = " << (int)aMessage.p1()
-        << "\tVelocity = "      << (int)aMessage.p2()
+   cout << "GLISS: StartKey = " << (int)aMessage.getP1()
+        << "\tVelocity = "      << (int)aMessage.getP2()
         << "\tRate = "          << rate
         << "\tLocation = "      << location
         << endl;
@@ -210,7 +210,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiMessage message;
+   static MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {
@@ -247,10 +247,10 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    }
 
    // put note-off message in synth's input buffer:
-   message.time = t_time;
-   message.p0() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = 0;
+   message.tick = t_time;
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(0);
    synth.insert(message);
 
    // turn off the last note:
@@ -265,9 +265,9 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    voice.play();
 
    // insert the played note into synth's input MIDI buffer:
-   message.command() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = voice.getVel();
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(voice.getVel());
    synth.insert(message);
 
 }

@@ -27,7 +27,7 @@ int onKey2;
 int event = -1;
 int shift = 0;
 
-MidiMessage message;       // for processing incoming messages
+MidiEvent message;       // for processing incoming messages
 CircularBuffer<int> keysOn(100); 
 
 // function declarations:
@@ -65,12 +65,12 @@ void mainloopalgorithms(void) {
    if (synth.getNoteCount() > 0) {
       nextActionTime = t_time;
       message = synth.extractNote();
-      if (message.p2() == 0) {   // note off
+      if (message.getP2() == 0) {   // note off
          keyCount--;
          if (keyCount < 0) {
             keyCount = 0;
          }
-         switch (message.p1()) {
+         switch (message.getP1()) {
             case C3:   lastOffTime[1]  = t_time;   break;
             case D3:   lastOffTime[2]  = t_time;   break;
             case E3:   lastOffTime[3]  = t_time;   break;
@@ -84,9 +84,9 @@ void mainloopalgorithms(void) {
          }
       } else {                   // note on
          keyCount++;
-         keysOn.insert(message.p1());
+         keysOn.insert(message.getP1());
          onKey2 = onKey1;
-         switch (message.p1()) {
+         switch (message.getP1()) {
             case C3:   lastOnTime[1]  = t_time;  onKey1 = 1;   break;
             case D3:   lastOnTime[2]  = t_time;  onKey1 = 2;   break;
             case E3:   lastOnTime[3]  = t_time;  onKey1 = 3;   break;

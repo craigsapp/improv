@@ -64,7 +64,9 @@ EventBuffer::~EventBuffer(void) {
 //
 
 int EventBuffer::aquire(void) {
-   return freeSlots.extract();
+   int value = 0;
+   freeSlots.extract(value);
+	return value;
 }
 
 
@@ -209,7 +211,8 @@ int EventBuffer::getPollPeriod(void) const {
 //
 
 int EventBuffer::insert(const Event* newEvent) {
-   int freeSpot = freeSlots.extract();
+   int freeSpot = 0;
+   freeSlots.extract(freeSpot);
    eventStorage[freeSpot] = *newEvent;
    activate(freeSpot);
    return freeSpot;
@@ -217,7 +220,8 @@ int EventBuffer::insert(const Event* newEvent) {
 
 
 int EventBuffer::insert(const Event& newEvent) {
-   int freeSpot = freeSlots.extract();
+   int freeSpot = 0;
+   freeSlots.extract(freeSpot);
    memcpy((void*)&eventStorage[freeSpot], (void*)&newEvent, sizeof(Event));
    activate(freeSpot);
    return freeSpot;

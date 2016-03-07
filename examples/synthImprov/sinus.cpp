@@ -39,7 +39,7 @@ int octave = 4;              // octave range for computer keyboard notes
 int keyboardnote = 0;        // computer keyboard note
 int lastoff = 0;             // last note which was turned off
 int nextnotetime = 0;        // time for the next note
-MidiMessage noteMessage;     // for reading keyno and velocity (and time)
+MidiEvent noteMessage;     // for reading keyno and velocity (and time)
 Voice sinevoice;             // for handling note-offs
 
 
@@ -82,14 +82,14 @@ void finishup(void) {
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       noteMessage = synth.extractNote();
-      if (noteMessage.p2() != 0) {
-         sinevelocity = 127 - noteMessage.p2();
+      if (noteMessage.getP2() != 0) {
+         sinevelocity = 127 - noteMessage.getP2();
       } else  {
          break;
       }
-      centernote = noteMessage.p1();
+      centernote = noteMessage.getP1();
       counte = 0;
-      amplitude = midiscale(noteMessage.p2(), 0, 24);
+      amplitude = midiscale(noteMessage.getP2(), 0, 24);
       cout << "\rcenter = " << setw(4) << centernote
            << " amplitude = " << setw(4) << amplitude << "\t\t\t\t";
       cout.flush();
@@ -109,9 +109,9 @@ void mainloopalgorithms(void) {
 
 void keyboard(int key) {
    synth.play(0, keyboardnote, 0);
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = keyboardnote;
-   noteMessage.p2() = 0;
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(keyboardnote);
+   noteMessage.setP2(0);
    synth.insert(noteMessage);
    switch (key) {
       case 'z': keyboardnote = 12 * octave + 0;  break;   // C
@@ -131,10 +131,10 @@ void keyboard(int key) {
    }
    if (keyboardnote < 0)  keyboardnote = 0;
    else if (keyboardnote > 127)  keyboardnote = 127;
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = keyboardnote;
-   noteMessage.p2() = rand()%127 + 1;      // random int from 1 to 127
-   synth.play(0, noteMessage.p1(), noteMessage.p2());
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(keyboardnote);
+   noteMessage.setP2(rand()%127 + 1);      // random int from 1 to 127
+   synth.play(0, noteMessage.getP1(), noteMessage.getP2());
    synth.insert(noteMessage);
 }
 

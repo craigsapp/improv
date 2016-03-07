@@ -18,11 +18,11 @@
 #ifdef LINUX
 #ifdef ALSA
 
-#include "MidiMessage.h"
 #include "CircularBuffer.h"
 #include "Array.h"
 #include "Sequencer_alsa.h"
 #include "SigTimer.h"
+#include "MidiEvent.h"
 
 #include <pthread.h>
 
@@ -40,7 +40,7 @@ class MidiInPort_alsa : public Sequencer_alsa {
       void            clearSysex                 (void);
       void            close                      (void);
       void            closeAll                   (void);
-      MidiMessage     extract                    (void);
+      void            extract                    (MidiEvent& event);
       int             getBufferSize              (void);
       int             getChannelOffset           (void) const;
       int             getCount                   (void);
@@ -52,9 +52,9 @@ class MidiInPort_alsa : public Sequencer_alsa {
       uchar*          getSysex                   (int buffer);
       int             getSysexSize               (int buffer);
       int             getTrace                   (void);
-      void            insert                     (const MidiMessage& aMessage);
+      void            insert                     (const MidiEvent& aMessage);
       int             installSysex               (uchar* anArray, int aSize);
-      MidiMessage&    message                    (int index);
+      MidiEvent&      message                    (int index);
       int             open                       (void);
       void            pause                      (void);
       void            setBufferSize              (int aSize);
@@ -79,7 +79,7 @@ class MidiInPort_alsa : public Sequencer_alsa {
       static int*       trace;              // for verifying input
       static ostream*   tracedisplay;       // stream for displaying trace
       static int        numDevices;         // number of input ports
-      static CircularBuffer<MidiMessage>** midiBuffer; // MIDI storage frm ports
+      static CircularBuffer<MidiEvent>** midiBuffer; // MIDI storage frm ports
       static int        channelOffset;      // channel offset, either 0 or 1
                                             // not being used right now.
       static int*       pauseQ;             // for adding items to Buffer or not

@@ -125,7 +125,7 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiMessage message;
+MidiEvent message;
 int velocity;
 short dtime;
 
@@ -133,12 +133,12 @@ void mainloopalgorithms(void) {
 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      if (message.is_note_off()) {
+      if (message.isNoteOff()) {
          continue;
       }
-      returnpitch = message.p1();
-      returnvelocity = message.p2();
-      // returntime = message.time;
+      returnpitch = message.getP1();
+      returnvelocity = message.getP2();
+      // returntime = message.tick;
       returntime = t_time;
       
       dtime = (short)(returntime - outtimes[returnpitch]);

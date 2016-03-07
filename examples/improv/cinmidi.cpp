@@ -74,15 +74,15 @@ int       bufferIndex = 0;                   // for keyboard input buffer
 
 // function declarations
 void        checkOptions             (Options& opts);
-void        displayMessage           (ostream& out, MidiMessage message, 
+void        displayMessage           (ostream& out, MidiEvent message, 
 		                      int style);
 void        displayHeader            (ostream& out);
 void        examineInputForCommand   (const char* inputBuffer);
 void        example                  (void);
 const char* getGmInst                (int number);
 char*       getKey                   (int keynum);
-void        interpret                (ostream& out, MidiMessage message);
-void        interpretSysex           (ostream& out, MidiMessage message);
+void        interpret                (ostream& out, MidiEvent message);
+void        interpretSysex           (ostream& out, MidiEvent message);
 float       makePitchBend            (int lsb, int msb);
 void        printbyte                (ostream& out, int value, int location, 
                                       int style);
@@ -106,40 +106,40 @@ int main(int argc, char** argv) {
 
    KeyboardInput keyboard;     // for typing comments into output file
    char keych;                 // character from keyboard
-   MidiMessage message;
+   MidiEvent message;
    int lastTime = -1;
 
    midi.open();
    while (1) {
       while (midi.getCount() > 0) {
-         message = midi.extract();
+         midi.extract(message);
          if (echoQ) {
             midi.send(message);
          }
 
-         if ((!activeSensingQ) && (message.p0() == 0xfe)) {
+         if ((!activeSensingQ) && (message.getP0() == 0xfe)) {
             // don't display incoming active-sensing messages
             continue;
          }
 
          // filter any specified message types
-         if (suppressOffQ && ((message.p0() & 0xf0) == 0x90) &&
-               (message.p2() == 0)) {      
+         if (suppressOffQ && ((message.getP0() & 0xf0) == 0x90) &&
+               (message.getP2() == 0)) {      
             continue;
-         } else if (filter[(message.p0() >> 4) - 8]) {
+         } else if (filter[(message.getP0() >> 4) - 8]) {
             continue;
-         } else if (cfilter[message.p0() & 0x0f]) {
+         } else if (cfilter[message.getP0() & 0x0f]) {
             continue;
          }
 
          // adjust message time to delta time if necessary
          if (!absoluteQ) {
             if (lastTime == -1) {
-               lastTime = message.time;
-               message.time = 0;
+               lastTime = message.tick;
+               message.tick = 0;
             } else {
-               int temp = message.time;
-               message.time = message.time - lastTime;
+               int temp = message.tick;
+               message.tick = message.tick - lastTime;
                lastTime = temp;
             }
          }
@@ -419,18 +419,18 @@ void displayHeader(ostream& out) {
 //	specified on the command-line
 //
 
-void displayMessage(ostream& out, MidiMessage message, int style) {
+void displayMessage(ostream& out, MidiEvent message, int style) {
    if (secondsQ) {
-      out << dec << message.time / 1000.0 << "\t";
+      out << dec << message.tick / 1000.0 << "\t";
    } else {
-      out << dec << message.time << "\t";
+      out << dec << message.tick << "\t";
    }
    
    if (bytesQ) {
       printbyte(out, (int)message[0], 0, style);
-      if (message.p0() == 0xf0) {
-         int byteCount = midi.getSysexSize((int)message.p1());
-         uchar* sysexmessage = midi.getSysex((int)message.p1());
+      if (message.getP0() == 0xf0) {
+         int byteCount = midi.getSysexSize((int)message.getP1());
+         uchar* sysexmessage = midi.getSysex((int)message.getP1());
          for (int k=1; k<byteCount-1; k++) {
             out << " ";
             printbyte(out, (int)sysexmessage[k], k, style);
@@ -438,7 +438,7 @@ void displayMessage(ostream& out, MidiMessage message, int style) {
          out << " ";
          printbyte(out, (int)sysexmessage[byteCount-1], 0, style);
       } else {  // not a system exclusive
-         int parameterCount = message.getParameterCount();
+         int parameterCount = message.size()-1;
          for (int i=0; i<parameterCount; i++) {
             out << " ";
             printbyte(out, (int)message[i+1], i+1, style);
@@ -447,12 +447,12 @@ void displayMessage(ostream& out, MidiMessage message, int style) {
    }
 
    if (bytesQ && interpretQ && (style == 2)) {
-      if (message.getParameterCount() <= 1) {
+      if (message.size()-1 <= 1) {
          out << '\t';
       }
       out << "\t ; ";
    } else if (bytesQ && interpretQ) {
-      if (message.getParameterCount() <= 1) {
+      if (message.size()-1 <= 1) {
          out << '\t';
       }
       out << "\t\t; ";
@@ -594,52 +594,52 @@ char* getKey(int keynum) {
 // interpret -- convert a MIDI message to English.
 //
 
-void interpret(ostream& out, MidiMessage message) {
+void interpret(ostream& out, MidiEvent message) {
    out << dec;      // set output to decimal notation
  
-   switch (message.p0() & 0xf0) {
+   switch (message.getP0() & 0xf0) {
       case 0x80:                                           // NOTE OFF
-         out << "NOTEOFF chan: " << (int)(message.p0() & 0x0f) + 1
-             << " key:" << getKey(message.p1()) << " vel: "
-             << (int)message.p2();
+         out << "NOTEOFF chan: " << (int)(message.getP0() & 0x0f) + 1
+             << " key:" << getKey(message.getP1()) << " vel: "
+             << (int)message.getP2();
          break;
       case 0x90:                                           // NOTE ON
-         out << "NOTE chan:" << (int)(message.p0() & 0x0f) + 1
-             << " key:" << getKey(message.p1())
-             << " vel:" << (int)message.p2();
-         if (message.p2() == 0) {
+         out << "NOTE chan:" << (int)(message.getP0() & 0x0f) + 1
+             << " key:" << getKey(message.getP1())
+             << " vel:" << (int)message.getP2();
+         if (message.getP2() == 0) {
             out << " OFF";
          }
          break;
       case 0xa0:                                           // AFTERTOUCH
-         out << "AFTERTOUCH chan:" << (int)(message.p0() & 0x0f) + 1
-             << " key:" << getKey(message.p1())
-             << " val:" << (int)message.p2();
+         out << "AFTERTOUCH chan:" << (int)(message.getP0() & 0x0f) + 1
+             << " key:" << getKey(message.getP1())
+             << " val:" << (int)message.getP2();
          break;
       case 0xb0:
-         out << "CONTROL chan:" << (int)(message.p0() & 0x0f) + 1
-             << " #:" << (int)message.p1()
-             << " val:" << (int)message.p2();
-         switch (message.p1()) {
+         out << "CONTROL chan:" << (int)(message.getP0() & 0x0f) + 1
+             << " #:" << (int)message.getP1()
+             << " val:" << (int)message.getP2();
+         switch (message.getP1()) {
             case  7:  out << " (volume)";   break;
             case 64:  out << " (sustain)";  break;
          }
          break;
       case 0xc0:                                           // PATCH CHANGE
-         out << "PATCH chan:" << (int)(message.p0() & 0x0f) + 1
-             << " inst:" << (int)message.p1()
-             << " (" << getGmInst(message.p1()) << ")";
+         out << "PATCH chan:" << (int)(message.getP0() & 0x0f) + 1
+             << " inst:" << (int)message.getP1()
+             << " (" << getGmInst(message.getP1()) << ")";
          break;
       case 0xd0:                                           // CHANNEL PRESSURE
-         out << "PRESSURE chan:" << (int)(message.p0() & 0x0f) + 1
-             << " val:" << (int)message.p1();
+         out << "PRESSURE chan:" << (int)(message.getP0() & 0x0f) + 1
+             << " val:" << (int)message.getP1();
          break;
       case 0xe0:                                           // PITCH BEND
-         out << "PITCHBEND chan:" << (int)(message.p0() & 0x0f) + 1
-             << " val:" << makePitchBend(message.p1(), message.p2());
+         out << "PITCHBEND chan:" << (int)(message.getP0() & 0x0f) + 1
+             << " val:" << makePitchBend(message.getP1(), message.getP2());
          break;
       case 0xf0:
-         switch (message.p0()) {
+         switch (message.getP0()) {
             // system common messages
             case 0xf0: out << "SYSEX"; interpretSysex(out, message); break;
             case 0xf1: out << "MIDI Time Code Quarter Frame";        break;
@@ -669,15 +669,15 @@ void interpret(ostream& out, MidiMessage message) {
 // interpretSysex -- try to identify the system exclusive message
 //
 
-void interpretSysex(ostream& out, MidiMessage message) {
-   if (message.p0() != 0xf0) {
+void interpretSysex(ostream& out, MidiEvent message) {
+   if (message.getP0() != 0xf0) {
       cout << "Error: interpretSysex needed a sysex message"
-              " but got: " << hex << (int)message.p0() << dec << endl;
+              " but got: " << hex << (int)message.getP0() << dec << endl;
       exit(1);
    }
 
-   uchar* sysex = midi.getSysex(message.p1());
-   int length = midi.getSysexSize(message.p1());
+   uchar* sysex = midi.getSysex(message.getP1());
+   int length = midi.getSysexSize(message.getP1());
 
 
    // check for Currently defined Universal System Exclusive Messages

@@ -2,8 +2,9 @@
 // Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: Tue Jan 22 22:09:46 PST 2002
 // Last Modified: Thu Nov 20 17:09:08 PST 2003
-// Last Modified: Mon Sep  6 23:21:17 PDT 2004 (changed pow(2) to pow(2.0))
-// Last Modified: Fri Jul 23 12:32:31 PDT 2010 (generalized tempo parsing)
+// Last Modified: Mon Sep  6 23:21:17 PDT 2004 Changed pow(2) to pow(2.0).
+// Last Modified: Fri Jul 23 12:32:31 PDT 2010 Generalized tempo parsing.
+// Last Modified: Mon Feb  9 21:17:36 PST 2015 Updated for C++11.
 // Filename:      ...sig/examples/all/mid2mat.cpp
 // Web Address:   http://sig.sapp.org/examples/museinfo/midi/mid2mat.cpp
 // Syntax:        C++; museinfo
@@ -19,20 +20,15 @@
 
 #include "MidiFile.h"
 #include "Options.h"
-
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <vector>
+#include <iostream>
+#include <iomanip>
 
-#ifndef OLDCPP
-   #include <iostream>
-   #include <iomanip>
-   using namespace std;
-#else
-   #include <iostream.h>
-   #include <iomanip.h>
-#endif
+using namespace std;
 
 // Four types of event time display:
 #define TICK 1            /* time units are MIDI file ticks (absolute)     */
@@ -81,11 +77,11 @@ const char *GMinstrument[128] = {
    "steeldrum", "woodblock", "taiko",     "toms",      "syntom",    "revcymb",
    "fx-fret",   "fx-blow",   "seashore",  "jungle",    "telephone", "helicptr",
    "applause",  "ringwhsl"
-};                            
+};
 
-Array<int> legend_instr;
-Array<int> legend_opcode;
-Array<int> legend_controller;
+vector<int> legend_instr;
+vector<int> legend_opcode;
+vector<int> legend_controller;
 
 typedef unsigned char uchar;
 
@@ -103,45 +99,40 @@ int     timetype = SEC;
 int     numQ     = 0;
 double  tempo    = 60.0;
 int     maxcount = 100000;
-Array<Array<double> > matlabarray;
+vector<vector<double> > matlabarray;
 
 // function declarations:
-void      convertMidiFile       (MidiFile& midifile, 
-                                 Array<Array<double> >& matlab);
+void      convertMidiFile       (MidiFile& midifile,
+                                 vector<vector<double> >& matlab);
 //void    setTempo              (MidiFile& midifile, int index, double& tempo);
 void      checkOptions          (Options& opts, int argc, char** argv);
 void      example               (void);
 void      usage                 (const char* command);
 double    getTime               (int ticks, MidiFile& midifile);
-void      processMetaEvent      (MidiFile& midifile, int i, 
-                                 Array<double>& event);
-void      printEvent            (Array<double>& event);
+void      processMetaEvent      (MidiFile& midifile, int i,
+                                 vector<double>& event);
+void      printEvent            (vector<double>& event);
 void      printLegend           (MidiFile& midifile);
-void      printMatlabArray      (MidiFile& midifile, 
-                                 Array<Array<double> >& matlab);
-void      sortArray             (Array<Array<double> >& matlab);
+void      printMatlabArray      (MidiFile& midifile,
+                                 vector<vector<double> >& matlab);
+void      sortArray             (vector<vector<double> >& matlab);
 int       eventcmp              (const void* a, const void* b);
-void      printOpcodeVariables  (Array<int> opcodes);
+void      printOpcodeVariables  (vector<int> opcodes);
 void      printOpName           (int code);
 
 
 //////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char* argv[]) {
-   matlabarray.setSize(100000);
-   matlabarray.setSize(0);
-   matlabarray.setGrowth(1000000); 
-   matlabarray.allowGrowth();
+   matlabarray.reserve(100000);
+   matlabarray.clear();
 
-   legend_instr.setSize(128);
-   legend_instr.allowGrowth(0);
-   legend_opcode.setSize(128);
-   legend_opcode.allowGrowth(0);
-   legend_controller.setSize(128);
-   legend_controller.allowGrowth(0);
+   legend_instr.resize(128);
+   legend_opcode.resize(128);
+   legend_controller.resize(128);
 
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1).data());
+   MidiFile midifile(options.getArg(1));
 
    convertMidiFile(midifile, matlabarray);
    if (!verboseQ) {
@@ -155,13 +146,13 @@ int main(int argc, char* argv[]) {
 
 //////////////////////////////
 //
-// printOpcodeVariables -- create variables for each type of 
+// printOpcodeVariables -- create variables for each type of
 //  data found in the following array (for readability).
 //
 
-void printOpcodeVariables(Array<int> opcodes) {
+void printOpcodeVariables(vector<int> opcodes) {
    int i;
-   for (i=0; i<opcodes.getSize(); i++) {
+   for (i=0; i<(int)opcodes.size(); i++) {
       if (!opcodes[i]) {
          continue;
       }
@@ -195,17 +186,15 @@ void printOpcodeVariables(Array<int> opcodes) {
 // convertMidiFile --
 //
 
-void convertMidiFile(MidiFile& midifile, Array<Array<double> >& matlab) {
-   midifile.absoluteTime();
+void convertMidiFile(MidiFile& midifile, vector<vector<double> >& matlab) {
+   midifile.absoluteTicks();
    midifile.joinTracks();
    if (secQ || msecQ) {
-      midifile.doTimeInSecondsAnalysis();
+      midifile.doTimeAnalysis();
    }
-   Array<double> event(7);
-   event.allowGrowth(0);
-
-   Array<double> ontimes(128);
-   Array<int> onvelocities(128);
+   vector<double> event(7);
+   vector<double> ontimes(128);
+   vector<int> onvelocities(128);
    int i;
    for (i=0; i<128; i++) {
       ontimes[i] = -1.0;
@@ -223,33 +212,33 @@ void convertMidiFile(MidiFile& midifile, Array<Array<double> >& matlab) {
    }
 
    for (i=0; i<midifile.getNumEvents(0); i++) {
-      event.setAll(unused);
-      command = midifile.getEvent(0, i).data[0] & 0xf0;
-      if (command == 0xf0) { 
-         command = midifile.getEvent(0, i).data[0];
+      event.assign(event.size(), unused);
+      command = midifile[0][i][0] & 0xf0;
+      if (command == 0xf0) {
+         command = midifile[0][i][0];
       }
-      if (command == 0x90 && midifile.getEvent(0, i).data[2] != 0) {
+      if (command == 0x90 && midifile[0][i][2] != 0) {
          // store note-on velocity and time
-         key = midifile.getEvent(0, i).data[1];
-         vel = midifile.getEvent(0, i).data[2];
-         ontimes[key] = getTime(midifile.getEvent(0, i).time, midifile);
+         key = midifile[0][i][1];
+         vel = midifile[0][i][2];
+         ontimes[key] = getTime(midifile[0][i].tick, midifile);
 
          onvelocities[key] = vel;
       } else if (command == 0x90 || command == 0x80) {
          // note off command write to output
-         key = midifile.getEvent(0, i).data[1];
-         offtime = getTime(midifile.getEvent(0, i).time, midifile);
+         key = midifile[0][i][1];
+         offtime = getTime(midifile[0][i].tick, midifile);
          legend_opcode[OP_NOTE/1000] = 1;
 
          if (verboseQ) {
-            cout 
-              << ontimes[key] 
-              << "\tnote" 
+            cout
+              << ontimes[key]
+              << "\tnote"
               << "\tdur=" << offtime - ontimes[key]
-              << "\tpch=" << key 
-              << "\tvel=" << onvelocities[key] 
-              << "\tch="  << (midifile.getEvent(0, i).data[0] & 0x0f)
-              << "\ttrack=" << midifile.getEvent(0, i).track
+              << "\tpch=" << key
+              << "\tvel=" << onvelocities[key]
+              << "\tch="  << (midifile[0][i][0] & 0x0f)
+              << "\ttrack=" << midifile[0][i].track
               << endl;
          } else {
             event[0] = ontimes[key];
@@ -257,54 +246,54 @@ void convertMidiFile(MidiFile& midifile, Array<Array<double> >& matlab) {
             event[2] = offtime - ontimes[key];
             event[3] = key;
             event[4] = onvelocities[key];
-            event[5] = (midifile.getEvent(0, i).data[0] & 0x0f);
-            event[6] = midifile.getEvent(0, i).track;
+            event[5] = (midifile[0][i][0] & 0x0f);
+            event[6] = midifile[0][i].track;
          }
       } else if (command == 0xb0) {
-         legend_controller[midifile.getEvent(0,i).data[1]] = 1;
+         legend_controller[midifile[0][i][1]] = 1;
          legend_opcode[OP_CONTROL/1000] = 1;
 
          if (verboseQ) {
-            cout << getTime(midifile.getEvent(0,i).time, midifile)
-                 << "\tcontrol" 
-                 << "\ttype="  << (int)midifile.getEvent(0, i).data[1]
-                 << "\tval="   << (int)midifile.getEvent(0, i).data[2]
-                 << "\tch="    << (midifile.getEvent(0, i).data[0] & 0x0f)
-                 << "\ttrack=" << midifile.getEvent(0, i).track
+            cout << getTime(midifile[0][i].tick, midifile)
+                 << "\tcontrol"
+                 << "\ttype="  << (int)midifile[0][i][1]
+                 << "\tval="   << (int)midifile[0][i][2]
+                 << "\tch="    << (midifile[0][i][0] & 0x0f)
+                 << "\ttrack=" << midifile[0][i].track
                  << "\n";
          } else {
-            event[0] = getTime(midifile.getEvent(0,i).time, midifile);
+            event[0] = getTime(midifile[0][i].tick, midifile);
             event[1] = OP_CONTROL;
-            event[2] = (int)midifile.getEvent(0,i).data[1];
-            event[3] = (int)midifile.getEvent(0,i).data[2];
-            event[5] = (midifile.getEvent(0, i).data[0] & 0x0f);
-            event[6] = midifile.getEvent(0, i).track;
+            event[2] = (int)midifile[0][i][1];
+            event[3] = (int)midifile[0][i][2];
+            event[5] = (midifile[0][i][0] & 0x0f);
+            event[6] = midifile[0][i].track;
          }
       } else if (command == 0xc0) {
-         legend_instr[midifile.getEvent(0,i).data[1]] = 1;
+         legend_instr[midifile[0][i][1]] = 1;
          legend_opcode[OP_INSTR/1000] = 1;
 
          if (verboseQ) {
-         cout << getTime(midifile.getEvent(0,i).time, midifile)
-              << "\tinstr" 
-              << "\tname="  << GMinstrument[midifile.getEvent(0,i).data[1]]
-              << "\tnum="   << (int)midifile.getEvent(0, i).data[1]
-              << "\tch="    << (midifile.getEvent(0, i).data[0] & 0x0f)
-              << "\ttrack=" << midifile.getEvent(0, i).track
+         cout << getTime(midifile[0][i].tick, midifile)
+              << "\tinstr"
+              << "\tname="  << GMinstrument[midifile[0][i][1]]
+              << "\tnum="   << (int)midifile[0][i][1]
+              << "\tch="    << (midifile[0][i][0] & 0x0f)
+              << "\ttrack=" << midifile[0][i].track
               << "\n";
          } else {
-            event[0] = getTime(midifile.getEvent(0,i).time, midifile);
+            event[0] = getTime(midifile[0][i].tick, midifile);
             event[1] = OP_INSTR;
-            event[2] = (int)midifile.getEvent(0, i).data[1];
-            event[5] = (midifile.getEvent(0, i).data[0] & 0x0f);
-            event[6] = midifile.getEvent(0, i).track;
+            event[2] = (int)midifile[0][i][1];
+            event[5] = (midifile[0][i][0] & 0x0f);
+            event[6] = midifile[0][i].track;
          }
       } else if (command == 0xff) {
          if (verboseQ) {
-            cout << getTime(midifile.getEvent(0,i).time, midifile)
+            cout << getTime(midifile[0][i].tick, midifile)
                  << "\t";
          } else {
-            event[0] = getTime(midifile.getEvent(0,i).time, midifile);
+            event[0] = getTime(midifile[0][i].tick, midifile);
          }
          processMetaEvent(midifile, i, event);
          if (verboseQ) {
@@ -312,17 +301,17 @@ void convertMidiFile(MidiFile& midifile, Array<Array<double> >& matlab) {
          }
       }
 
-      /* no longer needed 
+      /* no longer needed
       // check for tempo indication
-      if (midifile.getEvent(0, i).data[0] == 0xff &&
-                 midifile.getEvent(0, i).data[1] == 0x51) {
+      if (midifile[0][i][0] == 0xff &&
+                 midifile[0][i][1] == 0x51) {
          setTempo(midifile, i, tempo);
-         
+
       }
       */
 
       if (event[1] != unused) {
-         matlab.append(event);
+         matlab.push_back(event);
       }
    }
 
@@ -335,11 +324,10 @@ void convertMidiFile(MidiFile& midifile, Array<Array<double> >& matlab) {
 // processMetaEvent -- Handle meta events.
 //
 
-void processMetaEvent(MidiFile& midifile, int i, Array<double>& event) {
-   MFEvent& mfevent = midifile.getEvent(0, i);
-   Array<uchar>& data = mfevent.data;
+void processMetaEvent(MidiFile& midifile, int i, vector<double>& event) {
+   MidiEvent& mfevent = midifile[0][i];
 
-   switch (data[1]) {
+   switch (mfevent[1]) {
       case 0x51:  // tempo change
          legend_opcode[OP_TEMPO/1000] = 1;
          event[1] = OP_TEMPO;
@@ -347,30 +335,30 @@ void processMetaEvent(MidiFile& midifile, int i, Array<double>& event) {
          break;
 
       case 0x58:  // time signature
-         // 58 04 nn dd cc bb 
+         // 58 04 nn dd cc bb
          //  nn=numerator of time sig.
          //  dd=denominator of time sig. 2=quarter
          //  3=eighth, etc.
          //  cc=number of ticks in metronome click
          //  bb=number of 32nd notes to the quarter note
          if (verboseQ) {
-            cout << "%meter\t" << (int)data[2] << "/" << pow(2.0, data[3]);
+            cout << "%meter\t" << (int)mfevent[2] << "/" << pow(2.0, mfevent[3]);
          } else {
             legend_opcode[OP_METER/1000] = 1;
             event[1] = OP_METER;
-            event[2] = (int)data[2];
-            event[3] = pow(2.0, data[3]);
+            event[2] = (int)mfevent[2];
+            event[3] = pow(2.0, mfevent[3]);
          }
          break;
 
       case 0x59:  // key signature
-         // 59 02 sf mi   
+         // 59 02 sf mi
          // sf=sharps/flats (-7=7 flats, 0=key of C, 7=7 sharps)
          // mi=major/minor (0=major, 1=minor)
          if (verboseQ) {
             cout << "%keysig\t";
-            if (data[3]==0) {
-               switch (data[2]) {
+            if (mfevent[3]==0) {
+               switch (mfevent[2]) {
                   case 0: cout << "C-major"; break;
                   case 1: cout << "G-major"; break;
                   case 2: cout << "D-major"; break;
@@ -381,7 +369,7 @@ void processMetaEvent(MidiFile& midifile, int i, Array<double>& event) {
                   case 7: cout << "C-sharp-major"; break;
                }
             } else {
-               switch (data[2]) {
+               switch (mfevent[2]) {
                   case 0: cout << "A-minor"; break;
                   case 1: cout << "E-minor"; break;
                   case 2: cout << "B-minor"; break;
@@ -395,13 +383,13 @@ void processMetaEvent(MidiFile& midifile, int i, Array<double>& event) {
          } else {
             legend_opcode[OP_KEYSIG/1000] = 1;
             event[1] = OP_KEYSIG;
-            event[2] = (int)data[2];
-            event[3] = (int)data[3];
+            event[2] = (int)mfevent[2];
+            event[3] = (int)mfevent[3];
          }
          break;
-      default: 
+      default:
          if (verboseQ) {
-            cout << "%meta\t0x" << hex << (int)data[1] << dec;
+            cout << "%meta\t0x" << hex << (int)mfevent[1] << dec;
          }
    }
 }
@@ -440,12 +428,10 @@ void setTempo(MidiFile& midifile, int index, double& tempo) {
    double newtempo = 0.0;
    static int count = 0;
    count++;
-   Array<double> event;
-   event.setSize(7);
-   event.allowGrowth(0);
-   event.setAll(unused);
+   vector<double> event;
+   event.assign(7, unused);
 
-   MFEvent& mididata = midifile.getEvent(0, index);
+   MidiEvent& mididata = midifile[0][index];
 
    int microseconds = 0;
    microseconds = microseconds | (mididata.data[3] << 16);
@@ -457,15 +443,15 @@ void setTempo(MidiFile& midifile, int index, double& tempo) {
       tempo = newtempo;
    } else if (tempo != newtempo) {
       if (verboseQ) {
-         cout << getTime(midifile.getEvent(0,index).time, midifile);
+         cout << getTime(midifile[0][index].tick, midifile);
               << "\t"
               << "tempo\t" << newtempo << endl;
       } else {
          legend_opcode[OP_TEMPO/1000] = 1;
-         event[0] = getTime(midifile.getEvent(0,index).time, midifile);
+         event[0] = getTime(midifile[0][index].tick, midifile);
          event[1] = OP_TEMPO;
          event[2] = newtempo;
-         matlabarray.append(event); 
+         matlabarray.push_back(event);
       }
    }
    tempo = newtempo;
@@ -476,7 +462,7 @@ void setTempo(MidiFile& midifile, int index, double& tempo) {
 
 //////////////////////////////
 //
-// checkOptions -- 
+// checkOptions --
 //
 
 void checkOptions(Options& opts, int argc, char* argv[]) {
@@ -489,16 +475,16 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    opts.define("num=b",                        "display opcodes as numbers");
    opts.define("v|verbose=b",                       "display verbose data");
 
-   opts.define("author=b",  "author of program"); 
+   opts.define("author=b",  "author of program");
    opts.define("version=b", "compilation info");
-   opts.define("example=b", "example usages");   
+   opts.define("example=b", "example usages");
    opts.define("h|help=b",  "short description");
 
    opts.define("debug=b",  "debug mode to find errors in input file");
    opts.define("max=i:100000", "maximum number of notes expected in input");
 
    opts.process(argc, argv);
-   
+
    // handle basic options:
    if (opts.getBoolean("author")) {
       cout << "Written by Craig Stuart Sapp, "
@@ -518,7 +504,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
 
    unused   = opts.getDouble("unused");
    debugQ   = opts.getBoolean("debug");
-   maxcount = opts.getInteger("max"); 
+   maxcount = opts.getInteger("max");
    numQ     = opts.getBoolean("num");
 
    if (opts.getArgCount() != 1) {
@@ -587,137 +573,137 @@ void usage(const char* command) {
 //////////////////////////////
 //
 // printLegend -- print a legend of the codes in the data.
-// 
+//
 
 const char *GMcontrollers[128] = {
-	"  0   Bank Select (coarse)               0..127",
-	"  1   Modulation Wheel (coarse)          0..127",
-	"  2   Breath Control (coarse)            0..127",
-	"  3   Continuous controller #3           0..127",
-	"  4   Foot Controller (coarse)           0..127",
-	"  5   Portamento Time (coarse)           0..127",
-	"  6   Data Entry Slider (coarse)         0..127",
-	"  7   Main Volume (coarse)               0..127",
-	"  8   Stereo Balance (coarse)            0..127",
-	"  9   Continuous controller #9           0..127",
-	" 10   Pan (coarse)                       0=left 127=right",
-	" 11   Expression (sub-Volume) (coarse)   0..127",
-	" 12   Effect Control 1 (coarse)          0..127",
-	" 13   Effect Control 2 (coarse)          0..127",
-	" 14   Continuous controller #14          0..127",
-	" 15   Continuous controller #15          0..127",
-	" 16   General Purpose Slider 1           0..127",
-	" 17   General Purpose Slider 2           0..127",
-	" 18   General Purpose Slider 3           0..127",
-	" 19   General Purpose Slider 4           0..127",
-	" 20   Continuous controller #20          0..127",
-	" 21   Continuous controller #21          0..127",
-	" 22   Continuous controller #22          0..127",
-	" 23   Continuous controller #23          0..127",
-	" 24   Continuous controller #24          0..127",
-	" 25   Continuous controller #25          0..127",
-	" 26   Continuous controller #26          0..127",
-	" 27   Continuous controller #27          0..127",
-	" 28   Continuous controller #28          0..127",
-	" 29   Continuous controller #29          0..127",
-	" 30   Continuous controller #30          0..127",
-	" 31   Continuous controller #31          0..127",
-	" 32   Bank Select (fine)                 0..127 usu.ignored",
-	" 33   Modulation Wheel (fine)            0..127",
-	" 34   Breath Control (fine)              0..127",
-	" 35   Continuous controller #3 (fine)    0..127",
-	" 36   Foot Controller (fine)             0..127",
-	" 37   Portamento Time (fine)             0..127",
-	" 38   Data Entry Slider (fine)           0..127",
-	" 39   Main Volume (fine)                 0..127 usu. ignored",
-	" 40   Stereo Balance (fine)              0..127",
-	" 41   Continuous controller #9 (fine)    0..127",
-	" 42   Pan (fine)                         0..127 usu. ignored",
-	" 43   Expression (sub-Volume) (fine)     0..127 usu. ignored",
-	" 44   Effect Control 1 (fine)            0..127",
-	" 45   Effect Control 2 (fine)            0..127",
-	" 46   Continuous controller #14 (fine)   0..127",
-	" 47   Continuous controller #15 (fine)   0..127",
-	" 48   Continuous controller #16          0..127",
-	" 49   Continuous controller #17          0..127",
-	" 50   Continuous controller #18          0..127",
-	" 51   Continuous controller #19          0..127",
-	" 52   Continuous controller #20 (fine)   0..127",
-	" 53   Continuous controller #21 (fine)   0..127",
-	" 54   Continuous controller #22 (fine)   0..127",
-	" 55   Continuous controller #23 (fine)   0..127",
-	" 56   Continuous controller #24 (fine)   0..127",
-	" 57   Continuous controller #25 (fine)   0..127",
-	" 58   Continuous controller #26 (fine)   0..127",
-	" 59   Continuous controller #27 (fine)   0..127",
-	" 60   Continuous controller #28 (fine)   0..127",
-	" 61   Continuous controller #29 (fine)   0..127",
-	" 62   Continuous controller #30 (fine)   0..127",
-	" 63   Continuous controller #31 (fine)   0..127",
-	" 64   Hold pedal (Sustain) on/off        0..63=off  64..127=on",
-	" 65   Portamento on/off                  0..63=off  64..127=on",
-	" 66   Sustenuto Pedal on/off             0..63=off  64..127=on",
-	" 67   Soft Pedal on/off                  0..63=off  64..127=on",
-	" 68   Legato Pedal on/off                0..63=off  64..127=on",
-	" 69   Hold Pedal 2 on/off                0..63=off  64..127=on",
-	" 70   Sound Variation                    0..127",
-	" 71   Sound Timbre                       0..127",
-	" 72   Sound Release Time                 0..127",
-	" 73   Sound Attack Time                  0..127",
-	" 74   Sound Brighness                    0..127",
-	" 75   Sound Control 6                    0..127",
-	" 76   Sound Control 7                    0..127",
-	" 77   Sound Control 8                    0..127",
-	" 78   Sound Control 9                    0..127",
-	" 79   Sound Control 10                   0..127",
-	" 80   General Purpose Button             0..63=off 64..127=on",
-	" 81   General Purpose Button             0..63=off 64..127=on",
-	" 82   General Purpose Button             0..63=off 64..127=on",
-	" 83   General Purpose Button             0..63=off 64..127=on",
-	" 84   Undefined on/off                   0..63=off 64..127=on",
-	" 85   Undefined on/off                   0..63=off 64..127=on",
-	" 86   Undefined on/off                   0..63=off 64..127=on",
-	" 87   Undefined on/off                   0..63=off 64..127=on",
-	" 88   Undefined on/off                   0..63=off 64..127=on",
-	" 89   Undefined on/off                   0..63=off 64..127=on",
-	" 90   Undefined on/off                   0..63=off 64..127=on",
-	" 91   Effects Level                      0..127",
-	" 92   Tremulo Level                      0..127",
-	" 93   Chorus Level                       0..127",
-	" 94   Celeste (Detune) Level             0..127",
-	" 95   Phaser Level                       0..127",
-	" 96   Data entry +1                      ignored",
-	" 97   Data entry -1                      ignored",
-	" 98   Non-Registered Parameter Number (coarse)0..127",
-	" 99   Non-Registered Parameter Number (fine)  0..127",
-	"100   Registered Parameter Number (coarse)    0..127",
-	"101   Registered Parameter Number (fine) 0..127",
-	"102   Undefined                          ?",
-	"103   Undefined                          ?",
-	"104   Undefined                          ?",
-	"105   Undefined                          ?",
-	"106   Undefined                          ?",
-	"107   Undefined                          ?",
-	"108   Undefined                          ?",
-	"109   Undefined                          ?",
-	"110   Undefined                          ?",
-	"111   Undefined                          ?",
-	"112   Undefined                          ?",
-	"113   Undefined                          ?",
-	"114   Undefined                          ?",
-	"115   Undefined                          ?",
-	"116   Undefined                          ?",
-	"117   Undefined                          ?",
-	"118   Undefined                          ?",
-	"119   Undefined                          ?",
-	"120   All Sound Off                      ignored",
-	"121   All Controllers Off                ignored",
-	"122   Local Keyboard On/Off              0..63=off 64..127=on",
-	"123   All Notes Off                      ignored",
-	"124   Omni Mode Off                      ignored",
-	"125   Omni Mode On                       ignored",
-	"126   Monophonic Mode On                 **",
-	"127   Polyphonic Mode On (mono=off)      ignored"
+   "  0   Bank Select (coarse)               0..127",
+   "  1   Modulation Wheel (coarse)          0..127",
+   "  2   Breath Control (coarse)            0..127",
+   "  3   Continuous controller #3           0..127",
+   "  4   Foot Controller (coarse)           0..127",
+   "  5   Portamento Time (coarse)           0..127",
+   "  6   Data Entry Slider (coarse)         0..127",
+   "  7   Main Volume (coarse)               0..127",
+   "  8   Stereo Balance (coarse)            0..127",
+   "  9   Continuous controller #9           0..127",
+   " 10   Pan (coarse)                       0=left 127=right",
+   " 11   Expression (sub-Volume) (coarse)   0..127",
+   " 12   Effect Control 1 (coarse)          0..127",
+   " 13   Effect Control 2 (coarse)          0..127",
+   " 14   Continuous controller #14          0..127",
+   " 15   Continuous controller #15          0..127",
+   " 16   General Purpose Slider 1           0..127",
+   " 17   General Purpose Slider 2           0..127",
+   " 18   General Purpose Slider 3           0..127",
+   " 19   General Purpose Slider 4           0..127",
+   " 20   Continuous controller #20          0..127",
+   " 21   Continuous controller #21          0..127",
+   " 22   Continuous controller #22          0..127",
+   " 23   Continuous controller #23          0..127",
+   " 24   Continuous controller #24          0..127",
+   " 25   Continuous controller #25          0..127",
+   " 26   Continuous controller #26          0..127",
+   " 27   Continuous controller #27          0..127",
+   " 28   Continuous controller #28          0..127",
+   " 29   Continuous controller #29          0..127",
+   " 30   Continuous controller #30          0..127",
+   " 31   Continuous controller #31          0..127",
+   " 32   Bank Select (fine)                 0..127 usu.ignored",
+   " 33   Modulation Wheel (fine)            0..127",
+   " 34   Breath Control (fine)              0..127",
+   " 35   Continuous controller #3 (fine)    0..127",
+   " 36   Foot Controller (fine)             0..127",
+   " 37   Portamento Time (fine)             0..127",
+   " 38   Data Entry Slider (fine)           0..127",
+   " 39   Main Volume (fine)                 0..127 usu. ignored",
+   " 40   Stereo Balance (fine)              0..127",
+   " 41   Continuous controller #9 (fine)    0..127",
+   " 42   Pan (fine)                         0..127 usu. ignored",
+   " 43   Expression (sub-Volume) (fine)     0..127 usu. ignored",
+   " 44   Effect Control 1 (fine)            0..127",
+   " 45   Effect Control 2 (fine)            0..127",
+   " 46   Continuous controller #14 (fine)   0..127",
+   " 47   Continuous controller #15 (fine)   0..127",
+   " 48   Continuous controller #16          0..127",
+   " 49   Continuous controller #17          0..127",
+   " 50   Continuous controller #18          0..127",
+   " 51   Continuous controller #19          0..127",
+   " 52   Continuous controller #20 (fine)   0..127",
+   " 53   Continuous controller #21 (fine)   0..127",
+   " 54   Continuous controller #22 (fine)   0..127",
+   " 55   Continuous controller #23 (fine)   0..127",
+   " 56   Continuous controller #24 (fine)   0..127",
+   " 57   Continuous controller #25 (fine)   0..127",
+   " 58   Continuous controller #26 (fine)   0..127",
+   " 59   Continuous controller #27 (fine)   0..127",
+   " 60   Continuous controller #28 (fine)   0..127",
+   " 61   Continuous controller #29 (fine)   0..127",
+   " 62   Continuous controller #30 (fine)   0..127",
+   " 63   Continuous controller #31 (fine)   0..127",
+   " 64   Hold pedal (Sustain) on/off        0..63=off  64..127=on",
+   " 65   Portamento on/off                  0..63=off  64..127=on",
+   " 66   Sustenuto Pedal on/off             0..63=off  64..127=on",
+   " 67   Soft Pedal on/off                  0..63=off  64..127=on",
+   " 68   Legato Pedal on/off                0..63=off  64..127=on",
+   " 69   Hold Pedal 2 on/off                0..63=off  64..127=on",
+   " 70   Sound Variation                    0..127",
+   " 71   Sound Timbre                       0..127",
+   " 72   Sound Release Time                 0..127",
+   " 73   Sound Attack Time                  0..127",
+   " 74   Sound Brighness                    0..127",
+   " 75   Sound Control 6                    0..127",
+   " 76   Sound Control 7                    0..127",
+   " 77   Sound Control 8                    0..127",
+   " 78   Sound Control 9                    0..127",
+   " 79   Sound Control 10                   0..127",
+   " 80   General Purpose Button             0..63=off 64..127=on",
+   " 81   General Purpose Button             0..63=off 64..127=on",
+   " 82   General Purpose Button             0..63=off 64..127=on",
+   " 83   General Purpose Button             0..63=off 64..127=on",
+   " 84   Undefined on/off                   0..63=off 64..127=on",
+   " 85   Undefined on/off                   0..63=off 64..127=on",
+   " 86   Undefined on/off                   0..63=off 64..127=on",
+   " 87   Undefined on/off                   0..63=off 64..127=on",
+   " 88   Undefined on/off                   0..63=off 64..127=on",
+   " 89   Undefined on/off                   0..63=off 64..127=on",
+   " 90   Undefined on/off                   0..63=off 64..127=on",
+   " 91   Effects Level                      0..127",
+   " 92   Tremulo Level                      0..127",
+   " 93   Chorus Level                       0..127",
+   " 94   Celeste (Detune) Level             0..127",
+   " 95   Phaser Level                       0..127",
+   " 96   Data entry +1                      ignored",
+   " 97   Data entry -1                      ignored",
+   " 98   Non-Registered Parameter Number (coarse)0..127",
+   " 99   Non-Registered Parameter Number (fine)  0..127",
+   "100   Registered Parameter Number (coarse)    0..127",
+   "101   Registered Parameter Number (fine) 0..127",
+   "102   Undefined                          ?",
+   "103   Undefined                          ?",
+   "104   Undefined                          ?",
+   "105   Undefined                          ?",
+   "106   Undefined                          ?",
+   "107   Undefined                          ?",
+   "108   Undefined                          ?",
+   "109   Undefined                          ?",
+   "110   Undefined                          ?",
+   "111   Undefined                          ?",
+   "112   Undefined                          ?",
+   "113   Undefined                          ?",
+   "114   Undefined                          ?",
+   "115   Undefined                          ?",
+   "116   Undefined                          ?",
+   "117   Undefined                          ?",
+   "118   Undefined                          ?",
+   "119   Undefined                          ?",
+   "120   All Sound Off                      ignored",
+   "121   All Controllers Off                ignored",
+   "122   Local Keyboard On/Off              0..63=off 64..127=on",
+   "123   All Notes Off                      ignored",
+   "124   Omni Mode Off                      ignored",
+   "125   Omni Mode On                       ignored",
+   "126   Monophonic Mode On                 **",
+   "127   Polyphonic Mode On (mono=off)      ignored"
 };
 
 
@@ -730,7 +716,7 @@ void printLegend(MidiFile& midifile) {
    cout << "%% DATA LEGEND                                               %%\n";
    cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
    cout << "%%Filename: " << midifile.getFilename() << endl;
-   cout << "%%Ticks per quarter note: " << midifile.getTicksPerQuarterNote() 
+   cout << "%%Ticks per quarter note: " << midifile.getTicksPerQuarterNote()
         << "\n";
    cout << "%%Time units used in column 1: ";
    switch (timetype) {
@@ -739,17 +725,17 @@ void printLegend(MidiFile& midifile) {
       case SEC:  cout << "seconds\n";       break;
       case MSEC: cout << "milliseconds\n";  break;
       default:   cout << "unknown\n";
- 
+
    }
    // cout << "% unused parameter marker: " << unused << "\n";
    // check for opcodes used in data:
    sum = 0;
-   for (i=0; i<legend_opcode.getSize(); i++) {
+   for (i=0; i<(int)legend_opcode.size(); i++) {
       sum += legend_opcode[i];
    }
    if (sum > 0) {
       cout << "% " << sum << " opcodes are present in the data:\n";
-      for (i=0; i<legend_opcode.getSize(); i++) {
+      for (i=0; i<(int)legend_opcode.size(); i++) {
          if (legend_opcode[i]) {
             switch (i*1000) {
                case OP_NOTE:
@@ -815,7 +801,7 @@ void printLegend(MidiFile& midifile) {
 
    // check for instruments to list:
    sum = 0;
-   for (i=0; i<legend_instr.getSize(); i++) {
+   for (i=0; i<(int)legend_instr.size(); i++) {
       sum += legend_instr[i];
    }
    if (sum > 0) {
@@ -824,9 +810,9 @@ void printLegend(MidiFile& midifile) {
       } else {
          cout << "% " << sum << " instrument timbres are present in the data:\n";
       }
-      for (i=0; i<legend_instr.getSize(); i++) {
+      for (i=0; i<(int)legend_instr.size(); i++) {
          if (legend_instr[i]) {
-            cout << "%\tinstrument number " << i << "\t= " 
+            cout << "%\tinstrument number " << i << "\t= "
                  << GMinstrument[i] << "\n";
          }
       }
@@ -834,7 +820,7 @@ void printLegend(MidiFile& midifile) {
 
    // check for controllers to list:
    sum = 0;
-   for (i=0; i<legend_controller.getSize(); i++) {
+   for (i=0; i<(int)legend_controller.size(); i++) {
       sum += legend_controller[i];
    }
    if (sum > 0) {
@@ -843,7 +829,7 @@ void printLegend(MidiFile& midifile) {
       } else {
       cout << "% " << sum << " types of controllers are present in the data:\n";
       }
-      for (i=0; i<legend_controller.getSize(); i++) {
+      for (i=0; i<(int)legend_controller.size(); i++) {
          if (legend_controller[i]) {
             cout << "%\tcontroller " << GMcontrollers[i] << "\n";
          }
@@ -862,7 +848,7 @@ void printLegend(MidiFile& midifile) {
 // printMatlabArray -- print the Matlab array representing the MIDI file.
 //
 
-void printMatlabArray(MidiFile& midifile, Array<Array<double> >& matlab) {
+void printMatlabArray(MidiFile& midifile, vector<vector<double> >& matlab) {
    int i;
    sortArray(matlab);
    printLegend(midifile);
@@ -870,7 +856,7 @@ void printMatlabArray(MidiFile& midifile, Array<Array<double> >& matlab) {
       printOpcodeVariables(legend_opcode);
    }
    cout << arrayname << " = [\n";
-   for (i=0; i<matlab.getSize(); i++) {
+   for (i=0; i<(int)matlab.size(); i++) {
       printEvent(matlab[i]);
    }
    cout << "];\n";
@@ -884,8 +870,8 @@ void printMatlabArray(MidiFile& midifile, Array<Array<double> >& matlab) {
 //   the notes may be slightly out of time order.
 //
 
-void sortArray(Array<Array<double> >& matlab) {
-   qsort(matlab.getBase(), matlab.getSize(), sizeof(Array<double>), eventcmp);
+void sortArray(vector<vector<double> >& matlab) {
+   qsort(matlab.data(), matlab.size(), sizeof(vector<double>), eventcmp);
 }
 
 
@@ -894,11 +880,11 @@ void sortArray(Array<Array<double> >& matlab) {
 //
 // eventcmp -- compare two events and determine which should come
 //    first in time.
-// 
+//
 
 int eventcmp(const void* a, const void* b) {
-   Array<double>& A = *((Array<double>*)a);
-   Array<double>& B = *((Array<double>*)b);
+   vector<double>& A = *((vector<double>*)a);
+   vector<double>& B = *((vector<double>*)b);
 
    if (A[0] < B[0]) {
       return -1;
@@ -951,9 +937,9 @@ void printOpName(int code) {
 // printEvent -- print the event
 //
 
-void printEvent(Array<double>& event) {
+void printEvent(vector<double>& event) {
    int i;
-   for (i=0; i<event.getSize(); i++) {
+   for (i=0; i<(int)event.size(); i++) {
       if ((i == 1) && (!numQ)) {
          printOpName(event[i]);
          cout << ",\t";
@@ -966,7 +952,7 @@ void printEvent(Array<double>& event) {
       //       cout << "0";
       //    }
       // }
-      if (i<event.getSize()-1) {
+      if (i<(int)event.size()-1) {
          cout << ",\t";
       }
    }
@@ -975,4 +961,3 @@ void printEvent(Array<double>& event) {
 
 
 
-// md5sum: 123b79d89bacdd1c99a03dd3951eb332 mid2mat.cpp [20100726]

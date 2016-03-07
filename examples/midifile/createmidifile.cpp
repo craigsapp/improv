@@ -1,22 +1,17 @@
 //
-// Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu> 
+// Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: Tue Jan  8 10:08:15 PST 2002
-// Last Modified: Tue Jan  8 10:31:08 PST 2002
+// Last Modified: Mon Feb  9 21:24:41 PST 2015 Updated for C++11.
 // Filename:      ...sig/doc/examples/all/createmidifile/createmidifile.cpp
 // Syntax:        C++
-// 
+//
 // Description:   Demonstration of how to create a Multi-track MIDI file.
 //
 
 #include "MidiFile.h"
+#include <iostream>
 
-#ifndef OLDCPP
-   #include <iostream>
-   using namespace std;
-#else
-   #include <iostream.h>
-#endif
-
+using namespace std;
 
 typedef unsigned char uchar;
 
@@ -24,11 +19,11 @@ typedef unsigned char uchar;
 
 int main(int argc, char** argv) {
    MidiFile outputfile;        // create an empty MIDI file with one track
-   outputfile.absoluteTime();  // time information stored as absolute time
+   outputfile.absoluteTicks();  // time information stored as absolute time
                                // (will be coverted to delta time when written)
    outputfile.addTrack(2);     // Add another two tracks to the MIDI file
-   Array<uchar> midievent;     // temporary storage for MIDI events 
-   midievent.setSize(3);       // set the size of the array to 3 bytes
+   vector<uchar> midievent;     // temporary storage for MIDI events
+   midievent.resize(3);        // set the size of the array to 3 bytes
    int tpq = 120;              // default value in MIDI file is 48
    outputfile.setTicksPerQuarterNote(tpq);
 
@@ -80,7 +75,7 @@ int main(int argc, char** argv) {
 
 void absoluteTime(void);
    Set the time information to absolute time.
-int addEvent(int aTrack, int aTime, Array<uchar>& midiData);
+int addEvent(int aTrack, int aTime, vector<uchar>& midiData);
    Add an event to the end of a MIDI track.
 int addTrack(void);
    Add an empty track to the MIDI file.
@@ -92,12 +87,12 @@ void deleteTrack(int aTrack);
    remove a track from the MIDI file.
 void erase(void);
    Empty the contents of the MIDI file, leaving one track with no data.
-_MFEvent& getEvent(int aTrack, int anIndex);
+MFEvent& getEvent(int aTrack, int anIndex);
    Return a MIDI event from the Track.
 int getTimeState(void);
    Indicates if the timestate is TIME_STATE_ABSOLUTE or TIME_STATE_DELTA.
 int getTrackState(void);
-   Indicates if the tracks are being processed as multiple tracks or 
+   Indicates if the tracks are being processed as multiple tracks or
    as a single track.
 int getTicksPerQuarterNote(void);
    Returns the ticks per quarter note value from the MIDI file.
@@ -117,7 +112,7 @@ int read(char* aFile);
    Read the contents of a MIDI file into the MidiFile class data structure
 void setTicksPerQuarterNote    (int ticks);
    Set the MIDI file's ticks per quarter note information
-void sortTrack(Collection<_MFEvent>& trackData);
+void sortTrack(vector<MFEvent>& trackData);
    If in absolute time, sort particular track into correct time order.
 void sortTracks(void);
    If in absolute time, sort tracks into correct time order.
@@ -126,4 +121,3 @@ void sortTracks(void);
 
 
 
-// md5sum: 89b83de0fbe279cccd183ef8c1583f62 createmidifile.cpp [20100703]

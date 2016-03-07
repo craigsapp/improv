@@ -122,7 +122,7 @@ int CircularBuffer<type>::capacity(void) const {
 //
 
 template<class type>
-type CircularBuffer<type>::extract(void) {
+void CircularBuffer<type>::extract(type& item) {
    itemCount--;
    if (itemCount < 0) {
       cerr << "Error: no elements in buffer to extract." << endl;
@@ -130,7 +130,7 @@ type CircularBuffer<type>::extract(void) {
       exit(1);
    }
    increment(readIndex);
-   return buffer[readIndex];
+   item = buffer[readIndex];
 }
 
 
@@ -210,8 +210,8 @@ type& CircularBuffer<type>::operator[](int index) {
 //
 
 template<class type>
-type CircularBuffer<type>::read(void) {
-   return extract();
+void CircularBuffer<type>::read(type& item) {
+   extract(item);
 }
 
 

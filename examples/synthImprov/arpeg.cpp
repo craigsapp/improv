@@ -40,7 +40,7 @@
 
 int octave = 4;                 // octave range for computer keyboard notes
 int keyboardnote = 0;           // computer keyboard note
-MidiMessage noteMessage;        // for reading keyno and velocity (and time)
+MidiEvent noteMessage;        // for reading keyno and velocity (and time)
 EventBuffer eventBuffer(2000);  // for future notes
 int chordType = MAJOR_TRIAD;    // the type of chord to play when key pressed
 int onset[4] = {0};             // the rhythm of the chord
@@ -104,12 +104,12 @@ void finishup(void) { }
 /*-------------------- main loop algorithms -----------------------------*/
 
 
-void playchord(MidiMessage aMessage, int chordQuality, 
+void playchord(MidiEvent aMessage, int chordQuality, 
       int* rhythm, int* dur) {
    int numNotes = 0;             // the number of notes to play
    NoteEvent tempNote;           // temporary Note for copying into eventBuffer
    int chordNote[4];             // the notes of the chord to be calculated
-   int rootNote = aMessage.p1(); // root of chord to be created
+   int rootNote = aMessage.getP1(); // root of chord to be created
 
    chordNote[0] = rootNote;
    switch (chordQuality) {
@@ -175,7 +175,7 @@ void playchord(MidiMessage aMessage, int chordQuality,
       if (tempNote.getKeyno() < 0 || tempNote.getKeyno() > 127)  continue;
 
       if (attack[i] == 0) {
-         tempNote.setVelocity(aMessage.p2());
+         tempNote.setVelocity(aMessage.getP2());
       } else {
          tempNote.setVelocity(attack[i]);
       }
@@ -197,7 +197,7 @@ void mainloopalgorithms(void) {
 
    while (synth.getNoteCount() > 0) {
       noteMessage = synth.extractNote();
-      if (noteMessage.p2() != 0) {
+      if (noteMessage.getP2() != 0) {
          playchord(noteMessage, chordType, onset, duration);
       }
    }
@@ -219,21 +219,21 @@ void recordRhythms(void) {
    int offtime;
    int playedNotes[4] = {0};
    int startTime = 0;
-   MidiMessage noteMessage;
+   MidiEvent noteMessage;
    while (oncount <= 4 && offcount <=4 ) {
       if (interfaceKeyboard.hit())  checkKeyboard();
       synth.processIncomingMessages();
       if (synth.getNoteCount() > 0) {
          noteMessage = synth.extractNote();
-         if (oncount < 4 && noteMessage.p2() != 0) {
-            if (oncount == 0)  startTime = noteMessage.time;
-            playedNotes[oncount] = noteMessage.p1();
-            attack[oncount] = noteMessage.p2();
-            onset[oncount] = noteMessage.time - startTime;
+         if (oncount < 4 && noteMessage.getP2() != 0) {
+            if (oncount == 0)  startTime = noteMessage.tick;
+            playedNotes[oncount] = noteMessage.getP1();
+            attack[oncount] = noteMessage.getP2();
+            onset[oncount] = noteMessage.tick - startTime;
             oncount++;
-         } else if (noteMessage.p2() == 0) {
-            offtime = noteMessage.time;
-            offnote = noteMessage.p1();
+         } else if (noteMessage.getP2() == 0) {
+            offtime = noteMessage.tick;
+            offnote = noteMessage.getP1();
             for (int i=0; i<oncount; i++) {
                if ((offnote == playedNotes[i]) && (finished[i] == 0)) {
                   duration[i] = offtime - onset[i] - startTime;
@@ -260,10 +260,10 @@ void recordRhythms(void) {
 
 void keyboard(int key) {
    synth.play(0, keyboardnote, 0);
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = keyboardnote;
-   noteMessage.p2() = 0;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(keyboardnote);
+   noteMessage.setP2(0);
    synth.insert(noteMessage);
    switch (key) {
       case 'z': keyboardnote = 12 * octave + 0;  break;    // C
@@ -283,11 +283,11 @@ void keyboard(int key) {
    }
    if (keyboardnote < 0)  keyboardnote = 0;
    else if (keyboardnote > 127)  keyboardnote = 127;
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = keyboardnote;
-   noteMessage.p2() = rand()%47 + 80;      // random int from 1 to 127
-   synth.play(0, noteMessage.p1(), noteMessage.p2());
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(keyboardnote);
+   noteMessage.setP2(rand()%47 + 80);      // random int from 1 to 127
+   synth.play(0, noteMessage.getP1(), noteMessage.getP2());
    synth.insert(noteMessage);
 }
 

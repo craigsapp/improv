@@ -31,7 +31,7 @@
 int                 MidiInPort_osx::numDevices           = 0;
 int                 MidiInPort_osx::objectCount          = 0;
 int*                MidiInPort_osx::portObjectCount      = NULL;
-CircularBuffer<MidiMessage>** MidiInPort_osx::midiBuffer = NULL;
+CircularBuffer<MidiEvent>** MidiInPort_osx::midiBuffer = NULL;
 int                 MidiInPort_osx::channelOffset        = 0;
 SigTimer            MidiInPort_osx::midiTimer;
 int*                MidiInPort_osx::pauseQ               = NULL;
@@ -157,13 +157,14 @@ void MidiInPort_osx::closeAll(void) {
 //	received since that last extracted message.
 //
 
-MidiMessage MidiInPort_osx::extract(void) {
+void MidiInPort_osx::extract(MidiEvent& event) {
    if (getPort() == -1) {
-      MidiMessage temp;
-      return temp;
+      MidiEvent temp;
+      event = temp;
+      return;
    }
 
-   return midiBuffer[getPort()]->extract();
+   midiBuffer[getPort()]->extract(event);
 }
 
 
@@ -344,7 +345,7 @@ int MidiInPort_osx::getTrace(void) {
 // MidiInPort_osx::insert
 //
 
-void MidiInPort_osx::insert(const MidiMessage& aMessage) {
+void MidiInPort_osx::insert(const MidiEvent& aMessage) {
    if (getPort() == -1)   return;
 
    midiBuffer[getPort()]->insert(aMessage);
@@ -401,13 +402,13 @@ int MidiInPort_osx::installSysexPrivate(int port, uchar* anArray, int aSize) {
 // MidiInPort_osx::message
 //
 
-MidiMessage& MidiInPort_osx::message(int index) {
+MidiEvent& MidiInPort_osx::message(int index) {
    if (getPort() == -1) {
-      static MidiMessage x;
+      static MidiEvent x;
       return x;
    }
 
-   CircularBuffer<MidiMessage>& temp = *midiBuffer[getPort()];
+   CircularBuffer<MidiEvent>& temp = *midiBuffer[getPort()];
    return temp[index];
 }
 
@@ -646,7 +647,7 @@ void MidiInPort_osx::initialize(void) {
    if (midiBuffer != NULL) {
       delete [] midiBuffer;
    }
-   midiBuffer = new CircularBuffer<MidiMessage>*[numDevices];
+   midiBuffer = new CircularBuffer<MidiEvent>*[numDevices];
 
    // allocate space for Midi input sysex buffer write indices
    if (sysexWriteBuffer != NULL) {
@@ -666,7 +667,7 @@ void MidiInPort_osx::initialize(void) {
       portObjectCount[i] = 0;
       trace[i] = 0;
       pauseQ[i] = 0;
-      midiBuffer[i] = new CircularBuffer<MidiMessage>;
+      midiBuffer[i] = new CircularBuffer<MidiEvent>;
       midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
       sysexWriteBuffer[i] = 0;
@@ -773,7 +774,7 @@ void improvReadProc(const MIDIPacketList *packetList, void* readProcRefCon,
    } else {
       return;
    }
-   MidiMessage message;
+   MidiEvent message;
    message.time = MidiInPort_osx::midiTimer.getTime() - zeroSigTime;
    message.data = 0;
 

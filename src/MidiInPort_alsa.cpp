@@ -41,7 +41,7 @@
 int       MidiInPort_alsa::numDevices                     = 0;
 int       MidiInPort_alsa::objectCount                    = 0;
 int*      MidiInPort_alsa::portObjectCount                = NULL;
-CircularBuffer<MidiMessage>** MidiInPort_alsa::midiBuffer = NULL;
+CircularBuffer<MidiEvent>** MidiInPort_alsa::midiBuffer = NULL;
 int       MidiInPort_alsa::channelOffset                  = 0;
 SigTimer  MidiInPort_alsa::midiTimer;
 int*      MidiInPort_alsa::pauseQ                         = NULL;
@@ -169,13 +169,14 @@ void MidiInPort_alsa::closeAll(void) {
 //	received since that last extracted message.
 //
 
-MidiMessage MidiInPort_alsa::extract(void) {
+void MidiInPort_alsa::extract(MidiEvent& event) {
    if (getPort() == -1) {
-      MidiMessage temp;
-      return temp;
+      MidiEvent temp;
+      event = temp;
+      return;
    }
 
-   return midiBuffer[getPort()]->extract();
+   midiBuffer[getPort()]->extract(event);
 }
 
 
@@ -335,7 +336,7 @@ int MidiInPort_alsa::getTrace(void) {
 // MidiInPort_alsa::insert
 //
 
-void MidiInPort_alsa::insert(const MidiMessage& aMessage) {
+void MidiInPort_alsa::insert(const MidiEvent& aMessage) {
    if (getPort() == -1)   return;
 
    midiBuffer[getPort()]->insert(aMessage);
@@ -395,13 +396,13 @@ int MidiInPort_alsa::installSysexPrivate(int port, uchar* anArray, int aSize) {
 //     without extracting it from the input buffer.
 //
 
-MidiMessage& MidiInPort_alsa::message(int index) {
+MidiEvent& MidiInPort_alsa::message(int index) {
    if (getPort() == -1) {
-      static MidiMessage x;
+      static MidiEvent x;
       return x;
    }
 
-   CircularBuffer<MidiMessage>& temp = *midiBuffer[getPort()];
+   CircularBuffer<MidiEvent>& temp = *midiBuffer[getPort()];
    return temp[index];
 }
 
@@ -640,7 +641,7 @@ void MidiInPort_alsa::initialize(void) {
       if (midiBuffer != NULL) {
          delete [] midiBuffer;
       }
-      midiBuffer = new CircularBuffer<MidiMessage>*[numDevices];
+      midiBuffer = new CircularBuffer<MidiEvent>*[numDevices];
 
       // allocate space for Midi input sysex buffer write indices
       if (sysexWriteBuffer != NULL) {
@@ -663,7 +664,7 @@ void MidiInPort_alsa::initialize(void) {
          portObjectCount[i] = 0;
          trace[i] = 0;
          pauseQ[i] = 0;
-         midiBuffer[i] = new CircularBuffer<MidiMessage>;
+         midiBuffer[i] = new CircularBuffer<MidiEvent>;
          midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
          sysexWriteBuffer[i] = 0;
@@ -704,7 +705,7 @@ void MidiInPort_alsa::initialize(void) {
 //     System Exclusive messages are stored in a separate buffer from
 //     Other Midi messages since they can be variable in length.  If
 //     The Midi Input returns a message with command byte 0xf0, then
-//     the p1() byte indicates the system exclusive buffer number that is
+//     the getP1() byte indicates the system exclusive buffer number that is
 //     holding the system exclusive data for that Midi message.  There
 //     are 128 system exclusive buffers that are numbered between
 //     0 and 127.  These buffers are filled in a cycle.
@@ -741,9 +742,9 @@ void MidiInPort_alsa::initialize(void) {
 //     This function assumes that System Exclusive messages cannot be sent 
 //     as a running status messages.
 //
-// Note about MidiMessage time stamps:
-//     The MidiMessage::time field is a recording of the time that the 
-//     first byte of the MidiMessage arrived.  If the message is from
+// Note about MidiEvent time stamps:
+//     The MidiEvent::tick field is a recording of the time that the 
+//     first byte of the MidiEvent arrived.  If the message is from
 //     running status mode, then the time that the first parameter byte
 //     arrived is stored.   System exclusive message arrival times are
 //     recoreded at the time of the last byte (0xf7) arriving.  This is
@@ -766,7 +767,7 @@ void *interpretMidiInputStreamPrivateALSA(void * arg) {
    int* argsExpected = NULL;     // MIDI parameter bytes expected to follow
    int* argsLeft     = NULL;     // MIDI parameter bytes left to wait for
    uchar packet[1];              // bytes for sequencer driver
-   MidiMessage* message = NULL;  // holder for current MIDI message
+   MidiEvent* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
    // int lastSigTime = -1;         // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
@@ -782,7 +783,7 @@ void *interpretMidiInputStreamPrivateALSA(void * arg) {
 
    // allocate space for MIDI messages, each device has a different message
    // holding spot in case the messages overlap in the input stream
-   message      = new MidiMessage[MidiInPort_alsa::numDevices];
+   message      = new MidiEvent[MidiInPort_alsa::numDevices];
    argsExpected = new int[MidiInPort_alsa::numDevices];
    argsLeft     = new int[MidiInPort_alsa::numDevices];
 
@@ -911,23 +912,23 @@ top_of_loop:
          }
 
          newSigTime = MidiInPort_alsa::midiTimer.getTime();
-         message[device].time = newSigTime - zeroSigTime;
+         message[device].tick = newSigTime - zeroSigTime;
 
          if (packet[0] != 0xf7) {
-            message[device].p0() = packet[0];
+            message[device].setP0(packet[0]);
          } 
-         message[device].p1() = 0;
-         message[device].p2() = 0;
-         message[device].p3() = 0;
+         message[device].setP1(0);
+         message[device].setP2(0);
+         message[device].setP3(0);
 
          if (packet[0] == 0xf7) {
             goto sysex_done;
          }
       } else if (argsLeft[device]) {   // not a command byte coming in
-         if (message[device].time == 0) {
+         if (message[device].tick == 0) {
             // store the receipt time of the first message byte
             newSigTime = MidiInPort_alsa::midiTimer.getTime();
-            message[device].time = newSigTime - zeroSigTime;
+            message[device].tick = newSigTime - zeroSigTime;
          }
             
          if (argsExpected[device] < 0) {
@@ -936,9 +937,9 @@ top_of_loop:
          } else {
             // handle a message other than a sysex message
             if (argsLeft[device] == argsExpected[device]) {
-               message[device].p1() = packet[0];
+               message[device].setP1(packet[0]);
             } else {
-               message[device].p2() = packet[0];
+               message[device].setP2(packet[0]);
             }
             argsLeft[device]--;
          }
@@ -949,7 +950,7 @@ top_of_loop:
          if (argsExpected[device] >= 0 && !argsLeft[device]) {
 
             // store parameter data for running status
-            switch (message[device].p0() & 0xf0) {
+            switch (message[device].getP0() & 0xf0) {
                case 0xc0:      argsLeft[device] = 1;      break;
                case 0xd0:      argsLeft[device] = 1;      break;  // fix by dan
                default:        argsLeft[device] = 2;      break;
@@ -980,8 +981,8 @@ top_of_loop:
                         sysexIn[device].getBase(),
                         sysexIn[device].getSize());
 
-                  message[device].p0() = 0xf0;
-                  message[device].p1() = sysexlocation;
+                  message[device].setP0(0xf0);
+                  message[device].setP1(sysexlocation);
 
                   sysexIn[device].setSize(0); // empty the sysex storage
                   argsExpected[device] = 0;   // no run status for sysex
@@ -993,17 +994,17 @@ top_of_loop:
 //                      MidiInPort_alsa::callbackFunction(device);
 //                   }
                if (MidiInPort_alsa::trace[device]) {
-                  cout << '[' << hex << (int)message[device].p0()
-                       << ':' << dec << (int)message[device].p1()
-                       << ',' << (int)message[device].p2() << ']'
+                  cout << '[' << hex << (int)message[device].getP0()
+                       << ':' << dec << (int)message[device].getP1()
+                       << ',' << (int)message[device].getP2() << ']'
                        << flush;
                }
-               message[device].time = 0;
+               message[device].tick = 0;
             } else {
                if (MidiInPort_alsa::trace[device]) {
-                  cout << '[' << hex << (int)message[device].p0()
-                       << 'P' << dec << (int)message[device].p1()
-                       << ',' << (int)message[device].p2() << ']'
+                  cout << '[' << hex << (int)message[device].getP0()
+                       << 'P' << dec << (int)message[device].getP1()
+                       << ',' << (int)message[device].getP2() << ']'
                        << flush;
                }
             }

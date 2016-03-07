@@ -39,7 +39,7 @@ int velcorrection = 0;              // golbal velocity control of trills
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
 void createTrill(int key1, int key2, int velocity, int channel, int duration);
-void processNote(MidiMessage message);
+void processNote(MidiEvent message);
 
 
 
@@ -158,13 +158,13 @@ void mainloopalgorithms(void) {
 // processNote -- 
 //
 
-void processNote(MidiMessage message) {
-   int key = message.p1();
-   int velocity = message.p2();
-   int channel = message.p0() & 0x0f;
+void processNote(MidiEvent message) {
+   int key = message.getP1();
+   int velocity = message.getP2();
+   int channel = message.getP0() & 0x0f;
 
    int status = 1;
-   if (message.p0() - channel == 0x80 || velocity == 0) {
+   if (message.getP0() - channel == 0x80 || velocity == 0) {
       status = 0;
    }
 
@@ -214,7 +214,7 @@ void processNote(MidiMessage message) {
 
    noteontimes[key] = t_time;
 
-   notetimes.insert(message.time);
+   notetimes.insert(message.tick);
    notes.insert(key);
 
    if (notes[1] == 0) {
@@ -301,7 +301,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiMessage message;
+   static MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {
@@ -338,10 +338,10 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    }
 
    // put note-off message in synth's input buffer:
-   message.time = t_time;
-   message.p0() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = 0;
+   message.tick = t_time;
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(0);
    synth.insert(message);
 
    // turn off the last note:
@@ -356,9 +356,9 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    voice.play();
 
    // insert the played note into synth's input MIDI buffer:
-   message.command() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = voice.getVel();
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(voice.getVel());
    synth.insert(message);
 
 }

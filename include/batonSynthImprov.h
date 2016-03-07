@@ -1121,7 +1121,7 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiMessage noteMessage;
+   static MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 

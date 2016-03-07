@@ -17,14 +17,14 @@
 
 /*--------------------- maintenance algorithms --------------------------*/
 
-CircularBuffer<MidiMessage> memory;
+CircularBuffer<MidiEvent> memory;
 int mintime = 0;  // minimum time for squelch to occur
 int maxtime = 0;  // maximum time for squelch to occur
 int sstate = 1;    // toggle for squelching
 int veladd = 25;   // add extra velocity to match input note
 
-int checkForSquelch(MidiMessage& message, 
-      CircularBuffer<MidiMessage>& memory, int mintime, 
+int checkForSquelch(MidiEvent& message, 
+      CircularBuffer<MidiEvent>& memory, int mintime, 
       int maxtime, int curtime);
 
 
@@ -79,7 +79,7 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiMessage message;
+MidiEvent message;
 int oldnote = 0;
 int outvel;
 void mainloopalgorithms(void) { 
@@ -87,23 +87,23 @@ void mainloopalgorithms(void) {
       message = synth.extractNote();
       oldnote = checkForSquelch(message, memory, mintime, maxtime, t_time);
       if (!oldnote || sstate == 0) {
-         cout << "New note from performer: " << message << endl;
-         if (message.is_note_on()) {
-            message.p1() += 7;
-            outvel = message.p2() + veladd;
+         if (message.isNoteOn()) {
+            cout << "New note from performer: " << message.getP1() << endl;
+            message.setP1(message.getP1() + 7);
+            outvel = message.getP2() + veladd;
             if (outvel > 127) { outvel = 127; }
-            synth.send(message.p0(), message.p1(), outvel);
-            message.time = t_time;
-            message.p2() = outvel;
+            synth.send(message.getP0(), message.getP1(), outvel);
+            message.tick = t_time;
+            message.setP2(outvel);
             memory.insert(message);
-         } else if (message.is_note_off()) {
-            message.p1() += 7;
-            synth.send(message.p0(), message.p1(), message.p2());
-            message.time = t_time;
+         } else if (message.isNoteOff()) {
+            message.setP1(message.getP1() + 7);
+            synth.send(message.getP0(), message.getP1(), message.getP2());
+            message.tick = t_time;
             memory.insert(message);
          }
       } else {
-         cout << "Feedback note from piano: " << message << endl;
+         cout << "Feedback note from piano: " << message.getP2() << endl;
       }
    }
 
@@ -111,7 +111,7 @@ void mainloopalgorithms(void) {
 
 
 
-int checkForSquelch(MidiMessage& message, CircularBuffer<MidiMessage>& memory, 
+int checkForSquelch(MidiEvent& message, CircularBuffer<MidiEvent>& memory, 
       int mintime, int maxtime, int curtime) {
    int i;
    if (memory.getSize() == 0) {
@@ -119,13 +119,13 @@ int checkForSquelch(MidiMessage& message, CircularBuffer<MidiMessage>& memory,
    }
 
    for (i=0; i<memory.getSize(); i++) {
-      if ((curtime - (int)memory[i].time) < mintime) {
+      if ((curtime - (int)memory[i].tick) < mintime) {
          continue;
       }
-      if ((curtime - (int)memory[i].time) > maxtime) {
+      if ((curtime - (int)memory[i].tick) > maxtime) {
          break;
       }
-      if ((memory[i].p0() == message.p0()) && (memory[i].p1() == message.p1())) {
+      if ((memory[i].getP0() == message.getP0()) && (memory[i].getP1() == message.getP1())) {
          return 1;
       }
    }

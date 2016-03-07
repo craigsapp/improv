@@ -28,19 +28,19 @@ class Synthesizer : public MidiIO {
 
       int          controller               (int controlNumber, int channel = 0, 
                                                int index = 0);
-      MidiMessage  extractNote              (void);
+      MidiEvent    extractNote              (void);
       int          getNoteCount             (void) const;        
-      MidiMessage& operator[]               (int index);
+      MidiEvent&   operator[]               (int index);
       void         processIncomingMessages  (void);
       void         zeroControllers          (void);
 
    protected:
 
       // state variables
-      CircularBuffer<MidiMessage> note;
+      CircularBuffer<MidiEvent> note;
       CircularBuffer<uchar> Controller[16][128];   // [channel][controller]
    
-      void        interpretMessage          (MidiMessage aMessage);
+      void        interpretMessage          (MidiEvent& aMessage);
 
 };
 

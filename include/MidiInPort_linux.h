@@ -27,7 +27,7 @@
 #include "MidiInPort_oss.h"
 #include "MidiInPort_alsa.h"
 #include "MidiInPort_unsupported.h"
-#include "MidiMessage.h"
+#include "MidiEvent.h"
 
 
 class MidiInPort_linux {
@@ -40,7 +40,7 @@ class MidiInPort_linux {
       void         clearSysex               (int buffer);
       void         close                    (void);
       void         closeAll                 (void);
-      MidiMessage  extract                  (void);
+      MidiEvent    extract                  (void);
       int          getBufferSize            (void);
       int          getChannelOffset         (void) const;
       int          getCount                 (void);
@@ -52,11 +52,11 @@ class MidiInPort_linux {
       uchar*       getSysex                 (int buffer);
       int          getSysexSize             (int buffer);
       int          getTrace                 (void);
-      void         insert                   (const MidiMessage& aMessage);
+      void         insert                   (const MidiEvent& aMessage);
       int          installSysex             (uchar* anArray, int aSize);
-      MidiMessage& message                  (int index);
+      MidiEvent&   message                  (int index);
       int          open                     (void);
-      MidiMessage& operator[]               (int index);
+      MidiEvent&   operator[]               (int index);
       void         pause                    (void);
       void         setBufferSize            (int aSize);
       void         setChannelOffset         (int anOffset);

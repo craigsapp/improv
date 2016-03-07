@@ -5,3 +5,5 @@ bin/
 obj/
 lib/
 err
+external/midifile
+external/midifile.zip

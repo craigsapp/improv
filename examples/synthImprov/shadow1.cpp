@@ -15,7 +15,7 @@
 
 int shadowDistance = 12;     // number of half-steps to place shadow at
 int shadowSide     = 1;      // 1 = higher, -1 = lower
-MidiMessage noteMessage;     // for reading keyno and velocity (and time)
+MidiEvent noteMessage;     // for reading keyno and velocity (and time)
 int shadowNote = 0;          // note to play as a shadow
 
 /*--------------------- maintenance algorithms --------------------------*/
@@ -51,11 +51,11 @@ void finishup(void) { }
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       noteMessage = synth.extractNote();
-      if (noteMessage.p2() != 0) {              // ignore note off commands
+      if (noteMessage.getP2() != 0) {              // ignore note off commands
          synth.play(0, shadowNote, 0);          // turn off last note
-         shadowNote = noteMessage.p1() + shadowSide * shadowDistance;
+         shadowNote = noteMessage.getP1() + shadowSide * shadowDistance;
          if (shadowNote > 0 && shadowNote < 128) {
-            synth.play(0, shadowNote, noteMessage.p2());
+            synth.play(0, shadowNote, noteMessage.getP2());
          } else {
             shadowNote = 0;
          }

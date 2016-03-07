@@ -17,11 +17,11 @@
 
 #if defined(OSXPC) || defined(OSXOLD)
 
-#include "MidiMessage.h"
 #include "CircularBuffer.h"
 #include "Array.h"
 #include "SigTimer.h"
 #include <CoreMIDI/CoreMIDI.h>
+#include "MidiEvent.h"
 
 typedef unsigned char uchar;
 typedef void (*MIDI_Callback_function)(int arrivalPort);
@@ -38,7 +38,7 @@ class MidiInPort_osx {
       void            close                      (void);
       void            close                      (int i) { close(); }
       void            closeAll                   (void);
-      MidiMessage     extract                    (void);
+      MidiEvent       extract                    (void);
       int             getBufferSize              (void);
       int             getChannelOffset           (void) const;
       int             getCount                   (void);
@@ -50,9 +50,9 @@ class MidiInPort_osx {
       uchar*          getSysex                   (int buffer);
       int             getSysexSize               (int buffer);
       int             getTrace                   (void);
-      void            insert                     (const MidiMessage& aMessage);
+      void            insert                     (const MidiEvent& aMessage);
       int             installSysex               (uchar* anArray, int aSize);
-      MidiMessage&    message                    (int index);
+      MidiEvent&      message                    (int index);
       int             open                       (void);
       void            pause                      (void);
       void            setBufferSize              (int aSize);
@@ -75,7 +75,7 @@ class MidiInPort_osx {
       static int*       trace;           // for verifying input
       static ostream*   tracedisplay;    // stream for displaying trace
       static int        numDevices;      // number of input ports
-      static CircularBuffer<MidiMessage>** midiBuffer; // MIDI storage frm ports
+      static CircularBuffer<MidiEvent>** midiBuffer; // MIDI storage frm ports
       static int        channelOffset;   // channel offset, either 0 or 1
                                          // not being used right now.
       static int*       pauseQ;          // for adding items to Buffer or not

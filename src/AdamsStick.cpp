@@ -252,8 +252,10 @@ void AdamsStick::poll(void) {
 //
 
 void AdamsStick::processIncomingMessages(void) { 
+   MidiEvent event;
    while (MidiInput::getCount() > 0) {
-      interpretCommand(MidiInput::extract());
+      MidiInput::extract(event);
+      interpretCommand(event);
    }
 }
 
@@ -511,16 +513,16 @@ int AdamsStick::s3fc(int min, int max) {
 
 #define POSITION_THRESHOLD 2000
 
-void AdamsStick::interpretCommand(MidiMessage aMessage) { 
-   switch (aMessage.command()) {
+void AdamsStick::interpretCommand(MidiEvent& aMessage) { 
+   switch (aMessage.getCommandByte()) {
       case 0x90:
-         t1s = aMessage.time;
+         t1s = aMessage.tick;
          t1sb.insert(t1s);
-         s1p = convertTo14bits(aMessage.p1(), aMessage.p2());
+         s1p = convertTo14bits(aMessage.getP1(), aMessage.getP2());
          s1pb.insert(s1p);
          break;
       case 0x91:
-         s1f = convertTo14bits(aMessage.p1(), aMessage.p2());
+         s1f = convertTo14bits(aMessage.getP1(), aMessage.getP2());
          s1fb.insert(s1f);
          if (s1f > POSITION_THRESHOLD) {
             loc1 = s1p;
@@ -528,13 +530,13 @@ void AdamsStick::interpretCommand(MidiMessage aMessage) {
          }
          break;
       case 0x92:
-         t2s = aMessage.time;
+         t2s = aMessage.tick;
          t2sb.insert(t2s);
-         s2p = convertTo14bits(aMessage.p1(), aMessage.p2());
+         s2p = convertTo14bits(aMessage.getP1(), aMessage.getP2());
          s2pb.insert(s2p);
          break;
       case 0x93:
-         s2f = convertTo14bits(aMessage.p1(), aMessage.p2());
+         s2f = convertTo14bits(aMessage.getP1(), aMessage.getP2());
          s2fb.insert(s2f);
          if (s2f > POSITION_THRESHOLD) {
             loc2 = s2p;
@@ -542,13 +544,13 @@ void AdamsStick::interpretCommand(MidiMessage aMessage) {
          }
          break;
       case 0x94:
-         t3s = aMessage.time;
+         t3s = aMessage.tick;
          t3sb.insert(t3s);
-         s3p = convertTo14bits(aMessage.p1(), aMessage.p2());
+         s3p = convertTo14bits(aMessage.getP1(), aMessage.getP2());
          s3pb.insert(s3p);
          break;
       case 0x95:
-         s3f = convertTo14bits(aMessage.p1(), aMessage.p2());
+         s3f = convertTo14bits(aMessage.getP1(), aMessage.getP2());
          s3fb.insert(s3f);
          if (s3f > POSITION_THRESHOLD) {
             loc3 = s3p;
@@ -560,7 +562,7 @@ void AdamsStick::interpretCommand(MidiMessage aMessage) {
       case 0xf0:
          {
          // sample sysex message for version number: "0xf0 16 0 103 0xf7"
-         int bufferNumber = aMessage.p1();
+         int bufferNumber = aMessage.getP1();
          int size = getSysexSize(bufferNumber);
          unsigned char *data = getSysex(bufferNumber);
          if (size != 5) return;
@@ -571,7 +573,8 @@ void AdamsStick::interpretCommand(MidiMessage aMessage) {
          }
          break;
       default:
-         cout << "Unknown stick command: " << aMessage << endl;
+         cout << "Unknown stick command: " << endl;
+			// << aMessage << endl;
    }
 }
 

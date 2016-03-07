@@ -19,9 +19,9 @@
 #ifndef _MIDIINPUT_UNSUPPORTED_H_INCLUDED
 #define _MIDIINPUT_UNSUPPORTED_H_INCLUDED
 
-#include "MidiMessage.h"
 #include "CircularBuffer.h"
 #include "Array.h"
+#include "MidiEvent.h"
 
 
 class MidiInPort_unsupported {
@@ -39,7 +39,7 @@ class MidiInPort_unsupported {
       void            close                      (void);
       void            close                      (int i) { close(); }
       void            closeAll                   (void);
-      MidiMessage     extract                    (void);
+      void            extract                    (MidiEvent& event);
       int             getChannelOffset           (void) const;
       int             getCount                   (void);
       const char*     getName                    (void);
@@ -48,8 +48,8 @@ class MidiInPort_unsupported {
       int             getPort                    (void);
       int             getPortStatus              (void);
       int             getTrace                   (void);
-      void            insert                     (const MidiMessage& aMessage);
-      MidiMessage&    message                    (int index);
+      void            insert                     (const MidiEvent& aMessage);
+      MidiEvent&      message                    (int index);
       int             open                       (void);
       void            pause                      (void);
       void            setBufferSize              (int aSize);
@@ -67,7 +67,7 @@ class MidiInPort_unsupported {
       static int*       portObjectCount; // objects connected to particular port
       static int*       openQ;           // for open/close status of port
       static int        numDevices;      // number of input ports
-      static CircularBuffer<MidiMessage>* midiBuffer; // MIDI storage from ports
+      static CircularBuffer<MidiEvent>* midiBuffer; // MIDI storage from ports
       static int        channelOffset;     // channel offset, either 0 or 1
                                            // not being used right now.
       static int*       sysexWriteBuffer;  // for MIDI sysex write location

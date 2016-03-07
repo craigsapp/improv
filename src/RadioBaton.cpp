@@ -279,8 +279,10 @@ int RadioBaton::positionReportingOn(void) {
 // 
 
 void RadioBaton::processIncomingMessages(void) {
+   MidiEvent event;
    while (MidiInput::getCount() > 0) {
-      interpretCommand(MidiInput::extract());
+      MidiInput::extract(event);
+      interpretCommand(event);
    }
 }
 
@@ -659,110 +661,112 @@ int RadioBaton::d4pc(int min, int max) {
 //     will know what to do with that MIDI input message.
 //
 
-void RadioBaton::interpretCommand(MidiMessage aMessage) {
+void RadioBaton::interpretCommand(MidiEvent& aMessage) {
    ushort value;  // for the buff value receive commands
+   uchar  val;
 
-   if (aMessage.command() == BAT_MIDI_COMMAND) {
-      switch (aMessage.p1()) {
+   if (aMessage.getCommandByte() == BAT_MIDI_COMMAND) {
+      switch (aMessage.getP1()) {
          case BAT_STICK1_RESPONSE_X:         // stick 1 responding to poll; x
-            s1ps(aMessage.time);
-            s1pd(DATA_X, aMessage.p2());
+            s1ps(aMessage.tick);
+            s1pd(DATA_X, aMessage.getP2());
             break;
          case BAT_STICK1_RESPONSE_Y:         // stick 1 responding to poll; y
-            s1pd(DATA_Y, aMessage.p2());
+            s1pd(DATA_Y, aMessage.getP2());
             break;
          case BAT_STICK1_RESPONSE_Z:         // stick 1 responding to poll; z
-            s1pd(DATA_Z, aMessage.p2());
+            s1pd(DATA_Z, aMessage.getP2());
             break;
          case BAT_STICK2_RESPONSE_X:         // stick 2 responding to poll; x
-            s2ps(aMessage.time);
-            s2pd(DATA_X, aMessage.p2());
+            s2ps(aMessage.tick);
+            s2pd(DATA_X, aMessage.getP2());
             break;
          case BAT_STICK2_RESPONSE_Y:         // stick 2 responding to poll; y
-            s2pd(DATA_Y, aMessage.p2());
+            s2pd(DATA_Y, aMessage.getP2());
             break;
          case BAT_STICK2_RESPONSE_Z:         // stick 2 responding to poll; z
-            s2pd(DATA_Z, aMessage.p2());
+            s2pd(DATA_Z, aMessage.getP2());
             break;
          case BAT_POT1_RESPONSE:             // pot 1 responding to poll
-            d1p = aMessage.p2();             // update global state variable
+            d1p = aMessage.getP2();             // update global state variable
             dial1position();
-            recordState(aMessage.time, DIAL1RECORD, d1p);
-            d1pb.insert(aMessage.p2());
+            recordState(aMessage.tick, DIAL1RECORD, d1p);
+            val = (unsigned char)aMessage.getP2();
+            d1pb.insert(val);
             break;
          case BAT_POT2_RESPONSE:             // pot 2 responding to poll
-            d2p = aMessage.p2();             // update global state variable
+            d2p = (unsigned char)aMessage.getP2();       // update global state variable
             dial2position();
-            recordState(aMessage.time, DIAL2RECORD, d2p);
-            d2pb.insert(aMessage.p2());
+            recordState(aMessage.tick, DIAL2RECORD, d2p);
+            d2pb.insert(d2p);
             break;
          case BAT_POT3_RESPONSE:             // pot 3 responding to poll
-            d3p = aMessage.p2();             // update global state variable
+            d3p = aMessage.getP2();             // update global state variable
             dial3position();
-            recordState(aMessage.time, DIAL3RECORD, d3p);
-            d3pb.insert(aMessage.p2());
+            recordState(aMessage.tick, DIAL3RECORD, d3p);
+            d3pb.insert(d3p);
             break;
          case BAT_POT4_RESPONSE:             // pot 4 responding to poll
-            d4p = aMessage.p2();             // update global state variable
+            d4p = (unsigned char)aMessage.getP2();             // update global state variable
             dial4position();
-            recordState(aMessage.time, DIAL4RECORD, d4p);
-            d4pb.insert(aMessage.p2());
+            recordState(aMessage.tick, DIAL4RECORD, d4p);
+            d4pb.insert(d4p);
             break;
          case BAT_STICK1_TRIGGER:            // stick 1 got triggered
-            s1ts(aMessage.time);
-            s1td(DATA_W, aMessage.p2());
+            s1ts(aMessage.tick);
+            s1td(DATA_W, aMessage.getP2());
             break;
          case BAT_STICK1_TRIG_X:             // stick 1 got triggered
-            s1td(DATA_X, aMessage.p2());
+            s1td(DATA_X, aMessage.getP2());
             break;
          case BAT_STICK1_TRIG_Y:             // stick 1 got triggered
-            s1td(DATA_Y, aMessage.p2());
+            s1td(DATA_Y, aMessage.getP2());
             break;
          case BAT_STICK2_TRIGGER:            // stick 2 got triggered
-            s2ts(aMessage.time);
-            s2td(DATA_W, aMessage.p2());
+            s2ts(aMessage.tick);
+            s2td(DATA_W, aMessage.getP2());
             break;
          case BAT_STICK2_TRIG_X:             // stick 2 got triggered
-            s2td(DATA_X, aMessage.p2());
+            s2td(DATA_X, aMessage.getP2());
             break;
          case BAT_STICK2_TRIG_Y:             // stick 2 got triggered
-            s2td(DATA_Y, aMessage.p2());
+            s2td(DATA_Y, aMessage.getP2());
             break;
 
          case BAT_BUTTON_FOOT_TRIGGER:       // button or pedal was triggered
-            switch (aMessage.p2()) {
+            switch (aMessage.getP2()) {
                case BAT_B14p_TRIGGER:        // B14+ button pressed
-                  b14pt = aMessage.time;
+                  b14pt = aMessage.tick;
                   b14ptb.insert(b14pt);
-                  recordState(aMessage.time, BUTTON1RECORD);
+                  recordState(aMessage.tick, BUTTON1RECORD);
                   b14plustrig();
                   break;
                case BAT_B15p_TRIGGER:        // B15+ button pressed
-                  b15pt = aMessage.time;
-                  recordState(aMessage.time, BUTTON2RECORD);
+                  b15pt = aMessage.tick;
+                  recordState(aMessage.tick, BUTTON2RECORD);
                   b15plustrig();
                   b15ptb.insert(b15pt);
                   break;
                case BAT_B14m_DOWN_TRIGGER:   // B14- pedal was depressed
-                  b14mdt = aMessage.time;
+                  b14mdt = aMessage.tick;
                   b14mdtb.insert(b14mdt);
                   recordState(b14mdt, FOOTPEDAL1RECORD, 1);
                   b14minusdowntrig();
                   break;
                case BAT_B14m_UP_TRIGGER:     // B14- pedal was released
-                  b14mut = aMessage.time;
+                  b14mut = aMessage.tick;
                   b14mutb.insert(b14mut);
                   recordState(b14mut, FOOTPEDAL1RECORD, 0);
                   b14minusuptrig();
                   break;
                case BAT_B15m_DOWN_TRIGGER:   // B15- pedal was depressed
-                  b15mdt = aMessage.time;
+                  b15mdt = aMessage.tick;
                   b15mdtb.insert(b15mdt);
                   recordState(b15mut, FOOTPEDAL2RECORD, 1);
                   b15minusdowntrig();
                   break;
                case BAT_B15m_UP_TRIGGER:     // B15- pedal was released
-                  b15mut = aMessage.time;
+                  b15mut = aMessage.tick;
                   b15mutb.insert(b15mut);
                   recordState(b15mut, FOOTPEDAL2RECORD, 0);
                   b15minusuptrig();
@@ -776,56 +780,56 @@ void RadioBaton::interpretCommand(MidiMessage aMessage) {
          default:
             if (errorQ) {
                cerr << "Baton command not recognized: 0x" << hex
-                    << (int)aMessage.command() << dec
-                    << ", param1 = " << (int)aMessage.p1()
-                    << ", param2 = " << (int)aMessage.p2()
+                    << (int)aMessage.getCommandByte() << dec
+                    << ", param1 = " << (int)aMessage.getP1()
+                    << ", param2 = " << (int)aMessage.getP2()
                     << endl;
             }
-      }  // end of switch (aMessage.command())
+      }  // end of switch (aMessage.getCommandByte())
 
    }  // end of if a baton command (0xa0)
 
-   else if (aMessage.command() == 0xa1) {
+   else if (aMessage.getCommandByte() == 0xa1) {
       // do nothing: old calibration message
-   } else if (aMessage.command() == 0xa2) {
+   } else if (aMessage.getCommandByte() == 0xa2) {
       // do nothing: old calibration message
-   } else if (aMessage.command() == 0xa3) {
+   } else if (aMessage.getCommandByte() == 0xa3) {
       // do nothing: old calibration message
-   } else if (aMessage.command() == 0xa4) {
+   } else if (aMessage.getCommandByte() == 0xa4) {
       // do nothing: old calibration message
    }
 
    // take care of buf data
-   else if (aMessage.command() == 0xa5) {
+   else if (aMessage.getCommandByte() == 0xa5) {
       // if p1 is not in the range from 0 to 15 then ignore the error:
-      if (aMessage.p1() > 15) return;
-      completeBufQ[aMessage.p1()] = 0;
-      value = (ushort)(aMessage.p2() & 0x000f);
-      buf[aMessage.p1()] &= 0x0fff;
-      buf[aMessage.p1()] |= (value << 12);
-   } else if (aMessage.command() == 0xa6) {
+      if (aMessage.getP1() > 15) return;
+      completeBufQ[aMessage.getP1()] = 0;
+      value = (ushort)(aMessage.getP2() & 0x000f);
+      buf[aMessage.getP1()] &= 0x0fff;
+      buf[aMessage.getP1()] |= (value << 12);
+   } else if (aMessage.getCommandByte() == 0xa6) {
       // if p1 is not in the range from 0 to 15 then ignore the error:
-      if (aMessage.p1() > 15) return;
-      value = (ushort)(aMessage.p2() & 0x000f);
-      buf[aMessage.p1()] &= 0xf0ff;
-      buf[aMessage.p1()] |= (value << 8);
-   } else if (aMessage.command() == 0xa7) {
+      if (aMessage.getP1() > 15) return;
+      value = (ushort)(aMessage.getP2() & 0x000f);
+      buf[aMessage.getP1()] &= 0xf0ff;
+      buf[aMessage.getP1()] |= (value << 8);
+   } else if (aMessage.getCommandByte() == 0xa7) {
       // if p1 is not in the range from 0 to 15 then ignore the error:
-      if (aMessage.p1() > 15) return;
-      value = (ushort)(aMessage.p2() & 0x000f);
-      buf[aMessage.p1()] &= 0xff0f;
-      buf[aMessage.p1()] |= (value << 4);
-   } else if (aMessage.command() == 0xa8) {
+      if (aMessage.getP1() > 15) return;
+      value = (ushort)(aMessage.getP2() & 0x000f);
+      buf[aMessage.getP1()] &= 0xff0f;
+      buf[aMessage.getP1()] |= (value << 4);
+   } else if (aMessage.getCommandByte() == 0xa8) {
       // if p1 is not in the range from 0 to 15 then ignore the error:
-      if (aMessage.p1() > 15) return;
-      value = (ushort)(aMessage.p2() & 0x000f);
-      buf[aMessage.p1()] &= 0xfff0;
-      buf[aMessage.p1()] |= value;
-      completeBufQ[aMessage.p1()] = 1;
+      if (aMessage.getP1() > 15) return;
+      value = (ushort)(aMessage.getP2() & 0x000f);
+      buf[aMessage.getP1()] &= 0xfff0;
+      buf[aMessage.getP1()] |= value;
+      completeBufQ[aMessage.getP1()] = 1;
 
       // record buffer element to file if recording
       // NOTE: have to figure out what to put in the time slots below; 0 for now.
-      switch (aMessage.p1()) {
+      switch (aMessage.getP1()) {
          case 0:   recordState(timer.getTime(), ANTENNA0RECORD, buf[0]);   break;
          case 1:   recordState(timer.getTime(), ANTENNA1RECORD, buf[1]);   break;
          case 2:   recordState(timer.getTime(), ANTENNA2RECORD, buf[2]);   break;
@@ -845,8 +849,8 @@ void RadioBaton::interpretCommand(MidiMessage aMessage) {
       }
    }
 
-   else if (aMessage.command() == 0xaa) {              // miditest
-      currentmidi = aMessage.p2();
+   else if (aMessage.getCommandByte() == 0xaa) {              // miditest
+      currentmidi = aMessage.getP2();
       if (currentmidi != 0) {
          if (currentmidi != lastmidi + 1) {
             midierrors++;
@@ -854,8 +858,8 @@ void RadioBaton::interpretCommand(MidiMessage aMessage) {
          lastmidi = currentmidi;
          miditests++;
       }
-   } else if (aMessage.command() == 0xab) {            // miditest
-      currentmidi = aMessage.p2();
+   } else if (aMessage.getCommandByte() == 0xab) {            // miditest
+      currentmidi = aMessage.getP2();
       if (currentmidi != 0) {
          if (currentmidi != lastmidi+1) { 
             midierrors++;
@@ -968,10 +972,10 @@ void RadioBaton::s1td(int flag, uchar aValue) {
          whack1y = 1;          // set the global state variable
          s1tf += 16;           // set flag bit 5 (or create an error)
          if (s1tf == 21) {     // if complete data then store trigger set
-            t1tb.insert((uchar)t1t);
-            w1tb.insert((uchar)w1t);
-            x1tb.insert((uchar)x1t);
-            y1tb.insert((uchar)y1t);
+            t1tb.insert(t1t);
+            w1tb.insert(w1t);
+            x1tb.insert(x1t);
+            y1tb.insert(y1t);
             stick1trig();               // call user-defined behavior function
             recordState(t1t, TRIGGER1RECORD, x1t, y1t, w1t);
          } else {
@@ -1032,9 +1036,9 @@ void RadioBaton::s2td(int flag, uchar aValue) {
          s2tf += 16;            // set flag bit 5 (or create an error)
          if (s2tf == 21) {      // if complete trigger, then store
             t2tb.insert(t2t); 
-            w2tb.insert((uchar)w2t);
-            x2tb.insert((uchar)x2t);
-            y2tb.insert((uchar)y2t);
+            w2tb.insert(w2t);
+            x2tb.insert(x2t);
+            y2tb.insert(y2t);
             stick2trig();               // call the user state function
             recordState(t2t, TRIGGER2RECORD, x2t, y2t, w2t);
          } else {
@@ -1094,9 +1098,9 @@ void RadioBaton::s1pd(int flag, uchar aValue) {
          }
          s1pf += 16;            // set bit 5 (or create an error)
          if (s1pf == 21) {      // if complete temp position set then store
-            x1pb.insert((uchar)x1p);
-            y1pb.insert((uchar)y1p);
-            z1pb.insert((uchar)z1p);
+            x1pb.insert(x1p);
+            y1pb.insert(y1p);
+            z1pb.insert(z1p);
             stick1position();
             recordState(t1p, POSITION1RECORD, x1p, y1p, z1p);
          } else {
@@ -1157,9 +1161,9 @@ void RadioBaton::s2pd(int flag, uchar aValue) {
          }
          s2pf += 16;            // set flag bit 5 (or create an error)
          if (s2pf == 21) {      // if complete temp position set then store
-            x2pb.insert((uchar)x2p);
-            y2pb.insert((uchar)y2p);
-            z2pb.insert((uchar)z2p);
+            x2pb.insert(x2p);
+            y2pb.insert(y2p);
+            z2pb.insert(z2p);
             stick2position();
             recordState(t2p, POSITION2RECORD, x2p, y2p, z2p);
          } else {

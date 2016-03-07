@@ -19,6 +19,7 @@
 #include "CircularBuffer.h"
 #include "SigTimer.h"
 #include "MidiOutput.h"
+#include "MidiStageEvent.h"
 
 #define TEMPO_METHOD_AUTOMATIC 0
 #define TEMPO_METHOD_CONSTANT  1

@@ -15,9 +15,9 @@
 #define _ADAMSSTICK_H_INCLUDED
 
 #include "MidiIO.h"              /* Inheritance of MIDI in/out class funcs */
-#include "MidiMessage.h"         /* for processing incoming MIDI messages  */
 #include "CircularBuffer.h"      /* for storage of state variables         */
 #include "SigTimer.h"            /* for the poll timer functions           */
+#include "MidiEvent.h"           /* for processing incoming MIDI messages  */
 
 #define STICK_POLL_MODE    0
 #define STICK_STREAM_MODE  1
@@ -159,7 +159,7 @@ class AdamsStick : public MidiIO {
       int         versionInfo;          // -1 = unknown version
       SigTimer    pollTimer;
 
-      void        interpretCommand      (MidiMessage aMessage);
+      void        interpretCommand      (MidiEvent& aMessage);
       void        sendVersionMessage    (void);
       void        sendStreamingMessage  (void);
       void        sendPollingMessage    (void);

@@ -2,6 +2,7 @@
 // Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: Tue Jan 22 22:09:46 PST 2002
 // Last Modified: Tue Jan 22 22:09:48 PST 2002
+// Last Modified: Mon Feb  9 21:26:32 PST 2015 Updated for C++11.
 // Filename:      ...sig/examples/all/midi2text.cpp
 // Web Address:   http://sig.sapp.org/examples/museinfo/midi/midi2text.cpp
 // Syntax:        C++; museinfo
@@ -11,13 +12,15 @@
 
 #include "MidiFile.h"
 #include "Options.h"
-
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 typedef unsigned char uchar;
-
 
 // user interface variables
 Options options;
@@ -36,7 +39,7 @@ void      usage                 (const char* command);
 
 int main(int argc, char* argv[]) {
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1).data());
+   MidiFile midifile(options.getArg(1));
    convertMidiFileToText(midifile);
    return 0;
 }
@@ -50,11 +53,11 @@ int main(int argc, char* argv[]) {
 //
 
 void convertMidiFileToText(MidiFile& midifile) {
-   midifile.absoluteTime();
+   midifile.absoluteTicks();
    midifile.joinTracks();
 
-   Array<double> ontimes(128);
-   Array<int> onvelocities(128);
+   vector<double> ontimes(128);
+   vector<int> onvelocities(128);
    int i;
    for (i=0; i<128; i++) {
       ontimes[i] = -1.0;
@@ -68,29 +71,29 @@ void convertMidiFileToText(MidiFile& midifile) {
    int command = 0;
 
    for (i=0; i<midifile.getNumEvents(0); i++) {
-      command = midifile.getEvent(0, i).data[0] & 0xf0;
-      if (command == 0x90 && midifile.getEvent(0, i).data[2] != 0) {
+      command = midifile[0][i][0] & 0xf0;
+      if (command == 0x90 && midifile[0][i][2] != 0) {
          // store note-on velocity and time
-         key = midifile.getEvent(0, i).data[1];
-         vel = midifile.getEvent(0, i).data[2];
-         ontimes[key] = midifile.getEvent(0, i).time * 60.0 / tempo / 
+         key = midifile[0][i][1];
+         vel = midifile[0][i][2];
+         ontimes[key] = midifile[0][i].tick * 60.0 / tempo /
                midifile.getTicksPerQuarterNote();
          onvelocities[key] = vel;
       } else if (command == 0x90 || command == 0x80) {
          // note off command write to output
-         key = midifile.getEvent(0, i).data[1];
-         offtime = midifile.getEvent(0, i).time * 60.0 /
+         key = midifile[0][i][1];
+         offtime = midifile[0][i].tick * 60.0 /
                midifile.getTicksPerQuarterNote() / tempo;
-         cout << "note\t" << ontimes[key] 
+         cout << "note\t" << ontimes[key]
               << "\t" << offtime - ontimes[key]
               << "\t" << key << "\t" << onvelocities[key] << endl;
          onvelocities[key] = -1;
          ontimes[key] = -1.0;
-      } 
+      }
 
       // check for tempo indication
-      if (midifile.getEvent(0, i).data[0] == 0xff &&
-                 midifile.getEvent(0, i).data[1] == 0x51) {
+      if (midifile[0][i][0] == 0xff &&
+                 midifile[0][i][1] == 0x51) {
          setTempo(midifile, i, tempo);
       }
    }
@@ -108,18 +111,18 @@ void setTempo(MidiFile& midifile, int index, double& tempo) {
    static int count = 0;
    count++;
 
-   MFEvent& mididata = midifile.getEvent(0, index);
+   MidiEvent& mididata = midifile[0][index];
 
    int microseconds = 0;
-   microseconds = microseconds | (mididata.data[3] << 16);
-   microseconds = microseconds | (mididata.data[4] << 8);
-   microseconds = microseconds | (mididata.data[5] << 0);
+   microseconds = microseconds | (mididata[3] << 16);
+   microseconds = microseconds | (mididata[4] << 8);
+   microseconds = microseconds | (mididata[5] << 0);
 
    newtempo = 60.0 / microseconds * 1000000.0;
    if (count <= 1) {
       tempo = newtempo;
    } else if (tempo != newtempo) {
-      cout << "; WARNING: change of tempo from " << tempo 
+      cout << "; WARNING: change of tempo from " << tempo
            << " to " << newtempo << " ignored" << endl;
    }
 }
@@ -128,20 +131,20 @@ void setTempo(MidiFile& midifile, int index, double& tempo) {
 
 //////////////////////////////
 //
-// checkOptions -- 
+// checkOptions --
 //
 
 void checkOptions(Options& opts, int argc, char* argv[]) {
-   opts.define("author=b",  "author of program"); 
+   opts.define("author=b",  "author of program");
    opts.define("version=b", "compilation info");
-   opts.define("example=b", "example usages");   
+   opts.define("example=b", "example usages");
    opts.define("h|help=b",  "short description");
 
    opts.define("debug=b",  "debug mode to find errors in input file");
    opts.define("max=i:100000", "maximum number of notes expected in input");
 
    opts.process(argc, argv);
-   
+
    // handle basic options:
    if (opts.getBoolean("author")) {
       cout << "Written by Craig Stuart Sapp, "
@@ -160,7 +163,7 @@ void checkOptions(Options& opts, int argc, char* argv[]) {
    }
 
    debugQ = opts.getBoolean("debug");
-   maxcount = opts.getInteger("max"); 
+   maxcount = opts.getInteger("max");
 
    if (opts.getArgCount() != 1) {
       usage(opts.getCommand().data());
@@ -193,4 +196,3 @@ void usage(const char* command) {
 
 
 
-// md5sum: 6228e3df0855cfa017d06dd9a0c498e4 midi2text.cpp [20110711]

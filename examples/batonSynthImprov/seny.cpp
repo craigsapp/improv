@@ -98,7 +98,7 @@ SigTimer controlDisplayTimer;    // time to check buffer for forgetting
 //
 
 Voice    computer;
-MidiMessage computerMessage;
+MidiEvent computerMessage;
 Voice    voice[MAXVOICES];
 int      voiceState[MAXVOICES] = {0};
 int      voiceOnTime[MAXVOICES] = {0};
@@ -177,10 +177,10 @@ void initialization(void) {
       voice[i].setChannel(0);
    }
    computer.setChannel(0);
-   computerMessage.time = t_time;
-   computerMessage.p0() = 0x90;
-   computerMessage.p1() = 0;
-   computerMessage.p2() = 0;
+   computerMessage.tick = t_time;
+   computerMessage.setP0(0x90);
+   computerMessage.setP1(0);
+   computerMessage.setP2(0);
 
    keys.setSize(1000);        // store keys for memory of previous notes
    keytimes.setSize(1000);    // note times for keys buffer
@@ -263,17 +263,17 @@ void keyboardchar(int key) {
       int mvel = (int)(drand48() * 40 + 40);
        
       //turn off old note from computer's point of view
-      computerMessage.time = t_time;
-      computerMessage.p2() = 0;
+      computerMessage.tick = t_time;
+      computerMessage.setP2(0);
       synth.insert(computerMessage);
 
       cout << "played note: " << mkey << " with velocity: " << mvel << endl;
       computer.play(mkey, mvel);
 
-      computerMessage.time = t_time;
-      computerMessage.p0() = 0x90;           // midi note-on command, channel 1
-      computerMessage.p1() = mkey;
-      computerMessage.p2() = mvel;
+      computerMessage.tick = t_time;
+      computerMessage.setP0(0x90);           // midi note-on command, channel 1
+      computerMessage.setP1(mkey);
+      computerMessage.setP2(mvel);
       synth.insert(computerMessage);
       cout << "played note: " << mkey << " with velocity: " << mvel << endl;
 
@@ -381,8 +381,8 @@ void keyboardchar(int key) {
 
       case '-':           // turn off computer keyboard note
          // turn off old note from computer's point of view
-         computerMessage.time = t_time;
-         computerMessage.p2() = 0;
+         computerMessage.tick = t_time;
+         computerMessage.setP2(0);
          synth.insert(computerMessage);
 
          // turn off old note from synthesizer's point of view
@@ -419,27 +419,29 @@ void b15minusdowntrig(void) { }
 //
 
 void checkBuffers(void) {
+   double dummy;
+   long ldummy;
 
    // look at the volume buffers for old volumes:
    while ( (voltimes.getCount() > 0) && (voltimes[voltimes.getCount()-1] <
          t_time - volDuration) ) {
-      volumes.extract();
-      voltimes.extract();
+      volumes.extract(dummy);
+      voltimes.extract(dummy);
    }
 
    // look at the duration buffers for old durations:
    while ( (durtimes.getCount() > 0) && (durtimes[durtimes.getCount()-1] <
          t_time - durDuration) ) {
-      durations.extract();
-      durtimes.extract();
+      durations.extract(ldummy);
+      durtimes.extract(ldummy);
    }
 
    // look at the key buffers for old keys:
    int oldkey;
    while ( (keytimes.getCount() > 0) && (keytimes[keytimes.getCount()-1] <
          t_time - keyDuration) ) {
-      oldkey = keys.extract();
-      keytimes.extract();
+      keys.extract(oldkey);
+      keytimes.extract(ldummy);
   
       performerPCHistory[oldkey%12]--;
       if (performerPCHistory[oldkey%12] < 0) {
@@ -786,16 +788,16 @@ void processBaton(void) {
 //
 
 void processKeyboard(void) {
-   MidiMessage message;
+   MidiEvent message;
    int key;
    int vel;
    int command;
    
    while (synth.getNoteCount() > 0) {
-      message = synth.extractNote();
-      command = message.p0();
-      key = message.p1();
-      vel = message.p2();
+      synth.extractNote(message);
+      command = message.getP0();
+      key = message.getP1();
+      vel = message.getP2();
  
       if (vel == 0 || (command & 0xf0 == 0x80)) {
          // note-off command section

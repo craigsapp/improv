@@ -2,7 +2,7 @@
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 ## Creation Date: Fri Jan 15 05:23:55 PST 1999
-## Last Modified: Mon Feb  2 19:19:37 PST 2015
+## Last Modified: Sun Mar  6 20:33:36 PST 2016
 ## Filename:      ...improv/Makefile.examples
 ##
 ## Description: This Makefile creates example programs which use the
@@ -125,6 +125,8 @@ DEFINES   = $(addprefix -D,$(OSTYPE))
 DEFINES  += $(addprefix -D,$(OSSUBTYPE))
 
 PREFLAGS  = -O3 -I$(INCDIR) $(DEFINES) 
+PREFLAGS += -Iexternal/midifile/include
+PREFLAGS += -std=c++11
 
 # Add the following define if you are using an older C++ compiler:
 #PREFLAGS += -DOLDCPP
@@ -133,6 +135,7 @@ PREFLAGS  = -O3 -I$(INCDIR) $(DEFINES)
 #PREFLAGS += -static
 
 POSTFLAGS  = -L$(LIBDIR) -l$(LIBFILE) 
+POSTFLAGS += -Lexternal/midifile/lib -lmidifile
 
 ifeq ($(OSTYPE),OSXPC)
    POSTFLAGS += -framework CoreMIDI -framework CoreServices
@@ -269,15 +272,15 @@ endif
 
 $(TARGDIR)/% : $(notdir %.cpp)
 	@echo [CC] $@
-	@$(COMPILER) $(PREFLAGS) -o $@ $< $(POSTFLAGS) 
-#	   && strip $@
+	@$(COMPILER) $(PREFLAGS) -o $@ $< $(POSTFLAGS) \
+	   && strip $@
 
 % : $(notdir %.cpp)
 ifeq ($(wildcard $(TARGDIR)),)
 	-mkdir $(TARGDIR)
 endif
-	$(COMPILER) $(PREFLAGS) -o $(TARGDIR)/$@ $< $(POSTFLAGS) 
-#	   && strip $(TARGDIR)/$@
+	$(COMPILER) $(PREFLAGS) -o $(TARGDIR)/$@ $< $(POSTFLAGS) \
+	   && strip $(TARGDIR)/$@
 
 #                                                                         #
 #                                                                         #

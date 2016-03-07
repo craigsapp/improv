@@ -34,7 +34,7 @@ Array<int>          currentchord;
 Array<int>          tempchord;
 Array<Array<char> > names;
 Array<Array<int> >  chordset;
-MidiMessage         message;
+MidiEvent         message;
 long lastnotetime = 0;
 long timedelta    = 60;
 char lastprintchord[1024] = {0};
@@ -369,10 +369,10 @@ void mainloopalgorithms(void) {
    if (synth.getNoteCount() > 0) {
       while (synth.getNoteCount() > 0) {
          message = synth.extractNote();
-         if ((message.p2() == 0) || ((message.p0() & 0xf0) == 0x80)) {
-            keystates[message.p1()] = 0;
-         } else if (message.p2() != 0) {
-            keystates[message.p1()] = 1;
+         if ((message.getP2() == 0) || ((message.getP0() & 0xf0) == 0x80)) {
+            keystates[message.getP1()] = 0;
+         } else if (message.getP2() != 0) {
+            keystates[message.getP1()] = 1;
          }
       }
       getNewChordInfo(tempchord, keystates);

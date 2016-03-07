@@ -37,9 +37,9 @@
 CircularBuffer<char> notes;     // storage for notes being played
 CircularBuffer<long> times;     // storage for note times being played
 double occurrences[12] = {0};   // number of notes occurrences
-MidiMessage message;            // for extracting notes from the synthesizer
-int fadeNote          = 0;      // next to to go out of scope
-int fadeTime          = 0;      // next time to go out of scope
+MidiEvent message;              // for extracting notes from the synthesizer
+char fadeNote         = 0;      // next to to go out of scope
+long fadeTime         = 0;      // next time to go out of scope
 int keyoctave         = 7;      // the analysis key performance octave
 int displayKey2       = 0;      // display the second key possibility
 int octave            = 4;      // used for keyboard keyboard
@@ -193,12 +193,12 @@ void mainloopalgorithms(void) {
       if (echoQ) {
          synth.send(message);
       }
-      if ((message.command() & 0xf0) != 0x90) {
+      if ((message.getP0() & 0xf0) != 0x90) {
          // ignore note-off messages
          continue;
       }
-      if (message.p2() != 0) {
-         storeNote(message.p1(), t_time);
+      if (message.getP2() != 0) {
+         storeNote(message.getP1(), t_time);
       }
    }
    if (metronome.expired()) {
@@ -376,8 +376,8 @@ void analyzekey(void) {
          if (fadeTime > 0) {
             occurrences[fadeNote%12]--;
          }
-         fadeTime = times.extract();
-         fadeNote = notes.extract();
+         times.extract(fadeTime);
+         notes.extract(fadeNote);
       }
       if ((fadeTime > 0) && (fadeTime < t_time - analysisDuration * 1000)) {
          occurrences[fadeNote%12]--;

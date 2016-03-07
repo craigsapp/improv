@@ -11,7 +11,7 @@
 
 #include "MidiPerform.h"
 #include "MidiInput.h"
-#include "MidiMessage.h"
+#include "MidiEvent.h"
 #include "Options.h"
 #include "KeyboardInput.h"
 #include "Idler.h"
@@ -28,7 +28,7 @@ int  checkKeyboard(void);
 void checkOptions(Options& opts);
 void example(void);
 void keyboardCommand(int command);
-void processMidiCommand(MidiMessage& message);
+void processMidiCommand(MidiEvent& message);
 void usage(const char* command);
 
 // Global variables:
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
    MidiInput midiin;
    midiin.setPort(inport);
    midiin.open();
-   MidiMessage midimessage;
+   MidiEvent midimessage;
 
    performance.read(options.getArg(1).data());
    performance.setPort(outport);
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
    performance.play();
    while (command != 'Q') {
       while (midiin.getCount() > 0) {
-         midimessage = midiin.extract();
+         midiin.extract(midimessage);
          processMidiCommand(midimessage);
       }
       performance.xcheck();
@@ -281,19 +281,19 @@ void keyboardCommand(int command) {
 // processMidiCommand -- how to run the textmidi program on the command line.
 //
 
-void processMidiCommand(MidiMessage& message) {
-   if (message.p0() != 0x90 || message.p2() == 0) {
+void processMidiCommand(MidiEvent& message) {
+   if (message.getP0() != 0x90 || message.getP2() == 0) {
       return;
    }
 
-   switch (message.p1()) {
+   switch (message.getP1()) {
       case 60:                     // Middle C = beat
          keyboardCommand(' ');
          break;
       case 61:                     // C# = amplitude control
          {
          double amp = performance.getAmp();
-         amp = amp * message.p2() / 64;
+         amp = amp * message.getP2() / 64;
          if (amp < 0) {
             amp = 0;
          } else if (amp > 127) {

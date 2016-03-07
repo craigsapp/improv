@@ -43,7 +43,7 @@ OneStageEvent::~OneStageEvent() {
 void OneStageEvent::action(EventBuffer& midiOutput) {
    switch (getType() >> 3) {
       case EVENT_ONESTAGE_MIDI:
-         ((MidiEvent*)this)->action(midiOutput);
+         ((MidiStageEvent*)this)->action(midiOutput);
          break;
       default:
          break;

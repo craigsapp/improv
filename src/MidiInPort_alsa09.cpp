@@ -41,7 +41,7 @@
 int       MidiInPort_alsa09::numDevices                     = 0;
 int       MidiInPort_alsa09::objectCount                    = 0;
 int*      MidiInPort_alsa09::portObjectCount                = NULL;
-CircularBuffer<MidiMessage>** MidiInPort_alsa09::midiBuffer = NULL;
+CircularBuffer<MidiEvent>** MidiInPort_alsa09::midiBuffer = NULL;
 int       MidiInPort_alsa09::channelOffset                  = 0;
 SigTimer  MidiInPort_alsa09::midiTimer;
 int*      MidiInPort_alsa09::pauseQ                         = NULL;
@@ -169,13 +169,14 @@ void MidiInPort_alsa09::closeAll(void) {
 //	received since that last extracted message.
 //
 
-MidiMessage MidiInPort_alsa09::extract(void) {
+void MidiInPort_alsa09::extract(MidiEvent& event) {
    if (getPort() == -1) {
-      MidiMessage temp;
-      return temp;
+      MidiEvent temp;
+      event = temp;
+      return;
    }
 
-   return midiBuffer[getPort()]->extract();
+   midiBuffer[getPort()]->extract(event);
 }
 
 
@@ -335,7 +336,7 @@ int MidiInPort_alsa09::getTrace(void) {
 // MidiInPort_alsa09::insert
 //
 
-void MidiInPort_alsa09::insert(const MidiMessage& aMessage) {
+void MidiInPort_alsa09::insert(const MidiEvent& aMessage) {
    if (getPort() == -1)   return;
 
    midiBuffer[getPort()]->insert(aMessage);
@@ -395,13 +396,13 @@ int MidiInPort_alsa09::installSysexPrivate(int port, uchar* anArray, int aSize) 
 //     without extracting it from the input buffer.
 //
 
-MidiMessage& MidiInPort_alsa09::message(int index) {
+MidiEvent& MidiInPort_alsa09::message(int index) {
    if (getPort() == -1) {
-      static MidiMessage x;
+      static MidiEvent x;
       return x;
    }
 
-   CircularBuffer<MidiMessage>& temp = *midiBuffer[getPort()];
+   CircularBuffer<MidiEvent>& temp = *midiBuffer[getPort()];
    return temp[index];
 }
 
@@ -640,7 +641,7 @@ void MidiInPort_alsa09::initialize(void) {
       if (midiBuffer != NULL) {
          delete [] midiBuffer;
       }
-      midiBuffer = new CircularBuffer<MidiMessage>*[numDevices];
+      midiBuffer = new CircularBuffer<MidiEvent>*[numDevices];
 
       // allocate space for Midi input sysex buffer write indices
       if (sysexWriteBuffer != NULL) {
@@ -663,7 +664,7 @@ void MidiInPort_alsa09::initialize(void) {
          portObjectCount[i] = 0;
          trace[i] = 0;
          pauseQ[i] = 0;
-         midiBuffer[i] = new CircularBuffer<MidiMessage>;
+         midiBuffer[i] = new CircularBuffer<MidiEvent>;
          midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
          sysexWriteBuffer[i] = 0;
@@ -741,9 +742,9 @@ void MidiInPort_alsa09::initialize(void) {
 //     This function assumes that System Exclusive messages cannot be sent 
 //     as a running status messages.
 //
-// Note about MidiMessage time stamps:
-//     The MidiMessage::time field is a recording of the time that the 
-//     first byte of the MidiMessage arrived.  If the message is from
+// Note about MidiEvent time stamps:
+//     The MidiEvent::tick field is a recording of the time that the 
+//     first byte of the MidiEvent arrived.  If the message is from
 //     running status mode, then the time that the first parameter byte
 //     arrived is stored.   System exclusive message arrival times are
 //     recoreded at the time of the last byte (0xf7) arriving.  This is
@@ -766,7 +767,7 @@ void *interpretMidiInputStreamPrivateALSA09(void * arg) {
    int* argsExpected = NULL;     // MIDI parameter bytes expected to follow
    int* argsLeft     = NULL;     // MIDI parameter bytes left to wait for
    uchar packet[1];              // bytes for sequencer driver
-   MidiMessage* message = NULL;  // holder for current MIDI message
+   MidiEvent* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
    int lastSigTime = -1;         // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
@@ -782,7 +783,7 @@ void *interpretMidiInputStreamPrivateALSA09(void * arg) {
 
    // allocate space for MIDI messages, each device has a different message
    // holding spot in case the messages overlap in the input stream
-   message      = new MidiMessage[MidiInPort_alsa09::numDevices];
+   message      = new MidiEvent[MidiInPort_alsa09::numDevices];
    argsExpected = new int[MidiInPort_alsa09::numDevices];
    argsLeft     = new int[MidiInPort_alsa09::numDevices];
 

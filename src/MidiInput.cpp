@@ -90,11 +90,11 @@ int MidiInput::getCount(void) {
 // MidiInput::extract --
 //
 
-MidiMessage MidiInput::extract(void) {
+void MidiInput::extract(MidiEvent& event) {
    if (isOrphan()) {
-      return orphanBuffer->extract();
+      orphanBuffer->extract(event);
    } else {
-      return MidiInPort::extract();
+      MidiInPort::extract(event);
    }
 }
 
@@ -130,7 +130,7 @@ double MidiInput::fscale14(int value, double min, double max) {
 // MidiInput::insert --
 //
 
-void MidiInput::insert(const MidiMessage& aMessage) {
+void MidiInput::insert(const MidiEvent& aMessage) {
    if (isOrphan()) {
       orphanBuffer->insert(aMessage);
    } else {
@@ -167,7 +167,7 @@ void MidiInput::makeOrphanBuffer(int aSize) {
          delete orphanBuffer;
          orphanBuffer = NULL;
       }
-      orphanBuffer = new CircularBuffer<MidiMessage>(aSize);
+      orphanBuffer = new CircularBuffer<MidiEvent>(aSize);
    }
 }
 

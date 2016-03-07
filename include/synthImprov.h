@@ -606,16 +606,16 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiMessage noteMessage;
+   static MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 
    synth.play(0, note, 0);
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = 0;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(0);
    synth.insert(noteMessage);
 
    switch (aKey) {
@@ -649,10 +649,10 @@ void charsynth(int aKey) {
    attack = rand()%47 + 81;           // random int from 1 to 127
    synth.play(0,note,attack); 
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = rand()%47 + 81;      // random int from 1 to 127
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(rand()%47 + 81);      // random int from 1 to 127
    synth.insert(noteMessage);
 
 }
@@ -667,16 +667,16 @@ void charsynth(int aKey) {
 //
 
 void octavekeyboard(int key, int octave) {
-   static MidiMessage noteMessage;
+   static MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 
    synth.play(0, note, 0);
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = 0;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(0);
    synth.insert(noteMessage);
 
    switch (key) {
@@ -701,10 +701,10 @@ void octavekeyboard(int key, int octave) {
    attack = rand()%48 + 80; 
    synth.play(0, note, attack);
 
-   noteMessage.time = mainTimer.getTime();
-   noteMessage.command() = 0x90;
-   noteMessage.p1() = note;
-   noteMessage.p2() = attack;
+   noteMessage.tick = mainTimer.getTime();
+   noteMessage.setP0(0x90);
+   noteMessage.setP1(note);
+   noteMessage.setP2(attack);
    synth.insert(noteMessage);
 }
 

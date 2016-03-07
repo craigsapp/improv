@@ -17,7 +17,7 @@
 /*----------------- beginning of improvization algorithms ---------------*/
 
 int channel = 0;         // MIDI channel (offset 0) on which to play notes 
-MidiMessage message;     // for reading keyno and velocity (and time)
+MidiEvent message;     // for reading keyno and velocity (and time)
 int offNote[128] = {0};  // for keeping track of note-offs
 int instrument = GM_VIBRAPHONE; // initial timbre of output notes
 
@@ -53,11 +53,11 @@ void mainloopalgorithms(void) {
    // process all of the note messages waiting in the input buffer:
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      if (message.p2() == 0) {              // incoming note-off message
-         synth.play(channel, offNote[message.p1()], 0);
+      if (message.getP2() == 0) {              // incoming note-off message
+         synth.play(channel, offNote[message.getP1()], 0);
       } else {                              // incoming note-on  message
-         synth.play(channel, message.p2(), message.p1());
-         offNote[message.p1()] = message.p2();
+         synth.play(channel, message.getP2(), message.getP1());
+         offNote[message.getP1()] = message.getP2();
       }
    }
 

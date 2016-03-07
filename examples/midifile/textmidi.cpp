@@ -1,52 +1,49 @@
 //
-// Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu> 
+// Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: Sat Nov 27 11:43:31 PST 1999
 // Last Modified: Mon Nov 29 14:01:34 PST 1999
+// Last Modified: Mon Feb  9 21:26:32 PST 2015 Updated for C++11.
 // Filename:      ...sig/doc/examples/all/textmidi/textmidi.cpp
 // Syntax:        C++
-// 
+//
 // Description:   Reads a MIDI file and converts data to/from ASCII text.
 //
 
 #include "Options.h"
 #include "MidiFile.h"
+#include <iostream>
 
-#ifndef OLDCPP
-   #include <iostream>
-#else
-   #include <iostream.h>
-#endif
+using namespace std;
 
 #define STYLE_TIME_DELTA      'd'
 #define STYLE_TIME_ABSOLUTE   'a'
-
 
 // global variables:
 int timestyle = STYLE_TIME_DELTA;    // command-line style options (-a | -d)
 
 // function declarations:
-void checkOptions(Options& opts);
-void example(void);
-void usage(const char* command);
+void  checkOptions    (Options& opts);
+void  example         (void);
+void  usage           (const char* command);
 
 
 ///////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
-   int       status;          
+   int       status;
    MidiFile  inputfile;
    Options   options(argc, argv);
 
    checkOptions(options);
    for (int i=1; i<=options.getArgCount(); i++) {
-      status = inputfile.read(options.getArg(i).data());
+      status = inputfile.read(options.getArg(i));
       if (options.getArgCount() > 1) {
          cout << "\n\n\n+++ FILE " << i << "++++++++++++++++++++++++++++\n\n";
       }
       if (status != 0) {
          switch (timestyle) {
-            case 'd': inputfile.deltaTime();    break;
-            case 'a': inputfile.absoluteTime(); break;
+            case 'd': inputfile.deltaTicks();    break;
+            case 'a': inputfile.absoluteTicks(); break;
          }
          cout << inputfile;
       } else {
@@ -72,7 +69,7 @@ void checkOptions(Options& opts) {
    opts.define("version=b");
    opts.define("example=b");
    opts.define("help=b");
-   opts.process();              
+   opts.process();
 
    if (opts.getBoolean("author")) {
       cout << "Written by Craig Stuart Sapp, "
@@ -90,14 +87,14 @@ void checkOptions(Options& opts) {
    if (opts.getBoolean("example")) {
       example();
       exit(0);
-   }               
+   }
 
    // can only have one output filename
    if (opts.getArgCount() == 0) {
       cout << "Error: need one input MIDI file." << endl;
       usage(opts.getCommand().data());
       exit(1);
-   } 
+   }
 
    if (opts.getBoolean("absolute")) {
       timestyle = STYLE_TIME_ABSOLUTE;
@@ -118,7 +115,8 @@ void example(void) {
    "       textmidi -a midifile.mid | more                                   \n"
    << endl;
 }
- 
+
+
 
 //////////////////////////////
 //
@@ -138,8 +136,8 @@ void usage(const char* command) {
    "   --options = list of all options, aliases and default values.          \n"
    "                                                                         \n"
    "                                                                         \n"
-   << endl;               
+   << endl;
 }
 
 
-// md5sum: ea58b85465863add414fb98e3c9d5f27 textmidi.cpp [20050403]
+

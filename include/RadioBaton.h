@@ -22,8 +22,8 @@
 
 #include "batonprotocol.h"       /* October 2000 communication protocol    */
 #include "CircularBuffer.h"      /* for storage of state variables         */
-#include "MidiMessage.h"         /* for MIDI input from the drivers        */
 #include "MidiIO.h"              /* Inheritance of MIDI in/out class funcs */
+#include "MidiEvent.h"           /* for MIDI input from the drivers        */
 
 
 // The define below is for the size of the state variable storage buffers.
@@ -146,31 +146,31 @@ class RadioBaton : public MidiIO {
       // set for a given index.
 
       long  t1p;                    // baton 1 position reporting time
-      ushort x1p;                   // baton 1 x-axis position
-      ushort y1p;                   // baton 1 y-axis position
-      ushort z1p;                   // baton 1 z-axis position
+      uchar x1p;                    // baton 1 x-axis position
+      uchar y1p;                    // baton 1 y-axis position
+      uchar z1p;                    // baton 1 z-axis position
 
       long  t2p;                    // baton 2 position reporting time
-      ushort x2p;                   // baton 2 x-axis position
-      ushort y2p;                   // baton 2 y-axis position
-      ushort z2p;                   // baton 2 z-axis position
+      uchar x2p;                    // baton 2 x-axis position
+      uchar y2p;                    // baton 2 y-axis position
+      uchar z2p;                    // baton 2 z-axis position
 
-      ushort d1p;                   // dial 1 position
-      ushort d2p;                   // dial 2 position
-      ushort d3p;                   // dial 3 position
-      ushort d4p;                   // dial 4 position
+      uchar d1p;                    // dial 1 position
+      uchar d2p;                    // dial 2 position
+      uchar d3p;                    // dial 3 position
+      uchar d4p;                    // dial 4 position
 
       // trigger variables
 
       long  t1t;                    // baton 1 position reporting time
-      ushort x1t;                   // baton 1 x-axis position
-      ushort y1t;                   // baton 1 y-axis position
-      ushort w1t;                   // baton 1 z-axis position
+      uchar x1t;                    // baton 1 x-axis position
+      uchar y1t;                    // baton 1 y-axis position
+      uchar w1t;                    // baton 1 z-axis position
 
       long  t2t;                    // baton 2 position reporting time
-      ushort x2t;                   // baton 2 x-axis position
-      ushort y2t;                   // baton 2 y-axis position
-      ushort w2t;                   // baton 2 z-axis position
+      uchar x2t;                    // baton 2 x-axis position
+      uchar y2t;                    // baton 2 y-axis position
+      uchar w2t;                    // baton 2 z-axis position
 
       long b14pt;                   // b14+ button trigger time
       long b15pt;                   // b15+ button trigger time
@@ -316,7 +316,7 @@ class RadioBaton : public MidiIO {
    // 
 
    private: 
-      void        interpretCommand      (MidiMessage aMessage);
+      void        interpretCommand      (MidiEvent& aMessage);
       void        s1ts                  (long aTime);
       void        s1td                  (int flag, uchar aValue);
       void        s2ts                  (long aTime);

@@ -13,7 +13,7 @@
 /*----------------- beginning of improvization algorithms ---------------*/
 
 EventBuffer   eventBuffer;      // for future notes 
-MidiMessage   message;          // for reading keyno and velocity (and time)
+MidiEvent   message;          // for reading keyno and velocity (and time)
 Array<int>    notestates(128);  // for keeping track of note on/off
 Array<double> decaystates(128); // for keeping track of note on/off
 Array<int>    onvels(128);      // for keeping track of note on/off
@@ -23,7 +23,7 @@ double        decayrate = 0.87; // echo decay rate.
 
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
-void processNote(MidiMessage& message);
+void processNote(MidiEvent& message);
 void createDecay(int channel, int key, int duration, int velocity);
 
 
@@ -122,13 +122,13 @@ void mainloopalgorithms(void) {
 // processNote -- decide when to trigger a decay algorithm.
 //
 
-void processNote(MidiMessage& message) {
-   int velocity = message.p2();
-   int key = message.p1();
-   int channel = message.p0() & 0x0f;
+void processNote(MidiEvent& message) {
+   int velocity = message.getP2();
+   int key = message.getP1();
+   int channel = message.getP0() & 0x0f;
    int state = 1;
    int duration = 0;
-   if (((message.p0() & 0xf0) == 0x80) || velocity == 0) {
+   if (((message.getP0() & 0xf0) == 0x80) || velocity == 0) {
       state = 0;
    }
 
@@ -141,13 +141,13 @@ void processNote(MidiMessage& message) {
    }
 
    if (state == 1) {
-      notestates[key] = message.time;
+      notestates[key] = message.tick;
       onvels[key] = velocity;
    } else {
       if (notestates[key] == 0) {
          // do nothing
       } else {
-         duration = message.time - notestates[key];
+         duration = message.tick - notestates[key];
          if (decaystates[key] == 0.0) {
             createDecay(channel, key, duration, onvels[key]);
          }
@@ -215,7 +215,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiMessage message;
+   static MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {
@@ -252,10 +252,10 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    }
 
    // put note-off message in synth's input buffer:
-   message.time = t_time;
-   message.p0() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = 0;
+   message.tick = t_time;
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(0);
    synth.insert(message);
 
    // turn off the last note:
@@ -270,9 +270,9 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    voice.play();
 
    // insert the played note into synth's input MIDI buffer:
-   message.command() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = voice.getVel();
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(voice.getVel());
    synth.insert(message);
 
 }

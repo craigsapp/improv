@@ -116,26 +116,26 @@ char        recordFilename[1000] = {0};  // file to record Baton state
 // these variables.
 //
 
-// instantaneous position variables:
-unsigned short& pt1 = baton.d1p;      // pot1 current position
-unsigned short& pt2 = baton.d2p;      // pot2 current position
-unsigned short& pt3 = baton.d3p;      // pot3 current position
-unsigned short& pt4 = baton.d4p;      // pot4 current position
+// instantaneous position variables: (should be changed to unsigned shorts later.
+unsigned char& pt1 = baton.d1p;      // pot1 current position
+unsigned char& pt2 = baton.d2p;      // pot2 current position
+unsigned char& pt3 = baton.d3p;      // pot3 current position
+unsigned char& pt4 = baton.d4p;      // pot4 current position
 
-unsigned short& xt1 = baton.x1p;      // baton1 current x-axis position
-unsigned short& yt1 = baton.y1p;      // baton1 current y-axis position
-unsigned short& zt1 = baton.z1p;      // baton1 current z-axis position
-unsigned short& xt2 = baton.x2p;      // baton2 current x-axis position
-unsigned short& yt2 = baton.y2p;      // baton2 current y-axis position
-unsigned short& zt2 = baton.z2p;      // baton2 current z-axis position
+unsigned char& xt1 = baton.x1p;      // baton1 current x-axis position
+unsigned char& yt1 = baton.y1p;      // baton1 current y-axis position
+unsigned char& zt1 = baton.z1p;      // baton1 current z-axis position
+unsigned char& xt2 = baton.x2p;      // baton2 current x-axis position
+unsigned char& yt2 = baton.y2p;      // baton2 current y-axis position
+unsigned char& zt2 = baton.z2p;      // baton2 current z-axis position
 
 // trigger variables:
-unsigned short& wh1 = baton.w1t;      // baton1 whack trigger
-unsigned short& xw1 = baton.x1t;      // baton1 x-axis trigger 
-unsigned short& yw1 = baton.y1t;      // baton1 y-axis trigger
-unsigned short& wh2 = baton.w2t;      // baton2 whack trigger
-unsigned short& xw2 = baton.x2t;      // baton2 x-axis trigger
-unsigned short& yw2 = baton.y2t;      // baton2 y-axis trigger
+unsigned char& wh1 = baton.w1t;      // baton1 whack trigger
+unsigned char& xw1 = baton.x1t;      // baton1 x-axis trigger 
+unsigned char& yw1 = baton.y1t;      // baton1 y-axis trigger
+unsigned char& wh2 = baton.w2t;      // baton2 whack trigger
+unsigned char& xw2 = baton.x2t;      // baton2 x-axis trigger
+unsigned char& yw2 = baton.y2t;      // baton2 y-axis trigger
 
 int& whack1 = baton.trigger1;    // boolean for stick1 trigger occuring
 int& whack2 = baton.trigger2;    // boolean for stick2 trigger occuring
@@ -1021,7 +1021,7 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiMessage noteMessage;
+   static MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 

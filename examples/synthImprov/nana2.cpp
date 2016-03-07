@@ -75,8 +75,8 @@ int      stateChange;           // boolean for testing if state has changed
 int      notescan = 0;          // boolean for looking for a new currentnote
 double   maxwait = 0.10;        // maximum wait time after a beat before 
                                 //    choosing a default chord
-MidiMessage notemessage;        // for extracting notes from the Synthesizer
-MidiMessage keymessage;         // for spoofing MIDI input frm computer keyboard
+MidiEvent notemessage;          // for extracting notes from the Synthesizer
+MidiEvent keymessage;           // for spoofing MIDI input frm computer keyboard
 double   lagmaxinsec =  0.075;  // maximum 75 millisecond decision 
                                 //    delay in output of chord from  
                                 //    occurance of chordal beat
@@ -157,7 +157,7 @@ void initialization(void) {
    playChord = playChordByNet;
    cout << "Using network for playing accompaniment" << endl;
 
-   keymessage.p0() = 0x90; 
+   keymessage.setP0(0x90); 
 
 /*
    char netfilename[1024] = {0};
@@ -227,11 +227,11 @@ void mainloopalgorithms(void) {
    // of the last note, and whether it is currently on or off.
    while (synth.getNoteCount() > 0) {
       notemessage = synth.extractNote();
-      if (notemessage.p2() != 0) {
-         note = notemessage.p1();
+      if (notemessage.getP2() != 0) {
+         note = notemessage.getP1();
          notestates[note] = 1;
       } else {
-         notestates[notemessage.p1()] = 0;
+         notestates[notemessage.getP1()] = 0;
       }
    }
 
@@ -389,71 +389,71 @@ void keyboardchar(int key) {
          break;
 
       case '1':   // C note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 60;
-         keymessage.p2() = VEL;
+         keymessage.setP1(60);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '2':   // D note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 62;
-         keymessage.p2() = VEL;
+         keymessage.setP1(62);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '3':   // E note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 64;
-         keymessage.p2() = VEL;
+         keymessage.setP1(64);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '4':   // F note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 65;
-         keymessage.p2() = VEL;
+         keymessage.setP1(65);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '5':   // G note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 67;
-         keymessage.p2() = VEL;
+         keymessage.setP1(67);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '6':   // A note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 69;
-         keymessage.p2() = VEL;
+         keymessage.setP1(69);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '7':   // B note
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 71;
-         keymessage.p2() = VEL;
+         keymessage.setP1(71);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '8':   // C octave
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
-         keymessage.p1() = 72;
-         keymessage.p2() = VEL;
+         keymessage.setP1(72);
+         keymessage.setP2(VEL);
          synth.insert(keymessage);
          break;
 
       case '9':   // Rest
-         keymessage.p2() = 0;
+         keymessage.setP2(0);
          synth.insert(keymessage);
          break;
 

@@ -21,7 +21,7 @@ int nextHenon(void);
 
 /*----------------- beginning of improvization algorithms ---------------*/
 
-MidiMessage message;
+MidiEvent message;
 double y = 0.0;
 double x = 0.0;
 double newx;
@@ -91,8 +91,8 @@ void finishup(void) { }
 void mainloopalgorithms(void) { 
    if (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      if (message.p2() != 0) {
-         startHenon(message.p1(), message.p2());
+      if (message.getP2() != 0) {
+         startHenon(message.getP1(), message.getP2());
       }
    }
 

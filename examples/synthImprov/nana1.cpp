@@ -68,7 +68,7 @@ int      stateChange;           // boolean for testing if state has changed
 int      notescan = 0;          // boolean for looking for a new currentnote
 double   maxwait = 0.10;        // maximum wait time after a beat before 
                                 //    choosing a default chord
-MidiMessage notemessage;        // for extracting notes from the Synthesizer
+MidiEvent notemessage;        // for extracting notes from the Synthesizer
 double   lagmaxinsec =  0.075;  // maximum 75 millisecond decision 
                                 //    delay in output of chord from  
                                 //    occurance of chordal beat
@@ -162,11 +162,11 @@ void mainloopalgorithms(void) {
    // of the last note, and whether it is currently on or off.
    while (synth.getNoteCount() > 0) {
       notemessage = synth.extractNote();
-      if (notemessage.p2() != 0) {
-         note = notemessage.p1();
+      if (notemessage.getP2() != 0) {
+         note = notemessage.getP1();
          notestates[note] = 1;
       } else {
-         notestates[notemessage.p1()] = 0;
+         notestates[notemessage.getP1()] = 0;
       }
    }
 

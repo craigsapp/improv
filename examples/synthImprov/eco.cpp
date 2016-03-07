@@ -24,7 +24,7 @@
 #define MAXECHOTIME 10000   /* max time for activating echos */
 
 EventBuffer eventBuffer;  // for future notes 
-MidiMessage message;      // for reading keyno and velocity (and time)
+MidiEvent message;      // for reading keyno and velocity (and time)
 int channel;              // channel to play the echos on
 int key;                  // the current MIDI key number
 int duration;             // duration of the echoing note
@@ -118,10 +118,10 @@ void mainloopalgorithms(void) {
 
    while (synth.getNoteCount() > 0) {
       message  = synth.extractNote();
-      channel  = 0x0f & message.p0();
-      command  = 0xf0 & message.p0();
-      key      = message.p1();
-      velocity = message.p2();
+      channel  = 0x0f & message.getP0();
+      command  = 0xf0 & message.getP0();
+      key      = message.getP1();
+      velocity = message.getP2();
 
       if (command == 0x80 || velocity == 0) {
          // note off message
@@ -150,7 +150,7 @@ void mainloopalgorithms(void) {
             ontimes[key] = 0;
          } else {
             ontimes[key] = t_time;
-            attack[key] = message.p2(); 
+            attack[key] = message.getP2(); 
          }
       }
    }
@@ -210,7 +210,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiMessage message;
+   static MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {
@@ -247,10 +247,10 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    }
 
    // put note-off message in synth's input buffer:
-   message.time = t_time;
-   message.p0() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = 0;
+   message.tick = t_time;
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(0);
    synth.insert(message);
 
    // turn off the last note:
@@ -265,9 +265,9 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    voice.play();
 
    // insert the played note into synth's input MIDI buffer:
-   message.command() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = voice.getVel();
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(voice.getVel());
    synth.insert(message);
 
 }

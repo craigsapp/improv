@@ -17,7 +17,7 @@ typedef Array<MidiOutPort> MidiOutputArray;
 
 // function declarations:
 void displayPatchBay(Array<ArrayInt>& connections);
-void sendData(MidiMessage& message, MidiOutPort& output, 
+void sendData(MidiEvent& message, MidiOutPort& output, 
     MidiInput& input);
 
 /////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
    cout << "There are " << incount  << " MIDI inputs" << endl;
    cout << "and " << outcount << " MIDI outputs" << endl;
 
-   MidiMessage message;
+   MidiEvent message;
    Array<MidiInput> midiins;
    for (i=0; i<incount; i++) {
       midiins[i].setPort(i);
@@ -63,8 +63,8 @@ int main(int argc, char* argv[]) {
    while (!done) {
       for (i=0; i<incount; i++) {
          while (midiins[i].getCount() > 0) {
-            message = midiins[i].extract();
-            if (message.p1() == A0) {
+            midiins[i].extract(message);
+            if (message.getP1() == A0) {
                done = 1;
             }
             cout << "[" << i << ":";
@@ -90,13 +90,13 @@ int main(int argc, char* argv[]) {
 // sendData --
 //
 
-void sendData(MidiMessage& m, MidiOutPort& output, 
+void sendData(MidiEvent& m, MidiOutPort& output, 
      MidiInput& input) {
-   int count = m.getParameterCount();
+   int count = m.size()-1;
    if (count >= 0 && count <= 2) {
-      if (count >= 0) output.rawsend(m.p0());
-      if (count >= 1) output.rawsend(m.p0(), m.p1());
-      if (count >= 2) output.rawsend(m.p0(), m.p1(), m.p2());
+      if (count >= 0) output.rawsend(m.getP0());
+      if (count >= 1) output.rawsend(m.getP0(), m.getP1());
+      if (count >= 2) output.rawsend(m.getP0(), m.getP1(), m.getP2());
    }
 }
 

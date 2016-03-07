@@ -34,7 +34,7 @@ int       MidiInPort_unsupported::numDevices        = 0;
 int       MidiInPort_unsupported::objectCount       = 0;
 int*      MidiInPort_unsupported::openQ             = NULL;
 int*      MidiInPort_unsupported::portObjectCount   = NULL;
-CircularBuffer<MidiMessage>* MidiInPort_unsupported::midiBuffer = NULL;
+CircularBuffer<MidiEvent>* MidiInPort_unsupported::midiBuffer = NULL;
 int       MidiInPort_unsupported::channelOffset     = 0;
 int*      MidiInPort_unsupported::sysexWriteBuffer  = NULL;
 Array<uchar>** MidiInPort_unsupported::sysexBuffers = NULL; 
@@ -124,8 +124,8 @@ void MidiInPort_unsupported::closeAll(void) {
 //	received since that last extracted message.
 //
 
-MidiMessage MidiInPort_unsupported::extract(void) {
-   return midiBuffer[getPort()].extract();
+void MidiInPort_unsupported::extract(MidiEvent& event) {
+   midiBuffer[getPort()].extract(event);
 }
 
 
@@ -227,7 +227,7 @@ int MidiInPort_unsupported::getTrace(void) {
 // MidiInPort_unsupported::insert
 //
 
-void MidiInPort_unsupported::insert(const MidiMessage& aMessage) {
+void MidiInPort_unsupported::insert(const MidiEvent& aMessage) {
    midiBuffer[getPort()].insert(aMessage);
 }
 
@@ -238,7 +238,7 @@ void MidiInPort_unsupported::insert(const MidiMessage& aMessage) {
 // MidiInPort_unsupported::message
 //
 
-MidiMessage& MidiInPort_unsupported::message(int index) {
+MidiEvent& MidiInPort_unsupported::message(int index) {
    return midiBuffer[getPort()][index];
 }
 
@@ -454,7 +454,7 @@ void MidiInPort_unsupported::initialize(void) {
 
    // allocate space for the Midi input buffers
    if (midiBuffer != NULL) delete [] midiBuffer;
-   midiBuffer = new CircularBuffer<MidiMessage>[numDevices];
+   midiBuffer = new CircularBuffer<MidiEvent>[numDevices];
 
    // initialize the static arrays
    for (int i=0; i<getNumPorts(); i++) {

@@ -26,7 +26,7 @@ Array<int> noteonvels(128);         // list of the last time a note was played
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
 void createGhost(int key, int velocity, int channel, int duration);
-void processNote(MidiMessage message);
+void processNote(MidiEvent message);
 
 
 /*--------------------- maintenance algorithms --------------------------*/
@@ -73,11 +73,11 @@ void mainloopalgorithms(void) {
 // processNote -- 
 //
 
-void processNote(MidiMessage message) {
-   int key = message.p1();
-   int velocity = message.p2() / 2;
-   int channel = message.p0() & 0x0f;
-   int command = message.p0() & 0xf0;
+void processNote(MidiEvent message) {
+   int key = message.getP1();
+   int velocity = message.getP2() / 2;
+   int channel = message.getP0() & 0x0f;
+   int command = message.getP0() & 0xf0;
    int duration;
 
    int status = 1;
@@ -142,7 +142,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiMessage message;
+   static MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {
@@ -179,10 +179,10 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    }
 
    // put note-off message in synth's input buffer:
-   message.time = t_time;
-   message.p0() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = 0;
+   message.tick = t_time;
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(0);
    synth.insert(message);
 
    // turn off the last note:
@@ -197,9 +197,9 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    voice.play();
 
    // insert the played note into synth's input MIDI buffer:
-   message.command() = 0x90 | voice.getChan();
-   message.p1() = voice.getKey();
-   message.p2() = voice.getVel();
+   message.setP0(0x90 | voice.getChan());
+   message.setP1(voice.getKey());
+   message.setP2(voice.getVel());
    synth.insert(message);
 
 }

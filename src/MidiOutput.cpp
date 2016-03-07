@@ -6,7 +6,7 @@
 // Last Modified: Sun Jul 18 18:52:29 PDT 1999 added RPN functions
 // Last Modified: Sun Dec  9 15:01:33 PST 2001 switched con/des code
 // Last Modified: Wed Jun  4 20:06:46 PDT 2003 initial MIDI file recording
-// Last Modified: Sun Feb 17 14:11:15 PST 2013 added MidiMessage send
+// Last Modified: Sun Feb 17 14:11:15 PST 2013 added MidiEvent send
 // Filename:      ...sig/code/control/MidiOutput/MidiOutput.cpp
 // Web Address:   http://sig.sapp.org/src/sig/MidiOutput.cpp
 // Syntax:        C++
@@ -338,17 +338,17 @@ int MidiOutput::send(int command) {
 }
 
 
-int MidiOutput::send(MidiMessage& message) {
-   int parameters = message.getArgCount();
+int MidiOutput::send(MidiEvent& message) {
+   int parameters = message.size() - 1;
    switch (parameters) {
       case 0:  
-         return send(message.command()); 
+         return send(message.getCommandByte()); 
          break;
       case 1:  
-         return send(message.command(), message.p1()); 
+         return send(message.getCommandByte(), message.getP1()); 
          break;
       case 2:  
-         return send(message.command(), message.p1(), message.p2()); 
+         return send(message.getCommandByte(), message.getP1(), message.getP2()); 
          break;
       default:
          // sytem exclusive or meta message which are ignored for now

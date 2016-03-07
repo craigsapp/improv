@@ -16,13 +16,13 @@
 MAKE = make
 
 # targets which don't actually refer to files
-.PHONY : all clean superclean programs examples library improv synthImprov batonImprov info help
+.PHONY: external programs examples library improv synthImprov batonImprov info help
 
 ###########################################################################
 #                                                                         #
 #                                                                         #
 
-all: library examples
+all: external library examples
 
 info: help
 help:
@@ -43,11 +43,15 @@ help:
 	@echo "   $(MAKE) xxx"
 	@echo ""
 
-library:
+library: external
 	$(MAKE) -f Makefile.library
+
+external:
+	(cd external && $(MAKE))
 
 clean:
 	$(MAKE) -f Makefile.library clean
+	(cd external && $(MAKE) clean)
 
 superclean: clean
 	-rm -rf bin

@@ -36,7 +36,7 @@
 
 /*----------------- beginning of improvization algorithms ---------------*/
 
-MidiMessage message;
+MidiEvent message;
 CircularBuffer<int> attacktimes; // time of attack
 CircularBuffer<int> durations;   // time between attack and release
 CircularBuffer<int> iois;        // time between attacks
@@ -138,20 +138,20 @@ void finishup(void) { }
 void mainloopalgorithms(void) { 
    if (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      int key = message.p1();
-      int vel = message.p2();
-      if ((message.p0() & 0xf0) == 0x80) {
+      int key = message.getP1();
+      int vel = message.getP2();
+      if ((message.getP0() & 0xf0) == 0x80) {
          vel = 0;
       }
       if (tdelta == -1000) {
-         tdelta = t_time - message.time;
+         tdelta = t_time - message.tick;
       }
       if (key == 21) {
          if (vel != 0) {
             cout << endl;
          }
       } else {
-         processEvent(key, vel, message.time);
+         processEvent(key, vel, message.tick);
       }
    }
 

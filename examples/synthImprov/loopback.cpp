@@ -75,11 +75,11 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiMessage message;
+MidiEvent message;
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      cout << "Received Message: " << message << " at time: " << t_time-basetime << endl;
+      cout << "Received Message: " << message.getP2() << " at time: " << t_time-basetime << endl;
    }
 }
 

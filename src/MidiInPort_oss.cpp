@@ -38,7 +38,7 @@ using namespace std;
 int       MidiInPort_oss::numDevices                     = 0;
 int       MidiInPort_oss::objectCount                    = 0;
 int*      MidiInPort_oss::portObjectCount                = NULL;
-CircularBuffer<MidiMessage>** MidiInPort_oss::midiBuffer = NULL;
+CircularBuffer<MidiEvent>** MidiInPort_oss::midiBuffer = NULL;
 int       MidiInPort_oss::channelOffset                  = 0;
 SigTimer  MidiInPort_oss::midiTimer;
 int*      MidiInPort_oss::pauseQ                         = NULL;
@@ -159,13 +159,14 @@ void MidiInPort_oss::closeAll(void) {
 //	received since that last extracted message.
 //
 
-MidiMessage MidiInPort_oss::extract(void) {
+void MidiInPort_oss::extract(MidiEvent& event) {
    if (getPort() == -1) {
-      MidiMessage temp;
-      return temp;
+      MidiEvent temp;
+      event = temp;
+		return;
    }
 
-   return midiBuffer[getPort()]->extract();
+   midiBuffer[getPort()]->extract(event);
 }
 
 
@@ -327,7 +328,7 @@ int MidiInPort_oss::getTrace(void) {
 // MidiInPort_oss::insert
 //
 
-void MidiInPort_oss::insert(const MidiMessage& aMessage) {
+void MidiInPort_oss::insert(const MidiEvent& aMessage) {
    if (getPort() == -1)   return;
 
    midiBuffer[getPort()]->insert(aMessage);
@@ -384,13 +385,13 @@ int MidiInPort_oss::installSysexPrivate(int port, uchar* anArray, int aSize) {
 // MidiInPort_oss::message
 //
 
-MidiMessage& MidiInPort_oss::message(int index) {
+MidiEvent& MidiInPort_oss::message(int index) {
    if (getPort() == -1) {
-      static MidiMessage x;
+      static MidiEvent x;
       return x;
    }
 
-   CircularBuffer<MidiMessage>& temp = *midiBuffer[getPort()];
+   CircularBuffer<MidiEvent>& temp = *midiBuffer[getPort()];
    return temp[index];
 }
 
@@ -621,7 +622,7 @@ void MidiInPort_oss::initialize(void) {
       if (midiBuffer != NULL) {
          delete [] midiBuffer;
       }
-      midiBuffer = new CircularBuffer<MidiMessage>*[numDevices];
+      midiBuffer = new CircularBuffer<MidiEvent>*[numDevices];
 
       // allocate space for Midi input sysex buffer write indices
       if (sysexWriteBuffer != NULL) {
@@ -641,7 +642,7 @@ void MidiInPort_oss::initialize(void) {
          portObjectCount[i] = 0;
          trace[i] = 0;
          pauseQ[i] = 0;
-         midiBuffer[i] = new CircularBuffer<MidiMessage>;
+         midiBuffer[i] = new CircularBuffer<MidiEvent>;
          midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
          sysexWriteBuffer[i] = 0;
@@ -718,9 +719,9 @@ void MidiInPort_oss::initialize(void) {
 //     This function assumes that System Exclusive messages cannot be sent 
 //     as a running status messages.
 //
-// Note about MidiMessage time stamps:
-//     The MidiMessage::time field is a recording of the time that the 
-//     first byte of the MidiMessage arrived.  If the message is from
+// Note about MidiEvent time stamps:
+//     The MidiEvent::tick field is a recording of the time that the 
+//     first byte of the MidiEvent arrived.  If the message is from
 //     running status mode, then the time that the first parameter byte
 //     arrived is stored.   System exclusive message arrival times are
 //     recoreded at the time of the last byte (0xf7) arriving.  This is
@@ -736,7 +737,7 @@ void *interpretMidiInputStreamPrivate(void *) {
    int* argsExpected = NULL;     // MIDI parameter bytes expected to follow
    int* argsLeft     = NULL;     // MIDI parameter bytes left to wait for
    uchar packet[4];              // bytes for sequencer driver
-   MidiMessage* message = NULL;  // holder for current MIDI message
+   MidiEvent* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
    // int lastSigTime = -1;         // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
@@ -757,7 +758,7 @@ void *interpretMidiInputStreamPrivate(void *) {
    } else {
       // allocate space for MIDI messages, each device has a different message
       // holding spot in case the messages overlap in the input stream
-      message      = new MidiMessage[MidiInPort_oss::numDevices];
+      message      = new MidiEvent[MidiInPort_oss::numDevices];
       argsExpected = new int[MidiInPort_oss::numDevices];
       argsLeft     = new int[MidiInPort_oss::numDevices];
 
@@ -901,23 +902,23 @@ top_of_loop:
                }
 
                newSigTime = MidiInPort_oss::midiTimer.getTime();
-               message[device].time = newSigTime - zeroSigTime;
+               message[device].tick = newSigTime - zeroSigTime;
 
                if (packet[1] != 0xf7) {
-                  message[device].p0() = packet[1];
+                  message[device].setP0(packet[1]);
                } 
-               message[device].p1() = 0;
-               message[device].p2() = 0;
-               message[device].p3() = 0;
+               message[device].setP1(0);
+               message[device].setP2(0);
+               message[device].setP3(0);
 
                if (packet[1] == 0xf7) {
                   goto sysex_done;
                }
             } else if (argsLeft[device]) {   // not a command byte coming in
-               if (message[device].time == 0) {
+               if (message[device].tick == 0) {
                   // store the receipt time of the first message byte
                   newSigTime = MidiInPort_oss::midiTimer.getTime();
-                  message[device].time = newSigTime - zeroSigTime;
+                  message[device].tick = newSigTime - zeroSigTime;
                }
                   
                if (argsExpected[device] < 0) {
@@ -926,9 +927,9 @@ top_of_loop:
                } else {
                   // handle a message other than a sysex message
                   if (argsLeft[device] == argsExpected[device]) {
-                     message[device].p1() = packet[1];
+                     message[device].setP1(packet[1]);
                   } else {
-                     message[device].p2() = packet[1];
+                     message[device].setP2(packet[1]);
                   }
                   argsLeft[device]--;
                }
@@ -939,7 +940,7 @@ top_of_loop:
                if (argsExpected[device] >= 0 && !argsLeft[device]) {
 
                   // store parameter data for running status
-                  switch (message[device].p0() & 0xf0) {
+                  switch (message[device].getP0() & 0xf0) {
                      case 0xc0:  argsLeft[device] = 1;    break;
                      case 0xd0:  argsLeft[device] = 1;    break;  // fix by dan
                      default:    argsLeft[device] = 2;    break;
@@ -970,8 +971,8 @@ top_of_loop:
                               sysexIn[device].getBase(),
                               sysexIn[device].getSize());
 
-                        message[device].p0() = 0xf0;
-                        message[device].p1() = sysexlocation;
+                        message[device].setP0(0xf0);
+                        message[device].setP1(sysexlocation);
 
                         sysexIn[device].setSize(0); // empty the sysex storage
                         argsExpected[device] = 0;   // no run status for sysex
@@ -983,17 +984,17 @@ top_of_loop:
 //                      MidiInPort_oss::callbackFunction(device);
 //                   }
                      if (MidiInPort_oss::trace[device]) {
-                        cout << '[' << hex << (int)message[device].p0()
-                             << ':' << dec << (int)message[device].p1()
-                             << ',' << (int)message[device].p2() << ']'
+                        cout << '[' << hex << (int)message[device].getP0()
+                             << ':' << dec << (int)message[device].getP1()
+                             << ',' << (int)message[device].getP2() << ']'
                              << flush;
                      }
-                     message[device].time = 0;
+                     message[device].tick = 0;
                   } else {
                      if (MidiInPort_oss::trace[device]) {
-                        cout << '[' << hex << (int)message[device].p0()
-                             << 'P' << dec << (int)message[device].p1()
-                             << ',' << (int)message[device].p2() << ']'
+                        cout << '[' << hex << (int)message[device].getP0()
+                             << 'P' << dec << (int)message[device].getP1()
+                             << ',' << (int)message[device].getP2() << ']'
                              << flush;
                      }
                   }

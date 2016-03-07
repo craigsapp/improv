@@ -219,13 +219,13 @@ void keyboardchar(int key) {
 //
 
 void processNoteForMarkov(void) {
-   MidiMessage message;
+   MidiEvent message;
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
-      if (message.p2() != 0) {
+      if (message.getP2() != 0) {
          lastMarkovNote = newMarkovNote;
-         newMarkovNote = message.p1() % 12;
-         if (newMarkovNote == (21%12) && message.p1() == 21) {
+         newMarkovNote = message.getP1() % 12;
+         if (newMarkovNote == (21%12) && message.getP1() == 21) {
             newMarkovNote = -1;
          } else if (lastMarkovNote >= 0) {
             markov[lastMarkovNote][newMarkovNote] += 1;
@@ -242,13 +242,13 @@ void processNoteForMarkov(void) {
 //
 
 void performNoteFromMarkov(void) {
-   MidiMessage message;
+   MidiEvent message;
    int newnote = 0;
    if (synth.getNoteCount() != 0) {
       while (synth.getNoteCount() > 0) {
          message = synth.extractNote();
-         if (message.p2() != 0) {
-            newnote = message.p1() % 12;
+         if (message.getP2() != 0) {
+            newnote = message.getP1() % 12;
          } 
       }
       newnote = chooseNoteFromMarkovArray(newnote);

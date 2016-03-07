@@ -51,7 +51,7 @@ int      comparestate = 0;   // boolean for comparing input to output MIDI
 uchar    checkin[3]   = {0}; // temporary comparison storage for MIDI input 
 uchar    checkout[3]  = {0}; // temporary comparison storage for MIDI output
 uchar    data         = 0;   // dummy holder for data before inserting to buffer
-MidiMessage message;         // for reading in MIDI data.
+MidiEvent message;         // for reading in MIDI data.
 MidiInput midiinput;         // raw MIDI input interface.
 
 CircularBuffer<uchar> sentout;    // storage copy of MIDI output data
@@ -133,26 +133,26 @@ void mainloopalgorithms(void) {
    }
 
    if (midiinput.getCount() > 0) {
-      message = midiinput.extract();
-      receivedin.insert(message.p0());
-      receivedin.insert(message.p1());
-      receivedin.insert(message.p2());
+      midiinput.extract(message);
+      receivedin.insert(message.getP0());
+      receivedin.insert(message.getP1());
+      receivedin.insert(message.getP2());
 
       // check that the messages are identical
       if (receivedin.getCount() < 3) {
          cout << "Error: not enough received data" << endl;
       } else {
-         checkin[0] = receivedin.extract();
-         checkin[1] = receivedin.extract();
-         checkin[2] = receivedin.extract();
+         receivedin.extract(checkin[0]);
+         receivedin.extract(checkin[1]);
+         receivedin.extract(checkin[2]);
       }
 
       if (sentout.getCount() < 3) {
          cout << "Error: not enough sent data" << endl;
       } else {
-         checkout[0] = sentout.extract();
-         checkout[1] = sentout.extract();
-         checkout[2] = sentout.extract();
+         sentout.extract(checkout[0]);
+         sentout.extract(checkout[0]);
+         sentout.extract(checkout[0]);
       }
 
       if ((checkout[0] != checkin[0]) || (checkout[1] != checkin[1]) ||
@@ -171,9 +171,9 @@ void mainloopalgorithms(void) {
          if (sentout.getCount() < 3) {
             cout << "Error: not enough sent data during error" << endl;
          } else {
-            checkout[0] = sentout.extract();
-            checkout[1] = sentout.extract();
-            checkout[2] = sentout.extract();
+            sentout.extract(checkout[0]);
+            sentout.extract(checkout[1]);
+            sentout.extract(checkout[2]);
          }
 
          stop();  

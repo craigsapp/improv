@@ -34,12 +34,12 @@ class CircularBuffer {
                    ~CircularBuffer     ();
 
       int           capacity           (void) const;
-      type          extract            (void);
+      void          extract            (type& item);
       int           getCount           (void) const;
       int           getSize            (void) const;
       void          insert             (const type& aMessage);
       type&         operator[]         (int index);
-      type          read               (void);
+      void          read               (type& item);
       void          reset              (void);
       void          setSize            (int aSize);
       void          write              (const type& aMessage);

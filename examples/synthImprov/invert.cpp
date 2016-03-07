@@ -60,11 +60,11 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiMessage m;
+MidiEvent m;
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       m = synth.extractNote();
-      synth.send(m.p0(), 127 - m.p1(), m.p2());
+      synth.send(m.getP0(), 127 - m.getP1(), m.getP2());
    }
 }
 

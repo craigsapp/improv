@@ -16,7 +16,7 @@
 
 int shadowDistance = 12;     // number of half-steps to place shadow at
 int shadowSide     = 1;      // 1 = higher, -1 = lower
-MidiMessage noteMessage;     // for reading keyno and velocity (and time)
+MidiEvent noteMessage;     // for reading keyno and velocity (and time)
 int shadowNote = 0;          // note to play as a shadow
 int keyray[128] = {0};       // keyboard array which keeps track of notes
 
@@ -46,7 +46,7 @@ void finishup(void) { }
 
 /*-------------------- main loop algorithms -----------------------------*/
 
-void interpretNote(MidiMessage message);
+void interpretNote(MidiEvent message);
 
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
@@ -54,9 +54,9 @@ void mainloopalgorithms(void) {
    }
 }
 
-void interpretNote(MidiMessage message) {
-   int newNote = message.p1();
-   int newVelocity = message.p2();
+void interpretNote(MidiEvent message) {
+   int newNote = message.getP1();
+   int newVelocity = message.getP2();
 
    if (newVelocity != 0) {
       // pick a shadow note

@@ -18,7 +18,7 @@
 
 #include "Event.h"
 
-class MidiEvent;
+class MidiStageEvent;
 
 class OneStageEvent : public Event {
    public:
@@ -39,7 +39,7 @@ class OneStageEvent : public Event {
 
 };
 
-#include "MidiEvent.h"
+#include "MidiStageEvent.h"
 
 #endif  /* _ONESTAGEEVENT_H_INCLUDED */
 

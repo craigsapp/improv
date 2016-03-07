@@ -27,16 +27,16 @@
 //   actual data:
 //
 //   MidiInput midiinput;
-//   MidiMessage message;
+//   MidiEvent message;
 //   int sysexSize;
 //   int bufferNum;
 //   unsigned char *sysexData;
 //
 //   if (midiinput.getCount() > 0) {
-//      message = midiinput.extract();
-//      if (message.p0() == 0xf0) {
+//      midiinput.extract(message);
+//      if (message.getP0() == 0xf0) {
 //         // we have a system exclusive message
-//         bufferNum = message.p1();
+//         bufferNum = message.getP1();
 //         sysexData = midiinput.getSysex(bufferNum);
 //         sysexSize = midiinput.getSysexSize(bufferNum);
 //      }
@@ -75,7 +75,7 @@ int main(void) {
    midiin.setPort(0);
    midiin.open();
 
-   MidiMessage message;
+   MidiEvent message;
    int sysexloc;
    unsigned char *sysexdata = NULL;
    int sysexsize = 0;
@@ -85,9 +85,9 @@ int main(void) {
    cout << "Press Middle C to quit." << endl;
    while (running) {
       if (midiin.getCount() > 0) {
-         message = midiin.extract();
-         if (message.p0() == 0xf0) {
-            sysexloc = message.p1();
+         midiin.extract(message);
+         if (message.getP0() == 0xf0) {
+            sysexloc = message.getP1();
             sysexdata = midiin.getSysex(sysexloc);
             sysexsize = midiin.getSysexSize(sysexloc);
 
@@ -109,9 +109,9 @@ int main(void) {
             // more space is needed for storing a sysex.
             midiin.clearSysex(sysexloc);
             
-         } else if ((message.p0() & 0xf0) == 0x90) {
+         } else if ((message.getP0() & 0xf0) == 0x90) {
             // Exit the program when a middle C note is pressed.
-            if (message.p1() == 60 && message.p2() > 0) {
+            if (message.getP1() == 60 && message.getP2() > 0) {
                running = 0;
             }
          }

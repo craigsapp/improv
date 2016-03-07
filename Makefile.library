@@ -2,7 +2,7 @@
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 ## Creation Date: Fri Jan 15 04:47:24 PST 1999
-## Last Modified: Mon Apr  6 00:53:36 PDT 2015
+## Last Modified: Sun Mar  6 20:33:45 PST 2016
 ## Filename:      ...improv/Makefile.library
 ##
 ## Description: This Makefile creates the improv library lib/libimprov.a
@@ -115,6 +115,7 @@ COMPILER  = LANG=C $(ENV) g++
 
 DEFINES   = $(addprefix -D,$(OSTYPE)) $(addprefix -D,$(OSSUBTYPE))
 PREFLAGS  = -Wall -c -g -O3 $(DEFINES) -I$(INCDIR)
+PREFLAGS += -Iexternal/midifile/include
 PREFLAGS += -fno-strict-aliasing
 PREFLAGS += -std=c++11
 
@@ -136,7 +137,7 @@ vpath %.o   $(OBJDIR)
 OBJS = $(notdir $(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp)))
 
 # targets which don't actually refer to files
-.PHONY : all linux makeobjdir
+.PHONY : all linux makeobjdir midifile
 
 
 ###########################################################################
@@ -144,7 +145,7 @@ OBJS = $(notdir $(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp)))
 # Hardware Configurations:                                                #
 #                                                                         #
 
-all: makeobjdir $(OBJS)
+all: external makeobjdir $(OBJS)
 
    ifeq ($(OSTYPE),LINUX)
 	@echo Making improv library file for linux ...
@@ -164,6 +165,9 @@ all: makeobjdir $(OBJS)
    ifeq ($(OSTYPE),VISUAL)
 	echo "This makefile doesn't work with Visual C++."
    endif
+
+external:
+	(cd external && make)
 
 clean:
 	@echo Erasing object files:
@@ -203,19 +207,19 @@ makeobjdir:
 #   end                                                                   #
 
 AdamsStick.o: AdamsStick.cpp AdamsStick.h MidiIO.h MidiInput.h \
-  MidiInPort.h MidiMessage.h MidiInPort_unsupported.h CircularBuffer.h \
+  MidiInPort.h MidiInPort_unsupported.h CircularBuffer.h \
   CircularBuffer.cpp Array.h SigCollection.h SigCollection.cpp Array.cpp \
   MidiOutput.h MidiOutPort.h MidiOutPort_unsupported.h MidiFileWrite.h \
   FileIO.h SigTimer.h
 
-Event.o: Event.cpp Event.h OneStageEvent.h MidiEvent.h TwoStageEvent.h \
+Event.o: Event.cpp Event.h OneStageEvent.h TwoStageEvent.h \
   NoteEvent.h MultiStageEvent.h FunctionEvent.h EventBuffer.h \
   CircularBuffer.h CircularBuffer.cpp MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h SigTimer.h Array.h \
   SigCollection.h SigCollection.cpp Array.cpp
 
 EventBuffer.o: EventBuffer.cpp EventBuffer.h Event.h OneStageEvent.h \
-  MidiEvent.h TwoStageEvent.h NoteEvent.h MultiStageEvent.h \
+  TwoStageEvent.h NoteEvent.h MultiStageEvent.h \
   FunctionEvent.h CircularBuffer.h CircularBuffer.cpp MidiOutput.h \
   MidiOutPort.h MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h \
   SigTimer.h Array.h SigCollection.h SigCollection.cpp Array.cpp
@@ -223,7 +227,7 @@ EventBuffer.o: EventBuffer.cpp EventBuffer.h Event.h OneStageEvent.h \
 FileIO.o: FileIO.cpp sigConfiguration.h FileIO.h
 
 FunctionEvent.o: FunctionEvent.cpp FunctionEvent.h TwoStageEvent.h \
-  Event.h OneStageEvent.h MidiEvent.h MultiStageEvent.h EventBuffer.h \
+  Event.h OneStageEvent.h MultiStageEvent.h EventBuffer.h \
   CircularBuffer.h CircularBuffer.cpp MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h SigTimer.h Array.h \
   SigCollection.h SigCollection.cpp Array.cpp NoteEvent.h
@@ -234,18 +238,9 @@ KeyboardInput_unix.o: KeyboardInput_unix.cpp KeyboardInput_unix.h
 
 LineDisplay.o: LineDisplay.cpp LineDisplay.h
 
-MidiEvent.o: MidiEvent.cpp MidiEvent.h OneStageEvent.h Event.h \
-  TwoStageEvent.h NoteEvent.h MultiStageEvent.h FunctionEvent.h \
-  EventBuffer.h CircularBuffer.h CircularBuffer.cpp MidiOutput.h \
-  MidiOutPort.h MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h \
-  SigTimer.h Array.h SigCollection.h SigCollection.cpp Array.cpp
-
-MidiFile.o: MidiFile.cpp MidiFile.h FileIO.h Array.h SigCollection.h \
-  SigCollection.cpp Array.cpp
-
 MidiFileWrite.o: MidiFileWrite.cpp MidiFileWrite.h FileIO.h SigTimer.h
 
-MidiIO.o: MidiIO.cpp MidiIO.h MidiInput.h MidiInPort.h MidiMessage.h \
+MidiIO.o: MidiIO.cpp MidiIO.h MidiInput.h MidiInPort.h \
   MidiInPort_unsupported.h CircularBuffer.h CircularBuffer.cpp Array.h \
   SigCollection.h SigCollection.cpp Array.cpp MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h SigTimer.h
@@ -261,14 +256,12 @@ MidiInPort_linux.o: MidiInPort_linux.cpp
 MidiInPort_oss.o: MidiInPort_oss.cpp
 
 MidiInPort_unsupported.o: MidiInPort_unsupported.cpp \
-  MidiInPort_unsupported.h MidiMessage.h CircularBuffer.h \
+  MidiInPort_unsupported.h CircularBuffer.h \
   CircularBuffer.cpp Array.h SigCollection.h SigCollection.cpp Array.cpp
 
-MidiInput.o: MidiInput.cpp MidiInput.h MidiInPort.h MidiMessage.h \
+MidiInput.o: MidiInput.cpp MidiInput.h MidiInPort.h \
   MidiInPort_unsupported.h CircularBuffer.h CircularBuffer.cpp Array.h \
   SigCollection.h SigCollection.cpp Array.cpp
-
-MidiMessage.o: MidiMessage.cpp MidiMessage.h
 
 MidiOutPort_alsa.o: MidiOutPort_alsa.cpp
 
@@ -285,18 +278,18 @@ MidiOutput.o: MidiOutput.cpp MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h SigTimer.h Array.h \
   SigCollection.h SigCollection.cpp Array.cpp
 
-MidiPerform.o: MidiPerform.cpp MidiPerform.h MidiFile.h FileIO.h Array.h \
+MidiPerform.o: MidiPerform.cpp MidiPerform.h FileIO.h Array.h \
   SigCollection.h SigCollection.cpp Array.cpp CircularBuffer.h \
   CircularBuffer.cpp SigTimer.h MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h
 
-MidiPort.o: MidiPort.cpp MidiPort.h MidiInPort.h MidiMessage.h \
+MidiPort.o: MidiPort.cpp MidiPort.h MidiInPort.h \
   MidiInPort_unsupported.h CircularBuffer.h CircularBuffer.cpp \
   Array.h SigCollection.h SigCollection.cpp Array.cpp MidiOutPort.h \
   MidiOutPort_unsupported.h
 
 MultiStageEvent.o: MultiStageEvent.cpp MultiStageEvent.h Event.h \
-  OneStageEvent.h MidiEvent.h TwoStageEvent.h NoteEvent.h EventBuffer.h \
+  OneStageEvent.h TwoStageEvent.h NoteEvent.h EventBuffer.h \
   CircularBuffer.h CircularBuffer.cpp MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h SigTimer.h Array.h \
   SigCollection.h SigCollection.cpp Array.cpp FunctionEvent.h
@@ -304,7 +297,7 @@ MultiStageEvent.o: MultiStageEvent.cpp MultiStageEvent.h Event.h \
 Nidaq.o: Nidaq.cpp
 
 NoteEvent.o: NoteEvent.cpp NoteEvent.h TwoStageEvent.h Event.h \
-  OneStageEvent.h MidiEvent.h MultiStageEvent.h FunctionEvent.h \
+  OneStageEvent.h MultiStageEvent.h FunctionEvent.h \
   EventBuffer.h CircularBuffer.h CircularBuffer.cpp MidiOutput.h \
   MidiOutPort.h MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h \
   SigTimer.h Array.h SigCollection.h SigCollection.cpp Array.cpp
@@ -313,7 +306,7 @@ OneStageEvent.o: OneStageEvent.cpp OneStageEvent.h Event.h TwoStageEvent.h \
   NoteEvent.h MultiStageEvent.h FunctionEvent.h EventBuffer.h \
   CircularBuffer.h CircularBuffer.cpp MidiOutput.h MidiOutPort.h \
   MidiOutPort_unsupported.h MidiFileWrite.h FileIO.h SigTimer.h Array.h \
-  SigCollection.h SigCollection.cpp Array.cpp MidiEvent.h
+  SigCollection.h SigCollection.cpp Array.cpp
 
 Options.o: Options.cpp Options.h Array.h SigCollection.h SigCollection.cpp \
   Array.cpp 
@@ -324,7 +317,7 @@ Performance.o: Performance.cpp Performance.h PerformData.h \
   FileIO.h SigTimer.h
 
 RadioBaton.o: RadioBaton.cpp RadioBaton.h batonprotocol.h CircularBuffer.h \
-  CircularBuffer.cpp MidiMessage.h MidiIO.h MidiInput.h MidiInPort.h \
+  CircularBuffer.cpp MidiIO.h MidiInput.h MidiInPort.h \
   MidiInPort_unsupported.h Array.h SigCollection.h SigCollection.cpp \
   Array.cpp MidiOutput.h MidiOutPort.h MidiOutPort_unsupported.h \
   MidiFileWrite.h FileIO.h SigTimer.h
@@ -342,13 +335,13 @@ Sequencer_oss.o: Sequencer_oss.cpp
 SigTimer.o: SigTimer.cpp SigTimer.h
 
 Synthesizer.o: Synthesizer.cpp Synthesizer.h MidiIO.h MidiInput.h \
-  MidiInPort.h MidiMessage.h CircularBuffer.h \
+  MidiInPort.h CircularBuffer.h \
   CircularBuffer.cpp Array.h SigCollection.h SigCollection.cpp Array.cpp \
   MidiOutput.h MidiOutPort.h MidiFileWrite.h \
   FileIO.h SigTimer.h
 
 TwoStageEvent.o: TwoStageEvent.cpp TwoStageEvent.h Event.h OneStageEvent.h \
-  MidiEvent.h MultiStageEvent.h FunctionEvent.h EventBuffer.h \
+  MultiStageEvent.h FunctionEvent.h EventBuffer.h \
   CircularBuffer.h CircularBuffer.cpp MidiOutput.h MidiOutPort.h \
   MidiFileWrite.h FileIO.h SigTimer.h Array.h \
   SigCollection.h SigCollection.cpp Array.cpp NoteEvent.h
@@ -358,14 +351,14 @@ Voice.o: Voice.cpp Voice.h MidiOutput.h MidiOutPort.h \
   SigCollection.h SigCollection.cpp Array.cpp
 
 improv.o: improv.cpp improv.h mididefines.h midichannels.h notenames.h \
-  gminstruments.h sigControl.h SigTimer.h Idler.h MidiMessage.h \
+  gminstruments.h sigControl.h SigTimer.h Idler.h \
   MidiOutPort.h \
   MidiOutput.h MidiFileWrite.h FileIO.h Array.h SigCollection.h \
   SigCollection.cpp Array.cpp \
   CircularBuffer.h CircularBuffer.cpp MidiInPort.h MidiInput.h MidiPort.h \
   MidiIO.h RadioBaton.h batonprotocol.h AdamsStick.h Synthesizer.h \
-  Voice.h KeyboardInput.h KeyboardInput_unix.h MidiPerform.h MidiFile.h \
-  EventBuffer.h Event.h OneStageEvent.h MidiEvent.h TwoStageEvent.h \
+  Voice.h KeyboardInput.h KeyboardInput_unix.h MidiPerform.h \
+  EventBuffer.h Event.h OneStageEvent.h TwoStageEvent.h \
   NoteEvent.h MultiStageEvent.h FunctionEvent.h Options.h
 
 

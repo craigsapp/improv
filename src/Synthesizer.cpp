@@ -75,8 +75,10 @@ int Synthesizer::controller(int controlNumber, int channel, int index) {
 //	in the incoming note buffer.
 //
 
-MidiMessage Synthesizer::extractNote(void) {
-   return note.extract();
+MidiEvent Synthesizer::extractNote(void) {
+   MidiEvent event;
+   note.extract(event);
+	return event;
 }
 
 
@@ -100,7 +102,7 @@ int Synthesizer::getNoteCount(void) const {
 //	relative to the currently inserted note.
 //
 
-MidiMessage& Synthesizer::operator[](int index) {
+MidiEvent& Synthesizer::operator[](int index) {
    return note[index];
 }
 
@@ -112,8 +114,10 @@ MidiMessage& Synthesizer::operator[](int index) {
 //
 
 void Synthesizer::processIncomingMessages(void) {
+   MidiEvent event;
    while (MidiInput::getCount() > 0) {
-      interpretMessage(MidiInPort::extract());
+      MidiInPort::extract(event);
+      interpretMessage(event);
    }
 }
 
@@ -151,13 +155,13 @@ void Synthesizer::zeroControllers(void) {
 //    separate slots according to channel.
 //
 
-void Synthesizer::interpretMessage(MidiMessage aMessage) {
-   if ((aMessage.command() & 0xf0) == 0x90) {         // a Note-on message
+void Synthesizer::interpretMessage(MidiEvent& aMessage) {
+   if ((aMessage.getCommandByte() & 0xf0) == 0x90) {         // a Note-on message
       note.insert(aMessage);
-   } else if ((aMessage.command() & 0xf0) == 0x80) {  // a Note-off message
+   } else if ((aMessage.getCommandByte() & 0xf0) == 0x80) {  // a Note-off message
       note.insert(aMessage);
-   } else if ((aMessage.command() & 0xf0) == 0xb0) {  // a controller message
-      Controller[aMessage.command() & 0x0f][aMessage.p1()].insert(aMessage.p2());
+   } else if ((aMessage.getCommandByte() & 0xf0) == 0xb0) {  // a controller message
+      Controller[aMessage.getCommandByte() & 0x0f][aMessage.getP1()].insert(aMessage.getP2());
    }
    // ignore all other messages
 }

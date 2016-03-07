@@ -238,7 +238,7 @@ int MidiPerform::channelCollapse(int aSetting) {
 
 void MidiPerform::xcheck(void) {
    int quitQ = 0;
-   MFEvent* event = NULL;
+   MidiEvent* event = NULL;
    if (beatTimer.expired()) {   // waiting for the next beat, so don't continue
       if (getTempoMethod() != TEMPO_METHOD_AUTOMATIC) {
          return;
@@ -252,24 +252,24 @@ void MidiPerform::xcheck(void) {
          quitQ++;
          continue;
       }
-      while (midifile.getEvent(i, readIndex[i]).time <= currentTime) {
+      while (midifile.getEvent(i, readIndex[i]).tick <= currentTime) {
          event = &midifile.getEvent(i, readIndex[i]);
-         if (((event->data[0] & 0xf0) == 0x90) ||
-             ((event->data[0] & 0xf0) == 0x80)) {
+         if ((((*event)[0] & 0xf0) == 0x90) ||
+             (((*event)[0] & 0xf0) == 0x80)) {
             if (channelCollapse()) {
-               event->data[0] = event->data[0] & (uchar)0xf0;
+               (*event)[0] = (*event)[0] & (uchar)0xf0;
             }
-            if (event->data[2] != 0) {
-               int amplitude = (int)(event->data[2] * getAmp());
+            if ((*event)[2] != 0) {
+               int amplitude = (int)((*event)[2] * getAmp());
                if (amplitude < 0) {
                   amplitude = 0;
                } else if (amplitude > getMaxAmp()) {
                   amplitude = getMaxAmp();
                }
-               event->data[2] = (uchar)amplitude;
+               (*event)[2] = (uchar)amplitude;
             }
          }
-         rawsend(event->data.getBase(), event->data.getSize());
+         rawsend(event->data(), event->size());
          readIndex[i] = readIndex[i] + 1;
          if (readIndex[i] >= midifile.getNumEvents(i)) {
             quitQ++;

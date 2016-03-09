@@ -1,20 +1,20 @@
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 ## Creation Date: Sun Mar  6 14:41:14 PST 2016
-## Last Modified: Sun Mar  6 14:41:17 PST 2016
+## Last Modified: Tue Mar  8 20:03:59 PST 2016
 ## Filename:      improv/external/Makefile
 ## Syntax:        GNU Makefile
 ##
 ## Description:   This Makefile prepares the external libraries.
 ##
 ## To run this makefile, type:
-##     make everything
+##     make
 ##
 
 .PHONY: midifile
 
-CURL = $(shell command -v curl)
-WGET = $(shell command -v wget)
+CURL = $(shell which curl)
+WGET = $(shell which wget)
 
 
 all: midifile
@@ -24,10 +24,8 @@ midifile: midifilecompile
 
 	
 midifiledownload:
-ifndef CURL
-   ifndef WGET
-	@echo CURL: $(CURL)
-	@echo WGET: $(WGET)
+ifeq ($(CURL),)
+   ifeq ($(WGET),)
 	@echo "Install either wget or curl on your computer to continue"
 	exit 1
    else
@@ -40,7 +38,7 @@ endif
 
 midifileunpack:
 	unzip midifile.zip
-	# unpacks to midifile-master
+	# unpacks to midifile-master, so move to midifile:
 	-rm -rf midifile
 	mv midifile-master midifile
 

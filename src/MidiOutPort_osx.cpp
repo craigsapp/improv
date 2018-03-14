@@ -13,6 +13,7 @@
 //                MidiOutPort class.
 // Reference:
 // https://developer.apple.com/library/mac/documentation/AudioToolbox/Reference/MusicPlayerServices_Reference/index.html
+// https://stackoverflow.com/questions/46221364/xcode-9-throws-errors-involving-require
 // 
 
 #if defined(OSXPC) || defined(OSXOLD)
@@ -652,10 +653,10 @@ int MidiOutPort_osx::initialize_softsynth(void) {
    if (graph) {
       deinitialize_softsynth();
    }
-   require_noerr( result = MidiOutPort_osx::createAUGraph(graph, synthUnit), InitError );
-   require_noerr( result = ::AUGraphInitialize(graph), InitError );
+   __Require_noErr( result = MidiOutPort_osx::createAUGraph(graph, synthUnit), InitError );
+   __Require_noErr( result = ::AUGraphInitialize(graph), InitError );
    // CAShow(graph);
-   require_noerr( result = ::AUGraphStart(graph), InitError );
+   __Require_noErr( result = ::AUGraphStart(graph), InitError );
 
    return 1;
    InitError:
@@ -700,30 +701,30 @@ OSStatus MidiOutPort_osx::createAUGraph(AUGraph& outGraph, AudioUnit& outSynth) 
    cd.componentFlags     = 0;
    cd.componentFlagsMask = 0;
 
-   require_noerr (result = NewAUGraph (&outGraph), home);
+   __Require_noErr (result = NewAUGraph (&outGraph), home);
 
    cd.componentType      = kAudioUnitType_MusicDevice;
    cd.componentSubType   = kAudioUnitSubType_DLSSynth;
 
-   require_noerr (result = AUGraphAddNode (outGraph, &cd, &synthNode), home);
+   __Require_noErr (result = AUGraphAddNode (outGraph, &cd, &synthNode), home);
 
    cd.componentType      = kAudioUnitType_Effect;
    cd.componentSubType   = kAudioUnitSubType_PeakLimiter;
 
-   require_noerr (result = AUGraphAddNode (outGraph, &cd, &limiterNode), home);
+   __Require_noErr (result = AUGraphAddNode (outGraph, &cd, &limiterNode), home);
 
    cd.componentType      = kAudioUnitType_Output;
    cd.componentSubType   = kAudioUnitSubType_DefaultOutput;
-   require_noerr (result = AUGraphAddNode (outGraph, &cd, &outNode), home);
+   __Require_noErr (result = AUGraphAddNode (outGraph, &cd, &outNode), home);
 
-   require_noerr (result = AUGraphOpen (outGraph), home);
+   __Require_noErr (result = AUGraphOpen (outGraph), home);
 
-   require_noerr (result = AUGraphConnectNodeInput (outGraph, synthNode,
+   __Require_noErr (result = AUGraphConnectNodeInput (outGraph, synthNode,
         0, limiterNode, 0), home);
-   require_noerr (result = AUGraphConnectNodeInput (outGraph, limiterNode,
+   __Require_noErr (result = AUGraphConnectNodeInput (outGraph, limiterNode,
         0, outNode, 0), home);
 
-   require_noerr (result = AUGraphNodeInfo(outGraph, synthNode, 0, &outSynth),
+   __Require_noErr (result = AUGraphNodeInfo(outGraph, synthNode, 0, &outSynth),
          home);
 
 home:

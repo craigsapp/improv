@@ -21,7 +21,7 @@ int nextHenon(void);
 
 /*----------------- beginning of improvization algorithms ---------------*/
 
-MidiEvent message;
+smf::MidiEvent message;
 double y = 0.0;
 double x = 0.0;
 double newx;

@@ -20,7 +20,7 @@
 /*----------------- beginning of improvization algorithms ---------------*/
 
 int channel = 0;         // MIDI channel (offset 0) on which to play notes 
-MidiEvent message;     // for reading keyno and velocity (and time)
+smf::MidiEvent message;     // for reading keyno and velocity (and time)
 int offNote[128] = {0};  // for keeping track of note-offs
 int instrument = GM_VIBRAPHONE; // initial timbre of output notes
 int sustain = 0;         // for sustain control
@@ -118,7 +118,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

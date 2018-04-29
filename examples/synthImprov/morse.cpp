@@ -36,7 +36,7 @@
 
 /*----------------- beginning of improvization algorithms ---------------*/
 
-MidiEvent message;
+smf::MidiEvent message;
 CircularBuffer<int> attacktimes; // time of attack
 CircularBuffer<int> durations;   // time between attack and release
 CircularBuffer<int> iois;        // time between attacks

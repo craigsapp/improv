@@ -1021,7 +1021,7 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiEvent noteMessage;
+   static smf::MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 

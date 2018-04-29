@@ -701,7 +701,7 @@ int getKernTrack(int number, HumdrumFile& infile) {
    int i;
 
    for (i=1; i<=infile.getMaxTracks(); i++) {
-      if (strcmp("**kern", infile.getTrackExInterp(i)) == 0) {
+      if (infile.getTrackExInterp(i) == "**kern") {
          counter++;
       }
       if (counter == number) {
@@ -745,7 +745,9 @@ void checkOptions(void) {
    //} else {
    //   inputNewFile();
    //}
-   streamer.setFileList(options.getArgList());
+   vector<string> arglist;
+   options.getArgList(arglist);
+   streamer.setFileList(arglist);
 
    mine = options.getInteger("min");
    if (mine < 0) {

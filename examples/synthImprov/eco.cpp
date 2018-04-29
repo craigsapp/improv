@@ -24,7 +24,7 @@
 #define MAXECHOTIME 10000   /* max time for activating echos */
 
 EventBuffer eventBuffer;  // for future notes 
-MidiEvent message;      // for reading keyno and velocity (and time)
+smf::MidiEvent message;   // for reading keyno and velocity (and time)
 int channel;              // channel to play the echos on
 int key;                  // the current MIDI key number
 int duration;             // duration of the echoing note
@@ -210,7 +210,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

@@ -15,7 +15,7 @@
 
 int shadowDistance = 12;     // number of half-steps to place shadow at
 int shadowSide     = 1;      // 1 = higher, -1 = lower
-MidiEvent noteMessage;     // for reading keyno and velocity (and time)
+smf::MidiEvent noteMessage;     // for reading keyno and velocity (and time)
 int shadowNote = 0;          // note to play as a shadow
 
 /*--------------------- maintenance algorithms --------------------------*/

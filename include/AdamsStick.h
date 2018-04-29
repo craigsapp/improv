@@ -159,7 +159,7 @@ class AdamsStick : public MidiIO {
       int         versionInfo;          // -1 = unknown version
       SigTimer    pollTimer;
 
-      void        interpretCommand      (MidiEvent& aMessage);
+      void        interpretCommand      (smf::MidiEvent& aMessage);
       void        sendVersionMessage    (void);
       void        sendStreamingMessage  (void);
       void        sendPollingMessage    (void);

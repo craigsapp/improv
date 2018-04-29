@@ -27,8 +27,8 @@ class MidiInput : public MidiInPort {
 
       int           getBufferSize     (void);
       int           getCount          (void);
-      void          extract           (MidiEvent& event);
-      void          insert            (const MidiEvent& aMessage);
+      void          extract           (smf::MidiEvent& event);
+      void          insert            (const smf::MidiEvent& aMessage);
       int           isOrphan          (void) const;
       void          makeOrphanBuffer  (int aSize = 1024);
       void          removeOrphanBuffer(void);
@@ -40,7 +40,7 @@ class MidiInput : public MidiInPort {
       double        fscale14          (int value, double min, double max);
 
    protected:
-      CircularBuffer<MidiEvent>* orphanBuffer;
+      CircularBuffer<smf::MidiEvent>* orphanBuffer;
 
 };
 

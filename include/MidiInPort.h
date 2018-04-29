@@ -56,7 +56,7 @@ class MidiInPort : protected MIDIINPORT {
       void        clearSysex(int buffer) { MIDIINPORT::clearSysex(buffer); }
       void        close(void)        { MIDIINPORT::close(); }
       void        closeAll(void)     { MIDIINPORT::closeAll(); }
-      void        extract(MidiEvent& event) { MIDIINPORT::extract(event); }
+      void        extract(smf::MidiEvent& event) { MIDIINPORT::extract(event); }
       int         getBufferSize(void) { return MIDIINPORT::getBufferSize(); }
       int         getChannelOffset(void) const { 
                                         return MIDIINPORT::getChannelOffset(); }
@@ -71,12 +71,12 @@ class MidiInPort : protected MIDIINPORT {
       uchar*      getSysex(int buffer) { return MIDIINPORT::getSysex(buffer); }
       int getSysexSize(int buffer) { return MIDIINPORT::getSysexSize(buffer); }
       int         getTrace(void)     { return MIDIINPORT::getTrace(); }
-      void        insert(const MidiEvent& aMessage) {
+      void        insert(const smf::MidiEvent& aMessage) {
                      MIDIINPORT::insert(aMessage); }
       int         installSysex(uchar* anArray, int aSize) {
                      return MIDIINPORT::installSysex(anArray, aSize); }
       int         open(void)         { return MIDIINPORT::open(); }
-      MidiEvent&  operator[](int index) {
+      smf::MidiEvent&  operator[](int index) {
                      return MIDIINPORT::message(index); }
       void        pause(void)        { MIDIINPORT::pause(); }
       void        setBufferSize(int aSize) {

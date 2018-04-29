@@ -219,7 +219,7 @@ void keyboardchar(int key) {
 //
 
 void processNoteForMarkov(void) {
-   MidiEvent message;
+   smf::MidiEvent message;
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();
       if (message.getP2() != 0) {
@@ -242,7 +242,7 @@ void processNoteForMarkov(void) {
 //
 
 void performNoteFromMarkov(void) {
-   MidiEvent message;
+   smf::MidiEvent message;
    int newnote = 0;
    if (synth.getNoteCount() != 0) {
       while (synth.getNoteCount() > 0) {

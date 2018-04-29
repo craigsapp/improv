@@ -252,7 +252,7 @@ void AdamsStick::poll(void) {
 //
 
 void AdamsStick::processIncomingMessages(void) { 
-   MidiEvent event;
+   smf::MidiEvent event;
    while (MidiInput::getCount() > 0) {
       MidiInput::extract(event);
       interpretCommand(event);
@@ -513,7 +513,7 @@ int AdamsStick::s3fc(int min, int max) {
 
 #define POSITION_THRESHOLD 2000
 
-void AdamsStick::interpretCommand(MidiEvent& aMessage) { 
+void AdamsStick::interpretCommand(smf::MidiEvent& aMessage) { 
    switch (aMessage.getCommandByte()) {
       case 0x90:
          t1s = aMessage.tick;

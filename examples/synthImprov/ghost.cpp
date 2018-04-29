@@ -26,7 +26,7 @@ Array<int> noteonvels(128);         // list of the last time a note was played
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
 void createGhost(int key, int velocity, int channel, int duration);
-void processNote(MidiEvent message);
+void processNote(smf::MidiEvent message);
 
 
 /*--------------------- maintenance algorithms --------------------------*/
@@ -73,7 +73,7 @@ void mainloopalgorithms(void) {
 // processNote -- 
 //
 
-void processNote(MidiEvent message) {
+void processNote(smf::MidiEvent message) {
    int key = message.getP1();
    int velocity = message.getP2() / 2;
    int channel = message.getP0() & 0x0f;
@@ -142,7 +142,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

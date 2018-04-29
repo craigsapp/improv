@@ -74,15 +74,15 @@ int       bufferIndex = 0;                   // for keyboard input buffer
 
 // function declarations
 void        checkOptions             (Options& opts);
-void        displayMessage           (ostream& out, MidiEvent message, 
+void        displayMessage           (ostream& out, smf::MidiEvent message, 
 		                      int style);
 void        displayHeader            (ostream& out);
 void        examineInputForCommand   (const char* inputBuffer);
 void        example                  (void);
 const char* getGmInst                (int number);
 char*       getKey                   (int keynum);
-void        interpret                (ostream& out, MidiEvent message);
-void        interpretSysex           (ostream& out, MidiEvent message);
+void        interpret                (ostream& out, smf::MidiEvent message);
+void        interpretSysex           (ostream& out, smf::MidiEvent message);
 float       makePitchBend            (int lsb, int msb);
 void        printbyte                (ostream& out, int value, int location, 
                                       int style);
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
 
    KeyboardInput keyboard;     // for typing comments into output file
    char keych;                 // character from keyboard
-   MidiEvent message;
+   smf::MidiEvent message;
    int lastTime = -1;
 
    midi.open();
@@ -419,7 +419,7 @@ void displayHeader(ostream& out) {
 //	specified on the command-line
 //
 
-void displayMessage(ostream& out, MidiEvent message, int style) {
+void displayMessage(ostream& out, smf::MidiEvent message, int style) {
    if (secondsQ) {
       out << dec << message.tick / 1000.0 << "\t";
    } else {
@@ -594,7 +594,7 @@ char* getKey(int keynum) {
 // interpret -- convert a MIDI message to English.
 //
 
-void interpret(ostream& out, MidiEvent message) {
+void interpret(ostream& out, smf::MidiEvent message) {
    out << dec;      // set output to decimal notation
  
    switch (message.getP0() & 0xf0) {
@@ -669,7 +669,7 @@ void interpret(ostream& out, MidiEvent message) {
 // interpretSysex -- try to identify the system exclusive message
 //
 
-void interpretSysex(ostream& out, MidiEvent message) {
+void interpretSysex(ostream& out, smf::MidiEvent message) {
    if (message.getP0() != 0xf0) {
       cout << "Error: interpretSysex needed a sysex message"
               " but got: " << hex << (int)message.getP0() << dec << endl;

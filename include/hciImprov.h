@@ -99,7 +99,7 @@ int runImprovInterface(void) {
    int p1;       // first parameter byte
    int p2;       // second parameter byte
   
-   MidiEvent message;
+   smf::MidiEvent message;
    while (1) {                        // event loop
       mcount = 0;
       while(midi.getCount() > 0 && mcount < 15) {
@@ -609,7 +609,7 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiEvent noteMessage;
+   static smf::MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 
@@ -670,7 +670,7 @@ void charsynth(int aKey) {
 //
 
 void octavekeyboard(int key, int octave) {
-   static MidiEvent noteMessage;
+   static smf::MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 

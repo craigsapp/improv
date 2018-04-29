@@ -75,7 +75,7 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiEvent message;
+smf::MidiEvent message;
 void mainloopalgorithms(void) { 
    while (synth.getNoteCount() > 0) {
       message = synth.extractNote();

@@ -17,14 +17,14 @@
 
 /*--------------------- maintenance algorithms --------------------------*/
 
-CircularBuffer<MidiEvent> memory;
+CircularBuffer<smf::MidiEvent> memory;
 int mintime = 0;  // minimum time for squelch to occur
 int maxtime = 0;  // maximum time for squelch to occur
 int sstate = 1;    // toggle for squelching
 int veladd = 25;   // add extra velocity to match input note
 
-int checkForSquelch(MidiEvent& message, 
-      CircularBuffer<MidiEvent>& memory, int mintime, 
+int checkForSquelch(smf::MidiEvent& message, 
+      CircularBuffer<smf::MidiEvent>& memory, int mintime, 
       int maxtime, int curtime);
 
 
@@ -79,7 +79,7 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiEvent message;
+smf::MidiEvent message;
 int oldnote = 0;
 int outvel;
 void mainloopalgorithms(void) { 
@@ -111,7 +111,7 @@ void mainloopalgorithms(void) {
 
 
 
-int checkForSquelch(MidiEvent& message, CircularBuffer<MidiEvent>& memory, 
+int checkForSquelch(smf::MidiEvent& message, CircularBuffer<smf::MidiEvent>& memory, 
       int mintime, int maxtime, int curtime) {
    int i;
    if (memory.getSize() == 0) {

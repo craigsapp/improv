@@ -23,12 +23,12 @@ using namespace std;
 #define SIXTEENTH 30         /* ticks per sixteenth note */
 
 typedef unsigned char uchar;
-void AddDrumTrack(MidiFile& midifile, int* data, int instrument, int ticks);
+void AddDrumTrack(smf::MidiFile& midifile, int* data, int instrument, int ticks);
 
 ///////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
-   MidiFile outputfile;        // create an empty MIDI file with one track
+   smf::MidiFile outputfile;        // create an empty MIDI file with one track
    outputfile.absoluteTicks(); // time information stored as absolute time
                                // (will be coverted to delta time when written)
    outputfile.setTicksPerQuarterNote(QUARTER);
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 //    a single percussion instrument.  Tablature data is ended by a -1
 //
 
-void AddDrumTrack(MidiFile& midifile, int* data, int instrument, int ticks) {
+void AddDrumTrack(smf::MidiFile& midifile, int* data, int instrument, int ticks) {
    vector<uchar> midievent;   // temporary storage for MIDI events
    midievent.resize(3);       // set the size of the array to 3 bytes
    midievent[2] = 64;         // set the loudness to a constant value

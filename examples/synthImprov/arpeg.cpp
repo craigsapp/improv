@@ -40,7 +40,7 @@
 
 int octave = 4;                 // octave range for computer keyboard notes
 int keyboardnote = 0;           // computer keyboard note
-MidiEvent noteMessage;        // for reading keyno and velocity (and time)
+smf::MidiEvent noteMessage;     // for reading keyno and velocity (and time)
 EventBuffer eventBuffer(2000);  // for future notes
 int chordType = MAJOR_TRIAD;    // the type of chord to play when key pressed
 int onset[4] = {0};             // the rhythm of the chord
@@ -104,7 +104,7 @@ void finishup(void) { }
 /*-------------------- main loop algorithms -----------------------------*/
 
 
-void playchord(MidiEvent aMessage, int chordQuality, 
+void playchord(smf::MidiEvent aMessage, int chordQuality, 
       int* rhythm, int* dur) {
    int numNotes = 0;             // the number of notes to play
    NoteEvent tempNote;           // temporary Note for copying into eventBuffer
@@ -219,7 +219,7 @@ void recordRhythms(void) {
    int offtime;
    int playedNotes[4] = {0};
    int startTime = 0;
-   MidiEvent noteMessage;
+   smf::MidiEvent noteMessage;
    while (oncount <= 4 && offcount <=4 ) {
       if (interfaceKeyboard.hit())  checkKeyboard();
       synth.processIncomingMessages();

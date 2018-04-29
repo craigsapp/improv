@@ -102,18 +102,18 @@ int     maxcount = 100000;
 vector<vector<double> > matlabarray;
 
 // function declarations:
-void      convertMidiFile       (MidiFile& midifile,
+void      convertMidiFile       (smf::MidiFile& midifile,
                                  vector<vector<double> >& matlab);
-//void    setTempo              (MidiFile& midifile, int index, double& tempo);
+//void    setTempo              (smf::MidiFile& midifile, int index, double& tempo);
 void      checkOptions          (Options& opts, int argc, char** argv);
 void      example               (void);
 void      usage                 (const char* command);
-double    getTime               (int ticks, MidiFile& midifile);
-void      processMetaEvent      (MidiFile& midifile, int i,
+double    getTime               (int ticks, smf::MidiFile& midifile);
+void      processMetaEvent      (smf::MidiFile& midifile, int i,
                                  vector<double>& event);
 void      printEvent            (vector<double>& event);
-void      printLegend           (MidiFile& midifile);
-void      printMatlabArray      (MidiFile& midifile,
+void      printLegend           (smf::MidiFile& midifile);
+void      printMatlabArray      (smf::MidiFile& midifile,
                                  vector<vector<double> >& matlab);
 void      sortArray             (vector<vector<double> >& matlab);
 int       eventcmp              (const void* a, const void* b);
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
    legend_controller.resize(128);
 
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1));
+   smf::MidiFile midifile(options.getArg(1));
 
    convertMidiFile(midifile, matlabarray);
    if (!verboseQ) {
@@ -186,7 +186,7 @@ void printOpcodeVariables(vector<int> opcodes) {
 // convertMidiFile --
 //
 
-void convertMidiFile(MidiFile& midifile, vector<vector<double> >& matlab) {
+void convertMidiFile(smf::MidiFile& midifile, vector<vector<double> >& matlab) {
    midifile.absoluteTicks();
    midifile.joinTracks();
    if (secQ || msecQ) {
@@ -324,8 +324,8 @@ void convertMidiFile(MidiFile& midifile, vector<vector<double> >& matlab) {
 // processMetaEvent -- Handle meta events.
 //
 
-void processMetaEvent(MidiFile& midifile, int i, vector<double>& event) {
-   MidiEvent& mfevent = midifile[0][i];
+void processMetaEvent(smf::MidiFile& midifile, int i, vector<double>& event) {
+   smf::MidiEvent& mfevent = midifile[0][i];
 
    switch (mfevent[1]) {
       case 0x51:  // tempo change
@@ -401,7 +401,7 @@ void processMetaEvent(MidiFile& midifile, int i, vector<double>& event) {
 // getTime -- return the time in command-line specified time unit
 //
 
-double getTime(int ticks, MidiFile& midifile) {
+double getTime(int ticks, smf::MidiFile& midifile) {
    int tpq = midifile.getTicksPerQuarterNote();
    switch (timetype) {
       case TICK:
@@ -424,14 +424,14 @@ double getTime(int ticks, MidiFile& midifile) {
 // setTempo -- set the current tempo
 //
 
-void setTempo(MidiFile& midifile, int index, double& tempo) {
+void setTempo(smf::MidiFile& midifile, int index, double& tempo) {
    double newtempo = 0.0;
    static int count = 0;
    count++;
    vector<double> event;
    event.assign(7, unused);
 
-   MidiEvent& mididata = midifile[0][index];
+   smf::MidiEvent& mididata = midifile[0][index];
 
    int microseconds = 0;
    microseconds = microseconds | (mididata.data[3] << 16);
@@ -707,7 +707,7 @@ const char *GMcontrollers[128] = {
 };
 
 
-void printLegend(MidiFile& midifile) {
+void printLegend(smf::MidiFile& midifile) {
    int sum = 0;
    int i;
 
@@ -848,7 +848,7 @@ void printLegend(MidiFile& midifile) {
 // printMatlabArray -- print the Matlab array representing the MIDI file.
 //
 
-void printMatlabArray(MidiFile& midifile, vector<vector<double> >& matlab) {
+void printMatlabArray(smf::MidiFile& midifile, vector<vector<double> >& matlab) {
    int i;
    sortArray(matlab);
    printLegend(midifile);

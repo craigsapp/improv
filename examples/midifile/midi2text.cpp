@@ -29,8 +29,8 @@ int     maxcount = 100000;
 double  tempo = 60.0;
 
 // function declarations:
-void      convertMidiFileToText (MidiFile& midifile);
-void      setTempo              (MidiFile& midifile, int index, double& tempo);
+void      convertMidiFileToText (smf::MidiFile& midifile);
+void      setTempo              (smf::MidiFile& midifile, int index, double& tempo);
 void      checkOptions          (Options& opts, int argc, char** argv);
 void      example               (void);
 void      usage                 (const char* command);
@@ -39,7 +39,7 @@ void      usage                 (const char* command);
 
 int main(int argc, char* argv[]) {
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1));
+   smf::MidiFile midifile(options.getArg(1));
    convertMidiFileToText(midifile);
    return 0;
 }
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 // convertMidiFileToText --
 //
 
-void convertMidiFileToText(MidiFile& midifile) {
+void convertMidiFileToText(smf::MidiFile& midifile) {
    midifile.absoluteTicks();
    midifile.joinTracks();
 
@@ -106,12 +106,12 @@ void convertMidiFileToText(MidiFile& midifile) {
 // setTempo -- set the current tempo
 //
 
-void setTempo(MidiFile& midifile, int index, double& tempo) {
+void setTempo(smf::MidiFile& midifile, int index, double& tempo) {
    double newtempo = 0.0;
    static int count = 0;
    count++;
 
-   MidiEvent& mididata = midifile[0][index];
+   smf::MidiEvent& mididata = midifile[0][index];
 
    int microseconds = 0;
    microseconds = microseconds | (mididata[3] << 16);

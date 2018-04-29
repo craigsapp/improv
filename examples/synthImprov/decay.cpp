@@ -12,18 +12,18 @@
 
 /*----------------- beginning of improvization algorithms ---------------*/
 
-EventBuffer   eventBuffer;      // for future notes 
-MidiEvent   message;          // for reading keyno and velocity (and time)
-Array<int>    notestates(128);  // for keeping track of note on/off
-Array<double> decaystates(128); // for keeping track of note on/off
-Array<int>    onvels(128);      // for keeping track of note on/off
-int           gap = 100;        // spacing between notes (millisec)
-double        decayrate = 0.87; // echo decay rate.
+EventBuffer    eventBuffer;      // for future notes 
+smf::MidiEvent message;          // for reading keyno and velocity (and time)
+Array<int>     notestates(128);  // for keeping track of note on/off
+Array<double>  decaystates(128); // for keeping track of note on/off
+Array<int>     onvels(128);      // for keeping track of note on/off
+int            gap = 100;        // spacing between notes (millisec)
+double         decayrate = 0.87; // echo decay rate.
 
 
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
-void processNote(MidiEvent& message);
+void processNote(smf::MidiEvent& message);
 void createDecay(int channel, int key, int duration, int velocity);
 
 
@@ -122,7 +122,7 @@ void mainloopalgorithms(void) {
 // processNote -- decide when to trigger a decay algorithm.
 //
 
-void processNote(MidiEvent& message) {
+void processNote(smf::MidiEvent& message) {
    int velocity = message.getP2();
    int key = message.getP1();
    int channel = message.getP0() & 0x0f;
@@ -215,7 +215,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

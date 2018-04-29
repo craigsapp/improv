@@ -28,7 +28,7 @@ int  checkKeyboard(void);
 void checkOptions(Options& opts);
 void example(void);
 void keyboardCommand(int command);
-void processMidiCommand(MidiEvent& message);
+void processMidiCommand(smf::MidiEvent& message);
 void usage(const char* command);
 
 // Global variables:
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
    MidiInput midiin;
    midiin.setPort(inport);
    midiin.open();
-   MidiEvent midimessage;
+   smf::MidiEvent midimessage;
 
    performance.read(options.getArg(1).data());
    performance.setPort(outport);
@@ -281,7 +281,7 @@ void keyboardCommand(int command) {
 // processMidiCommand -- how to run the textmidi program on the command line.
 //
 
-void processMidiCommand(MidiEvent& message) {
+void processMidiCommand(smf::MidiEvent& message) {
    if (message.getP0() != 0x90 || message.getP2() == 0) {
       return;
    }

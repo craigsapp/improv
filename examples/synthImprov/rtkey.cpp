@@ -37,7 +37,7 @@
 CircularBuffer<char> notes;     // storage for notes being played
 CircularBuffer<long> times;     // storage for note times being played
 double occurrences[12] = {0};   // number of notes occurrences
-MidiEvent message;              // for extracting notes from the synthesizer
+smf::MidiEvent message;         // for extracting notes from the synthesizer
 char fadeNote         = 0;      // next to to go out of scope
 long fadeTime         = 0;      // next time to go out of scope
 int keyoctave         = 7;      // the analysis key performance octave

@@ -27,7 +27,7 @@ void example(void);
 void usage(const char* command);
 
 // Global variables:
-MidiFile midifile;            // performance interface
+smf::MidiFile midifile;            // performance interface
 
 // command-line variables
 int maxdev  = 10;             // maximum unit deviation
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
    Options options(argc, argv);
    checkOptions(options);
 
-   MidiFile midifile;
+   smf::MidiFile midifile;
    midifile.read(options.getArg(1).data());
 
    // note: when a MIDI file is read in by the read() function,

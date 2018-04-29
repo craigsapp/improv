@@ -34,7 +34,7 @@ Array<int>          currentchord;
 Array<int>          tempchord;
 Array<Array<char> > names;
 Array<Array<int> >  chordset;
-MidiEvent         message;
+smf::MidiEvent      message;
 long lastnotetime = 0;
 long timedelta    = 60;
 char lastprintchord[1024] = {0};

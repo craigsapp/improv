@@ -19,12 +19,12 @@ int direction = 1;        // direction of glissandos, 1=up, -1=down
 int step = 1;		  // step to take for each note in glissando
 int rate = 300;		  // tempo of gliss notes
 int channel = 0;          // channel to play the glisses on.
-MidiEvent message;      // for reading keyno and velocity (and time)
+smf::MidiEvent message;   // for reading keyno and velocity (and time)
 
 
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
-void playgliss(MidiEvent aMessage);
+void playgliss(smf::MidiEvent aMessage);
 int limit(int value, int min, int max);
 
 
@@ -126,7 +126,7 @@ void mainloopalgorithms(void) {
 //     note falls off of the keyboard.
 //
 
-void playgliss(MidiEvent aMessage) { 
+void playgliss(smf::MidiEvent aMessage) { 
    static FunctionEvent tn;   // a Temporary Note for copying into eventBuffer
 
    // setting the fields of the function note
@@ -210,7 +210,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

@@ -606,7 +606,7 @@ void usage(const char* command) {
 //
 
 void charsynth(int aKey) {
-   static MidiEvent noteMessage;
+   static smf::MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 
@@ -667,7 +667,7 @@ void charsynth(int aKey) {
 //
 
 void octavekeyboard(int key, int octave) {
-   static MidiEvent noteMessage;
+   static smf::MidiEvent noteMessage;
    static int attack = 0;
    static int note = 0;
 

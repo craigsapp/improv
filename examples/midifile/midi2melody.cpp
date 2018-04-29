@@ -32,7 +32,7 @@ int     track = 0;          // used with the -t option
 void      checkOptions      (Options& opts, int argc, char** argv);
 void      example           (void);
 void      usage             (const char* command);
-void      convertToMelody   (MidiFile& midifile, vector<Melody>& melody);
+void      convertToMelody   (smf::MidiFile& midifile, vector<Melody>& melody);
 void      printMelody       (vector<Melody>& melody, int tpq);
 void      sortMelody        (vector<Melody>& melody);
 int       notecompare       (const void* a, const void* b);
@@ -41,7 +41,7 @@ int       notecompare       (const void* a, const void* b);
 
 int main(int argc, char* argv[]) {
    checkOptions(options, argc, argv);
-   MidiFile midifile(options.getArg(1));
+   smf::MidiFile midifile(options.getArg(1));
 
    vector<Melody> melody;
    convertToMelody(midifile, melody);
@@ -114,7 +114,7 @@ void printMelody(vector<Melody>& melody, int tpq) {
 // convertToMelody --
 //
 
-void convertToMelody(MidiFile& midifile, vector<Melody>& melody) {
+void convertToMelody(smf::MidiFile& midifile, vector<Melody>& melody) {
    midifile.absoluteTicks();
    if (track < 0 || track >= midifile.getNumTracks()) {
       cout << "Invalid track: " << track << " Maximum track is: "

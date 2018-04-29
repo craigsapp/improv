@@ -31,7 +31,7 @@ void  usage           (const char* command);
 
 int main(int argc, char** argv) {
    int       status;
-   MidiFile  inputfile;
+   smf::MidiFile  inputfile;
    Options   options(argc, argv);
 
    checkOptions(options);

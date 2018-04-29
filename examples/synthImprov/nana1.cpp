@@ -68,7 +68,7 @@ int      stateChange;           // boolean for testing if state has changed
 int      notescan = 0;          // boolean for looking for a new currentnote
 double   maxwait = 0.10;        // maximum wait time after a beat before 
                                 //    choosing a default chord
-MidiEvent notemessage;        // for extracting notes from the Synthesizer
+smf::MidiEvent notemessage;     // for extracting notes from the Synthesizer
 double   lagmaxinsec =  0.075;  // maximum 75 millisecond decision 
                                 //    delay in output of chord from  
                                 //    occurance of chordal beat

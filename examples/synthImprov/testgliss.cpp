@@ -51,7 +51,7 @@ int      comparestate = 0;   // boolean for comparing input to output MIDI
 uchar    checkin[3]   = {0}; // temporary comparison storage for MIDI input 
 uchar    checkout[3]  = {0}; // temporary comparison storage for MIDI output
 uchar    data         = 0;   // dummy holder for data before inserting to buffer
-MidiEvent message;         // for reading in MIDI data.
+smf::MidiEvent message;         // for reading in MIDI data.
 MidiInput midiinput;         // raw MIDI input interface.
 
 CircularBuffer<uchar> sentout;    // storage copy of MIDI output data

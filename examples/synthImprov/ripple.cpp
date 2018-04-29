@@ -13,7 +13,7 @@
 /*----------------- beginning of improvization algorithms ---------------*/
 
 EventBuffer eventBuffer;  // for future notes 
-MidiEvent message;      // for reading keyno and velocity (and time)
+smf::MidiEvent message;   // for reading keyno and velocity (and time)
 CircularBuffer<int> lastnotes(100);  // for keeping track of melody interval
 CircularBuffer<int> lasttimes(100);  // for keeping track of melody rate
 int duration;             // duration of the glissandos
@@ -183,7 +183,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

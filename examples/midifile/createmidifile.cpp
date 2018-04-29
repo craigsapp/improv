@@ -18,11 +18,11 @@ typedef unsigned char uchar;
 ///////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
-   MidiFile outputfile;        // create an empty MIDI file with one track
-   outputfile.absoluteTicks();  // time information stored as absolute time
+   smf::MidiFile outputfile;   // create an empty MIDI file with one track
+   outputfile.absoluteTicks(); // time information stored as absolute time
                                // (will be coverted to delta time when written)
    outputfile.addTrack(2);     // Add another two tracks to the MIDI file
-   vector<uchar> midievent;     // temporary storage for MIDI events
+   vector<uchar> midievent;    // temporary storage for MIDI events
    midievent.resize(3);        // set the size of the array to 3 bytes
    int tpq = 120;              // default value in MIDI file is 48
    outputfile.setTicksPerQuarterNote(tpq);

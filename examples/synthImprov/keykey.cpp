@@ -27,7 +27,7 @@ int onKey2;
 int event = -1;
 int shift = 0;
 
-MidiEvent message;       // for processing incoming messages
+smf::MidiEvent message;       // for processing incoming messages
 CircularBuffer<int> keysOn(100); 
 
 // function declarations:

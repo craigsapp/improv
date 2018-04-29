@@ -238,7 +238,7 @@ int MidiPerform::channelCollapse(int aSetting) {
 
 void MidiPerform::xcheck(void) {
    int quitQ = 0;
-   MidiEvent* event = NULL;
+   smf::MidiEvent* event = NULL;
    if (beatTimer.expired()) {   // waiting for the next beat, so don't continue
       if (getTempoMethod() != TEMPO_METHOD_AUTOMATIC) {
          return;

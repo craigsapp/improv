@@ -39,7 +39,7 @@ int velcorrection = 0;              // golbal velocity control of trills
 // function declarations:
 void sillyKeyboard(int key, int chan = 0);
 void createTrill(int key1, int key2, int velocity, int channel, int duration);
-void processNote(MidiEvent message);
+void processNote(smf::MidiEvent message);
 
 
 
@@ -158,7 +158,7 @@ void mainloopalgorithms(void) {
 // processNote -- 
 //
 
-void processNote(MidiEvent message) {
+void processNote(smf::MidiEvent message) {
    int key = message.getP1();
    int velocity = message.getP2();
    int channel = message.getP0() & 0x0f;
@@ -301,7 +301,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

@@ -125,7 +125,7 @@ void finishup(void) { }
 //   called and remains constant while in this functions.
 //
 
-MidiEvent message;
+smf::MidiEvent message;
 int velocity;
 short dtime;
 

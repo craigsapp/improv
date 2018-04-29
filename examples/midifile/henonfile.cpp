@@ -20,18 +20,20 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <vector>
+
 
 // function declarations:
 void        checkOptions        (Options& opts, int argc, char** argv);
 void        example             (void);
 void        usage               (const char* command);
 void        createHenon         (double alpha, double beta, double x0,
-                                 double y0, int maxcount, MidiFile& midifile);
+                                 double y0, int maxcount, smf::MidiFile& midifile);
 int         checkTermination    (int key);
-void        storeInMidiFile     (MidiFile& midifile, int key);
+void        storeInMidiFile     (smf::MidiFile& midifile, int key);
 void        printGuidoNotation  (void);
 void        printHumdrumNotation(void);
-char*       convertMidiToGuido  (char* buffer, Array<char> notelist, int index);
+char*       convertMidiToGuido  (char* buffer, vector<unsigned char>&  notelist, int index);
 void        printLeftHand       (void);
 void        printRightHand      (void);
 
@@ -51,7 +53,7 @@ int         tpq = 96;           // ticks per quarter note in MIDI file
 int         divisions = 4;      // number of notes per quarter note
 int         instrument = 0;     // used with the -i option
 double      tempo = 120.0;      // used with the -t option
-Array<char> notelist;           // for printing in Guido Music Notation
+vector<unsigned char> notelist; // for printing in Guido Music Notation
 int         minNote = 30;       // minimum note to play
 int         maxNote = 100;      // maximum note to play
 
@@ -60,23 +62,22 @@ int         maxNote = 100;      // maximum note to play
 int main(int argc, char** argv) {
    checkOptions(options, argc, argv); // process the command-line options
 
-   MidiFile midifile;
+   smf::MidiFile midifile;
    midifile.setTicksPerQuarterNote(tpq);
    midifile.allocateEvents(0, 2 * maxcount + 500);  // pre allocate space for 
                                                     // max expected MIDI events
-   notelist.setSize(maxcount+10);
-   notelist.setSize(0);
-   notelist.allowGrowth();
+   notelist.reserve(maxcount+10);
+   notelist.clear();
 
-   midifile.absoluteTime();
+   midifile.absoluteTicks();
 
-   Array<uchar> mididata(2);
+   vector<unsigned char> mididata(2);
    mididata[0] = 0xc0;       // patch change on MIDI channel 1
-   mididata[1] = (uchar) instrument;  // user input instrument
+   mididata[1] = (unsigned char) instrument;  // user input instrument
    midifile.addEvent(0, 0, mididata);
 
    // write the tempo to the midifile
-   mididata.setSize(6);
+   mididata.resize(6);
    mididata[0] = 0xff;      // meta message
    mididata[1] = 0x51;      // tempo change
    mididata[2] = 0x03;      // three bytes to follow
@@ -108,7 +109,7 @@ int main(int argc, char** argv) {
 //
 
 void createHenon(double alpha, double beta, double x0, double y0e, 
-   int maxcount, MidiFile& midifile) {
+   int maxcount, smf::MidiFile& midifile) {
 
    double x = x0;
    double y = y0e;
@@ -160,19 +161,19 @@ void createHenon(double alpha, double beta, double x0, double y0e,
 // storeInMidiFile -- 
 //
 
-void storeInMidiFile(MidiFile& midifile, int key) {
+void storeInMidiFile(smf::MidiFile& midifile, int key) {
    static int timer = tpq;   // start after one beat (for patch change)
    char note = (char)key;
  
    // don't store extreme notes -- this gives interesting rhythms sometimes.
    if (key < minNote || key > maxNote) {
       note = 0;
-      notelist.append(note);
+      notelist.push_back(note);
       timer += tpq/divisions;
       return;
    }
-   notelist.append(note);       // store note for displaying Guido Notation
-   Array<uchar> midinote(3);
+   notelist.push_back(note);       // store note for displaying Guido Notation
+   vector<unsigned char> midinote(3);
    midinote[0] = 0x90;
    midinote[1] = key;
    midinote[2] = 64;
@@ -374,7 +375,7 @@ void printHumdrumNotation(void) {
    cout << "!!!start:\t(" << x0 << ", " << y0e << ")\n";
    cout << "**kern\n";
    int i;
-   for (i=0; i<notelist.getSize(); i++) {
+   for (i=0; i<(int)notelist.size(); i++) {
       cout << "16";
       if (notelist[i] <= 0) {
          cout << "r";
@@ -402,7 +403,7 @@ void printRightHand(void) {
    cout << "[";
    int i;
    cout << "\\meter<\"2/4\">\n";
-   for (i=0; i<notelist.getSize(); i++) {
+   for (i=0; i<(int)notelist.size(); i++) {
       if (notelist[i] >= 60) {
          cout << convertMidiToGuido(buffer, notelist, i) << " ";
       } else {
@@ -427,7 +428,7 @@ void printLeftHand(void) {
    cout << "[";
    int i;
    cout << "\\meter<\"2/4\">\n";
-   for (i=0; i<notelist.getSize(); i++) {
+   for (i=0; i<(int)notelist.size(); i++) {
       if (notelist[i] < 60) {
          cout << convertMidiToGuido(buffer, notelist, i) << " ";
       } else {
@@ -448,7 +449,7 @@ void printLeftHand(void) {
 //     Notation note name.
 //
 
-char* convertMidiToGuido(char* buffer, Array<char> notelist, int index) {
+char* convertMidiToGuido(char* buffer, vector<unsigned char>&  notelist, int index) {
    if (notelist[index] == 0) {
       strcpy(buffer, "_/16");
       return buffer;

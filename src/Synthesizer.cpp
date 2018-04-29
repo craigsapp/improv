@@ -75,8 +75,8 @@ int Synthesizer::controller(int controlNumber, int channel, int index) {
 //	in the incoming note buffer.
 //
 
-MidiEvent Synthesizer::extractNote(void) {
-   MidiEvent event;
+smf::MidiEvent Synthesizer::extractNote(void) {
+   smf::MidiEvent event;
    note.extract(event);
 	return event;
 }
@@ -102,7 +102,7 @@ int Synthesizer::getNoteCount(void) const {
 //	relative to the currently inserted note.
 //
 
-MidiEvent& Synthesizer::operator[](int index) {
+smf::MidiEvent& Synthesizer::operator[](int index) {
    return note[index];
 }
 
@@ -114,7 +114,7 @@ MidiEvent& Synthesizer::operator[](int index) {
 //
 
 void Synthesizer::processIncomingMessages(void) {
-   MidiEvent event;
+   smf::MidiEvent event;
    while (MidiInput::getCount() > 0) {
       MidiInPort::extract(event);
       interpretMessage(event);
@@ -155,7 +155,7 @@ void Synthesizer::zeroControllers(void) {
 //    separate slots according to channel.
 //
 
-void Synthesizer::interpretMessage(MidiEvent& aMessage) {
+void Synthesizer::interpretMessage(smf::MidiEvent& aMessage) {
    if ((aMessage.getCommandByte() & 0xf0) == 0x90) {         // a Note-on message
       note.insert(aMessage);
    } else if ((aMessage.getCommandByte() & 0xf0) == 0x80) {  // a Note-off message

@@ -33,13 +33,13 @@ class MidiInPort_unsupported {
       void            clearSysex                 (int index) { }
       void            clearSysex                 (void) { }
       int             getSysexSize               (int index) { return 0; }
-      uchar*          getSysex                   (int buffer) { return NULL; }
+      unsigned char*  getSysex                   (int buffer) { return NULL; }
       int             installSysex               (unsigned char *&, int &) { return 0; }
       int             getBufferSize              (void) { return 0; }
       void            close                      (void);
       void            close                      (int i) { close(); }
       void            closeAll                   (void);
-      void            extract                    (MidiEvent& event);
+      void            extract                    (smf::MidiEvent& event);
       int             getChannelOffset           (void) const;
       int             getCount                   (void);
       const char*     getName                    (void);
@@ -48,8 +48,8 @@ class MidiInPort_unsupported {
       int             getPort                    (void);
       int             getPortStatus              (void);
       int             getTrace                   (void);
-      void            insert                     (const MidiEvent& aMessage);
-      MidiEvent&      message                    (int index);
+      void            insert                     (const smf::MidiEvent& aMessage);
+      smf::MidiEvent& message                    (int index);
       int             open                       (void);
       void            pause                      (void);
       void            setBufferSize              (int aSize);
@@ -67,11 +67,11 @@ class MidiInPort_unsupported {
       static int*       portObjectCount; // objects connected to particular port
       static int*       openQ;           // for open/close status of port
       static int        numDevices;      // number of input ports
-      static CircularBuffer<MidiEvent>* midiBuffer; // MIDI storage from ports
+      static CircularBuffer<smf::MidiEvent>* midiBuffer; // MIDI storage from ports
       static int        channelOffset;     // channel offset, either 0 or 1
                                            // not being used right now.
       static int*       sysexWriteBuffer;  // for MIDI sysex write location
-      static Array<uchar>** sysexBuffers;  // for MIDI sysex storage
+      static Array<unsigned char>** sysexBuffers;  // for MIDI sysex storage
 
    private:
       void            deinitialize               (void); 

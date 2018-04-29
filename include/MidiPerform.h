@@ -57,7 +57,7 @@ class MidiPerform : public MidiOutput {
       void      stop                  (void);
 
    protected:
-      MidiFile                        midifile;
+      smf::MidiFile                   midifile;
       double                          tempo;
       SigTimer                        performanceTimer;
       SigTimer                        beatTimer;

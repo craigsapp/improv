@@ -316,7 +316,7 @@ class RadioBaton : public MidiIO {
    // 
 
    private: 
-      void        interpretCommand      (MidiEvent& aMessage);
+      void        interpretCommand      (smf::MidiEvent& aMessage);
       void        s1ts                  (long aTime);
       void        s1td                  (int flag, uchar aValue);
       void        s2ts                  (long aTime);

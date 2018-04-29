@@ -22,25 +22,25 @@
 
 class Synthesizer : public MidiIO {
    public:
-                   Synthesizer              (void);
-                   Synthesizer              (int outputPort, int inputPort);
-                  ~Synthesizer              ();
+                     Synthesizer              (void);
+                     Synthesizer              (int outputPort, int inputPort);
+                    ~Synthesizer              ();
 
-      int          controller               (int controlNumber, int channel = 0, 
+      int            controller               (int controlNumber, int channel = 0, 
                                                int index = 0);
-      MidiEvent    extractNote              (void);
-      int          getNoteCount             (void) const;        
-      MidiEvent&   operator[]               (int index);
-      void         processIncomingMessages  (void);
-      void         zeroControllers          (void);
+      smf::MidiEvent  extractNote              (void);
+      int             getNoteCount             (void) const;        
+      smf::MidiEvent& operator[]               (int index);
+      void            processIncomingMessages  (void);
+      void            zeroControllers          (void);
 
    protected:
 
       // state variables
-      CircularBuffer<MidiEvent> note;
+      CircularBuffer<smf::MidiEvent> note;
       CircularBuffer<uchar> Controller[16][128];   // [channel][controller]
    
-      void        interpretMessage          (MidiEvent& aMessage);
+      void        interpretMessage          (smf::MidiEvent& aMessage);
 
 };
 

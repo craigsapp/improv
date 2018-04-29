@@ -31,7 +31,7 @@ double  tempo = 120.0;          // time units will be in seconds
 int     channel = 0;            // default channel
 
 // function declarations:
-void      convertTextToMidiFile (istream& textfile, MidiFile& midifile);
+void      convertTextToMidiFile (istream& textfile, smf::MidiFile& midifile);
 void      adjustbuffer          (char* buffer);
 void      readvalues            (char* buffer, int& eventtype, double& start,
                                  double& dur, int& note, int& vel);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
       usage(options.getCommand().data());
       exit(1);
    }
-   MidiFile midifile;
+   smf::MidiFile midifile;
    convertTextToMidiFile(textfile, midifile);
 
 
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 // convertTextToMidiFile --
 //
 
-void convertTextToMidiFile(istream& textfile, MidiFile& midifile) {
+void convertTextToMidiFile(istream& textfile, smf::MidiFile& midifile) {
    vector<uchar> mididata;
    midifile.setTicksPerQuarterNote(tpq);
    midifile.absoluteTicks();

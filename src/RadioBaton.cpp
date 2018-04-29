@@ -279,7 +279,7 @@ int RadioBaton::positionReportingOn(void) {
 // 
 
 void RadioBaton::processIncomingMessages(void) {
-   MidiEvent event;
+   smf::MidiEvent event;
    while (MidiInput::getCount() > 0) {
       MidiInput::extract(event);
       interpretCommand(event);
@@ -661,7 +661,7 @@ int RadioBaton::d4pc(int min, int max) {
 //     will know what to do with that MIDI input message.
 //
 
-void RadioBaton::interpretCommand(MidiEvent& aMessage) {
+void RadioBaton::interpretCommand(smf::MidiEvent& aMessage) {
    ushort value;  // for the buff value receive commands
    uchar  val;
 

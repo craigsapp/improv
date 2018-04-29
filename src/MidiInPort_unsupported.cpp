@@ -34,10 +34,10 @@ int       MidiInPort_unsupported::numDevices        = 0;
 int       MidiInPort_unsupported::objectCount       = 0;
 int*      MidiInPort_unsupported::openQ             = NULL;
 int*      MidiInPort_unsupported::portObjectCount   = NULL;
-CircularBuffer<MidiEvent>* MidiInPort_unsupported::midiBuffer = NULL;
+CircularBuffer<smf::MidiEvent>* MidiInPort_unsupported::midiBuffer = NULL;
 int       MidiInPort_unsupported::channelOffset     = 0;
 int*      MidiInPort_unsupported::sysexWriteBuffer  = NULL;
-Array<uchar>** MidiInPort_unsupported::sysexBuffers = NULL; 
+Array<unsigned char>** MidiInPort_unsupported::sysexBuffers = NULL; 
 
 
 //////////////////////////////
@@ -124,7 +124,7 @@ void MidiInPort_unsupported::closeAll(void) {
 //	received since that last extracted message.
 //
 
-void MidiInPort_unsupported::extract(MidiEvent& event) {
+void MidiInPort_unsupported::extract(smf::MidiEvent& event) {
    midiBuffer[getPort()].extract(event);
 }
 
@@ -227,7 +227,7 @@ int MidiInPort_unsupported::getTrace(void) {
 // MidiInPort_unsupported::insert
 //
 
-void MidiInPort_unsupported::insert(const MidiEvent& aMessage) {
+void MidiInPort_unsupported::insert(const smf::MidiEvent& aMessage) {
    midiBuffer[getPort()].insert(aMessage);
 }
 
@@ -238,7 +238,7 @@ void MidiInPort_unsupported::insert(const MidiEvent& aMessage) {
 // MidiInPort_unsupported::message
 //
 
-MidiEvent& MidiInPort_unsupported::message(int index) {
+smf::MidiEvent& MidiInPort_unsupported::message(int index) {
    return midiBuffer[getPort()][index];
 }
 
@@ -438,7 +438,7 @@ void MidiInPort_unsupported::initialize(void) {
       cout << "Error: sysexBuffers are not empty, don't know size" << endl;
       exit(1);
    }
-   sysexBuffers = new Array<uchar>*[numDevices];
+   sysexBuffers = new Array<unsigned char>*[numDevices];
 
    // allocate space for sysexWriteBuffer, the port open/close status
    if (sysexWriteBuffer != NULL) delete [] sysexWriteBuffer;
@@ -454,7 +454,7 @@ void MidiInPort_unsupported::initialize(void) {
 
    // allocate space for the Midi input buffers
    if (midiBuffer != NULL) delete [] midiBuffer;
-   midiBuffer = new CircularBuffer<MidiEvent>[numDevices];
+   midiBuffer = new CircularBuffer<smf::MidiEvent>[numDevices];
 
    // initialize the static arrays
    for (int i=0; i<getNumPorts(); i++) {
@@ -463,7 +463,7 @@ void MidiInPort_unsupported::initialize(void) {
       midiBuffer[i].setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
       sysexWriteBuffer[i] = 0;
-      sysexBuffers[i] = new Array<uchar>[128];
+      sysexBuffers[i] = new Array<unsigned char>[128];
       for (int n=0; n<128; n++) {
          sysexBuffers[i][n].allowGrowth(0);      // shouldn't need to grow
          sysexBuffers[i][n].setAllocSize(32);

@@ -49,7 +49,7 @@ class MidiOutput : public MidiOutPort {
       int       send           (int command, int p1, int p2);
       int       send           (int command, int p1);
       int       send           (int command);
-      int       send           (MidiEvent& message);
+      int       send           (smf::MidiEvent& message);
       void      silence        (int aChannel = -1);
       void      sustain        (int channel, int status);
       int       sysex          (char* data, int length);

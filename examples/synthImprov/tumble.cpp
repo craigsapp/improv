@@ -73,7 +73,7 @@ class TumbleParameters {
 
 EventBuffer eventBuffer;  // for future notes (2048 notes max)
 int channel = 0;          // channel to play the notes on.
-MidiEvent message;      // for reading keyno and velocity (and time)
+smf::MidiEvent message;      // for reading keyno and velocity (and time)
 int direction = 1;        // direction of algorithm generation notes
 int length = 4;           // number of notes in a algorithm cycle
 int anticipation = 125;   // anticipation of first note in tumble for
@@ -85,7 +85,7 @@ SigCollection<TumbleParameters> tparam;  // data storage for tumble functions
 
 
 // function declarations:
-void    processNote         (MidiEvent message, int seqLength, int direction);
+void    processNote         (smf::MidiEvent message, int seqLength, int direction);
 int     startAlgorithm      (TumbleParameters& p);
 int     storeParameters     (SigCollection<TumbleParameters>& params,
                              TumbleParameters& p);
@@ -209,7 +209,7 @@ void mainloopalgorithms(void) {
 //     the algorithm if it is time to do so.
 //
 
-void processNote(MidiEvent message, int seqLength, int direction) {
+void processNote(smf::MidiEvent message, int seqLength, int direction) {
    static Array<char>         notes;
    static Array<char>         velocities;
    static Array<int>          durations;
@@ -530,7 +530,7 @@ void sillyKeyboard(int key, int chan /* = 0 */) {
    static int octave = 4;
    static int newkey = 0;
    static Voice voice;
-   static MidiEvent message;
+   static smf::MidiEvent message;
 
    // check to see if adjusting the octave:
    if (isdigit(key)) {

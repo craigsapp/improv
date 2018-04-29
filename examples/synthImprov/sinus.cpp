@@ -39,7 +39,7 @@ int octave = 4;              // octave range for computer keyboard notes
 int keyboardnote = 0;        // computer keyboard note
 int lastoff = 0;             // last note which was turned off
 int nextnotetime = 0;        // time for the next note
-MidiEvent noteMessage;     // for reading keyno and velocity (and time)
+smf::MidiEvent noteMessage;     // for reading keyno and velocity (and time)
 Voice sinevoice;             // for handling note-offs
 
 

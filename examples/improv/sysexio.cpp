@@ -27,7 +27,7 @@
 //   actual data:
 //
 //   MidiInput midiinput;
-//   MidiEvent message;
+//   smf::MidiEvent message;
 //   int sysexSize;
 //   int bufferNum;
 //   unsigned char *sysexData;
@@ -75,7 +75,7 @@ int main(void) {
    midiin.setPort(0);
    midiin.open();
 
-   MidiEvent message;
+   smf::MidiEvent message;
    int sysexloc;
    unsigned char *sysexdata = NULL;
    int sysexsize = 0;

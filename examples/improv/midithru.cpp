@@ -17,7 +17,7 @@ typedef Array<MidiOutPort> MidiOutputArray;
 
 // function declarations:
 void displayPatchBay(Array<ArrayInt>& connections);
-void sendData(MidiEvent& message, MidiOutPort& output, 
+void sendData(smf::MidiEvent& message, MidiOutPort& output, 
     MidiInput& input);
 
 /////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
    cout << "There are " << incount  << " MIDI inputs" << endl;
    cout << "and " << outcount << " MIDI outputs" << endl;
 
-   MidiEvent message;
+   smf::MidiEvent message;
    Array<MidiInput> midiins;
    for (i=0; i<incount; i++) {
       midiins[i].setPort(i);
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 // sendData --
 //
 
-void sendData(MidiEvent& m, MidiOutPort& output, 
+void sendData(smf::MidiEvent& m, MidiOutPort& output, 
      MidiInput& input) {
    int count = m.size()-1;
    if (count >= 0 && count <= 2) {

@@ -26,12 +26,12 @@
 void checkOptions(Options& opts);
 void example(void);
 void keyboardCommand(int command);
-void processMidiCommand(MidiEvent& message);
+void processMidiCommand(smf::MidiEvent& message);
 
 // Global variables:
 MidiPerform performance;            // performance interface
 
-MidiEvent midimessage;            // for monitoring MIDI input tempo
+smf::MidiEvent midimessage;            // for monitoring MIDI input tempo
 MidiInput midiin;                   // for monitoring MIDI input tempo
 
 
@@ -320,7 +320,7 @@ void keyboardchar(int command) {
 // processMidiCommand -- how to run the textmidi program on the command line.
 //
 
-void processMidiCommand(MidiEvent& message) {
+void processMidiCommand(smf::MidiEvent& message) {
    if (message.getP0() != 0x90 || message.getP2() == 0) {
       return;
    }

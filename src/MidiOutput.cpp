@@ -338,7 +338,7 @@ int MidiOutput::send(int command) {
 }
 
 
-int MidiOutput::send(MidiEvent& message) {
+int MidiOutput::send(smf::MidiEvent& message) {
    int parameters = message.size() - 1;
    switch (parameters) {
       case 0:  

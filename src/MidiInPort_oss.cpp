@@ -38,7 +38,7 @@ using namespace std;
 int       MidiInPort_oss::numDevices                     = 0;
 int       MidiInPort_oss::objectCount                    = 0;
 int*      MidiInPort_oss::portObjectCount                = NULL;
-CircularBuffer<MidiEvent>** MidiInPort_oss::midiBuffer = NULL;
+CircularBuffer<smf::MidiEvent>** MidiInPort_oss::midiBuffer = NULL;
 int       MidiInPort_oss::channelOffset                  = 0;
 SigTimer  MidiInPort_oss::midiTimer;
 int*      MidiInPort_oss::pauseQ                         = NULL;
@@ -159,9 +159,9 @@ void MidiInPort_oss::closeAll(void) {
 //	received since that last extracted message.
 //
 
-void MidiInPort_oss::extract(MidiEvent& event) {
+void MidiInPort_oss::extract(smf::MidiEvent& event) {
    if (getPort() == -1) {
-      MidiEvent temp;
+      smf::MidiEvent temp;
       event = temp;
 		return;
    }
@@ -328,7 +328,7 @@ int MidiInPort_oss::getTrace(void) {
 // MidiInPort_oss::insert
 //
 
-void MidiInPort_oss::insert(const MidiEvent& aMessage) {
+void MidiInPort_oss::insert(const smf::MidiEvent& aMessage) {
    if (getPort() == -1)   return;
 
    midiBuffer[getPort()]->insert(aMessage);
@@ -385,13 +385,13 @@ int MidiInPort_oss::installSysexPrivate(int port, uchar* anArray, int aSize) {
 // MidiInPort_oss::message
 //
 
-MidiEvent& MidiInPort_oss::message(int index) {
+smf::MidiEvent& MidiInPort_oss::message(int index) {
    if (getPort() == -1) {
-      static MidiEvent x;
+      static smf::MidiEvent x;
       return x;
    }
 
-   CircularBuffer<MidiEvent>& temp = *midiBuffer[getPort()];
+   CircularBuffer<smf::MidiEvent>& temp = *midiBuffer[getPort()];
    return temp[index];
 }
 
@@ -622,7 +622,7 @@ void MidiInPort_oss::initialize(void) {
       if (midiBuffer != NULL) {
          delete [] midiBuffer;
       }
-      midiBuffer = new CircularBuffer<MidiEvent>*[numDevices];
+      midiBuffer = new CircularBuffer<smf::MidiEvent>*[numDevices];
 
       // allocate space for Midi input sysex buffer write indices
       if (sysexWriteBuffer != NULL) {
@@ -642,7 +642,7 @@ void MidiInPort_oss::initialize(void) {
          portObjectCount[i] = 0;
          trace[i] = 0;
          pauseQ[i] = 0;
-         midiBuffer[i] = new CircularBuffer<MidiEvent>;
+         midiBuffer[i] = new CircularBuffer<smf::MidiEvent>;
          midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
          sysexWriteBuffer[i] = 0;
@@ -737,7 +737,7 @@ void *interpretMidiInputStreamPrivate(void *) {
    int* argsExpected = NULL;     // MIDI parameter bytes expected to follow
    int* argsLeft     = NULL;     // MIDI parameter bytes left to wait for
    uchar packet[4];              // bytes for sequencer driver
-   MidiEvent* message = NULL;  // holder for current MIDI message
+   smf::MidiEvent* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
    // int lastSigTime = -1;         // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
@@ -758,7 +758,7 @@ void *interpretMidiInputStreamPrivate(void *) {
    } else {
       // allocate space for MIDI messages, each device has a different message
       // holding spot in case the messages overlap in the input stream
-      message      = new MidiEvent[MidiInPort_oss::numDevices];
+      message      = new smf::MidiEvent[MidiInPort_oss::numDevices];
       argsExpected = new int[MidiInPort_oss::numDevices];
       argsLeft     = new int[MidiInPort_oss::numDevices];
 

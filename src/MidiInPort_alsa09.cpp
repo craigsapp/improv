@@ -41,7 +41,7 @@
 int       MidiInPort_alsa09::numDevices                     = 0;
 int       MidiInPort_alsa09::objectCount                    = 0;
 int*      MidiInPort_alsa09::portObjectCount                = NULL;
-CircularBuffer<MidiEvent>** MidiInPort_alsa09::midiBuffer = NULL;
+CircularBuffer<smf::MidiEvent>** MidiInPort_alsa09::midiBuffer = NULL;
 int       MidiInPort_alsa09::channelOffset                  = 0;
 SigTimer  MidiInPort_alsa09::midiTimer;
 int*      MidiInPort_alsa09::pauseQ                         = NULL;
@@ -169,9 +169,9 @@ void MidiInPort_alsa09::closeAll(void) {
 //	received since that last extracted message.
 //
 
-void MidiInPort_alsa09::extract(MidiEvent& event) {
+void MidiInPort_alsa09::extract(smf::MidiEvent& event) {
    if (getPort() == -1) {
-      MidiEvent temp;
+      smf::MidiEvent temp;
       event = temp;
       return;
    }
@@ -336,7 +336,7 @@ int MidiInPort_alsa09::getTrace(void) {
 // MidiInPort_alsa09::insert
 //
 
-void MidiInPort_alsa09::insert(const MidiEvent& aMessage) {
+void MidiInPort_alsa09::insert(const smf::MidiEvent& aMessage) {
    if (getPort() == -1)   return;
 
    midiBuffer[getPort()]->insert(aMessage);
@@ -396,13 +396,13 @@ int MidiInPort_alsa09::installSysexPrivate(int port, uchar* anArray, int aSize) 
 //     without extracting it from the input buffer.
 //
 
-MidiEvent& MidiInPort_alsa09::message(int index) {
+smf::MidiEvent& MidiInPort_alsa09::message(int index) {
    if (getPort() == -1) {
-      static MidiEvent x;
+      static smf::MidiEvent x;
       return x;
    }
 
-   CircularBuffer<MidiEvent>& temp = *midiBuffer[getPort()];
+   CircularBuffer<smf::MidiEvent>& temp = *midiBuffer[getPort()];
    return temp[index];
 }
 
@@ -641,7 +641,7 @@ void MidiInPort_alsa09::initialize(void) {
       if (midiBuffer != NULL) {
          delete [] midiBuffer;
       }
-      midiBuffer = new CircularBuffer<MidiEvent>*[numDevices];
+      midiBuffer = new CircularBuffer<smf::MidiEvent>*[numDevices];
 
       // allocate space for Midi input sysex buffer write indices
       if (sysexWriteBuffer != NULL) {
@@ -664,7 +664,7 @@ void MidiInPort_alsa09::initialize(void) {
          portObjectCount[i] = 0;
          trace[i] = 0;
          pauseQ[i] = 0;
-         midiBuffer[i] = new CircularBuffer<MidiEvent>;
+         midiBuffer[i] = new CircularBuffer<smf::MidiEvent>;
          midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
          sysexWriteBuffer[i] = 0;
@@ -767,7 +767,7 @@ void *interpretMidiInputStreamPrivateALSA09(void * arg) {
    int* argsExpected = NULL;     // MIDI parameter bytes expected to follow
    int* argsLeft     = NULL;     // MIDI parameter bytes left to wait for
    uchar packet[1];              // bytes for sequencer driver
-   MidiEvent* message = NULL;  // holder for current MIDI message
+   smf::MidiEvent* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
    int lastSigTime = -1;         // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
@@ -783,7 +783,7 @@ void *interpretMidiInputStreamPrivateALSA09(void * arg) {
 
    // allocate space for MIDI messages, each device has a different message
    // holding spot in case the messages overlap in the input stream
-   message      = new MidiEvent[MidiInPort_alsa09::numDevices];
+   message      = new smf::MidiEvent[MidiInPort_alsa09::numDevices];
    argsExpected = new int[MidiInPort_alsa09::numDevices];
    argsLeft     = new int[MidiInPort_alsa09::numDevices];
 

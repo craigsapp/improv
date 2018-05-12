@@ -41,7 +41,7 @@ class MidiInPort_oss : public Sequencer_oss {
       void            close                      (void);
       void            close                      (int i) { close(); }
       void            closeAll                   (void);
-      void            extract                    (MidiEvent& event);
+      void            extract                    (smf::MidiEvent& event);
       int             getBufferSize              (void);
       int             getChannelOffset           (void) const;
       int             getCount                   (void);
@@ -53,9 +53,9 @@ class MidiInPort_oss : public Sequencer_oss {
       uchar*          getSysex                   (int buffer);
       int             getSysexSize               (int buffer);
       int             getTrace                   (void);
-      void            insert                     (const MidiEvent& aMessage);
+      void            insert                     (const smf::MidiEvent& aMessage);
       int             installSysex               (uchar* anArray, int aSize);
-      MidiEvent&      message                    (int index);
+      smf::MidiEvent& message                    (int index);
       int             open                       (void);
       void            pause                      (void);
       void            setBufferSize              (int aSize);
@@ -78,7 +78,7 @@ class MidiInPort_oss : public Sequencer_oss {
       static int*       trace;           // for verifying input
       static ostream*   tracedisplay;    // stream for displaying trace
       static int        numDevices;      // number of input ports
-      static CircularBuffer<MidiEvent>** midiBuffer; // MIDI storage frm ports
+      static CircularBuffer<smf::MidiEvent>** midiBuffer; // MIDI storage frm ports
       static int        channelOffset;   // channel offset, either 0 or 1
                                          // not being used right now.
       static int*       pauseQ;          // for adding items to Buffer or not

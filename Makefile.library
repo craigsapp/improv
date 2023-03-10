@@ -149,17 +149,17 @@ all: external makeobjdir $(OBJS)
 
    ifeq ($(OSTYPE),LINUX)
 	@echo Making improv library file for linux ...
-	-mkdir $(LIBDIR)
+	-mkdir -p $(LIBDIR)
 	-rm -f $(LIBDIR)/$(LIBFILE)
-	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version
+	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o
 	ranlib $(LIBDIR)/$(LIBFILE)
    endif
 
    ifeq ($(OSTYPE),OSXPC)
 	@echo "Making improv library file for OSX (Intel)..."
-	-mkdir $(LIBDIR)
+	-mkdir -p $(LIBDIR)
 	-rm -f $(LIBDIR)/$(LIBFILE)
-	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o $(INCDIR)/version &> /dev/null
+	ar r $(LIBDIR)/$(LIBFILE) $(OBJDIR)/*.o &> /dev/null
    endif
 
    ifeq ($(OSTYPE),VISUAL)
@@ -176,7 +176,7 @@ clean:
 	-rmdir $(OBJDIR)
 
 makeobjdir: 
-	-mkdir $(OBJDIR)
+	-mkdir -p $(OBJDIR)
 
 # defining an explicit rule for object file dependencies
 %.o : %.cpp 

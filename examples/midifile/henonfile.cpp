@@ -380,7 +380,7 @@ void printHumdrumNotation(void) {
       if (notelist[i] <= 0) {
          cout << "r";
       } else {
-         cout << Convert::base12ToKern(buffer, notelist[i]);
+         cout << Convert::base12ToKern(buffer, 1024, notelist[i]);
       }
       cout << "\n";
       if ((i+1) % 32 == 0) {
@@ -458,7 +458,7 @@ char* convertMidiToGuido(char* buffer, vector<unsigned char>&  notelist, int ind
    if (octave > 2) octave--;
 
    char octbuf[32] = {0};
-   sprintf(octbuf, "%d", octave);
+   snprintf(octbuf, 32, "%d", octave);
 
    int pc = (int)notelist[index] % 12;
    switch (pc) {

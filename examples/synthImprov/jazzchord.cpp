@@ -82,7 +82,7 @@ void printNewChord(Array<int>& tempchord, Array<Array<int> >& chordset,
                chordstream << " or ";
             }
             count++;
-            Convert::base12ToKern(buffer, j+4*12);
+            Convert::base12ToKern(buffer, 1024, j+4*12);
 	    length = strlen(buffer);
 	    for (k=0; k<length; k++) {
                if (buffer[k] == '-') {

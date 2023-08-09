@@ -13,12 +13,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#ifndef OLDCPP
-   #include <iostream>
-   using namespace std;
-#else
-   #include <iostream.h>
-#endif
+#include <iostream>
+using namespace std;
 
 int atohd(const char* aNumber);
 void exitUsage(const char* command);

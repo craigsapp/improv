@@ -250,7 +250,7 @@ void checkOptions(Options& opts) {     // options are:
               "compiled: " << __DATE__ << endl;
       exit(0);
    } else if (opts.getBoolean("help")) {
-      usage(opts.getCommand().data());
+      usage(opts.getCommand().c_str());
       exit(0);
    } else if (opts.getBoolean("example")) {
       example();
@@ -302,9 +302,9 @@ void checkOptions(Options& opts) {     // options are:
       keyboardQ = 0;
    }
    
-   const char *filterString = opts.getString("filter").data();
+   string filterString = opts.getString("filter");
    char current;
-   for (int i=0; i<(int)strlen(filterString); i++) {
+   for (int i=0; i<(int)filterString.size(); i++) {
       current = filterString[i];
       switch (tolower(current)) {
          case '8':   filter[0] = 1;   break;
@@ -321,10 +321,10 @@ void checkOptions(Options& opts) {     // options are:
       }
    }
    
-   const char *cfilterString = opts.getString("chan-filter").data();
+   string cfilterString = opts.getString("chan-filter");
    char stringc [2] = {0};
    int cindex;
-   for (int j=0; j<(int)strlen(cfilterString); j++) {
+   for (int j=0; j<(int)cfilterString.size(); j++) {
       if (isxdigit(cfilterString[j])) {
          stringc[0] = cfilterString[j];
          cindex = strtol(stringc, NULL, 16);
@@ -340,9 +340,9 @@ void checkOptions(Options& opts) {     // options are:
 
    if (opts.getBoolean("output")) {
       fileQ = 1;
-      outputfile.open(opts.getString("output").data(), ios::out);
+      outputfile.open(opts.getString("output").c_str(), ios::out);
       if (!outputfile.is_open()) {
-         cout << "Error: cannot open file: "<< opts.getString("output").data() << endl;
+         cout << "Error: cannot open file: "<< opts.getString("output").c_str() << endl;
          exit(1);
       }
    }
@@ -354,7 +354,7 @@ void checkOptions(Options& opts) {     // options are:
    midi.openOutput();
 
    if (opts.getArgCount() != 0) {
-      usage(opts.getCommand().data());
+      usage(opts.getCommand().c_str());
       exit(1);
    }
 
@@ -371,7 +371,7 @@ void displayHeader(ostream& out) {
    out << HEADER_START << "\n";
    if (options.getBoolean("user")) {
       out << HEADER_START << "Recorded by:    ";
-      out << options.getString("user").data() << endl;
+      out << options.getString("user").c_str() << endl;
    }
    out << HEADER_START << "Style:          ";
    switch (style) {
@@ -581,7 +581,7 @@ char* getKey(int keynum) {
       default:   strcpy(name, "");
    }
 
-   sprintf(temp, "%d", octave);
+   snprintf(temp, 16, "%d", octave);
    strcat(name, temp);
 
    return name;

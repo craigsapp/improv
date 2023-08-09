@@ -152,11 +152,11 @@ ifeq ($(OSTYPE),LINUX)
 endif
 
 # Extra setup for compiling humplay:
-ifneq ($(wildcard ../humextra/lib/libhumextra.a),)
-   PREFLAGS  += -I../humextra/include
-   POSTFLAGS += -L../humextra/lib -lhumextra -lcslxml
-   HUMEXTRA  := yes
-endif
+#ifneq ($(wildcard ../humextra/lib/libhumextra.a),)
+#   PREFLAGS  += -I../humextra/include
+#   POSTFLAGS += -L../humextra/lib -lhumextra -lcslxml
+#   HUMEXTRA  := yes
+#endif
 
 ifneq ($(wildcard ../humextra/external/pcre-8.35),)
    PREFLAGS    += -I$(wildcard ../humextra/external/pcre-8.35)

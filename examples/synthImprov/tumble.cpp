@@ -4,7 +4,7 @@
 // Last Modified: Wed Oct 17 20:30:37 PDT 2001
 // Filename:      ...sig/doc/examples/improv/synthImprov/tumble/tumble.cpp
 // Syntax:        C++; synthImprov 2.0
-//  
+//
 // Description:   Melodic sequences with a uniform rhythm are played
 //                to input a melodic pattern which is then repeated
 //                until the algorith notes fall outside the range of
@@ -14,6 +14,7 @@
 #include "synthImprov.h"       /* include synthImprov environment */
 #define  PARAMSIZE 256         /* number of max simultaneous algorithms */
 
+#include <vector>
 
 // Tumble Parameters is a data structure for holding all of the data
 // for a tumble algorithm.  It stores all of the necessary information
@@ -21,35 +22,42 @@
 
 class TumbleParameters {
    public:
-      int max;                 // maximum number of notes in sequence
-      int pos;                 // current position to play next note.
-      int current;             // current note being played
-      Array<char> n;           // note sequence; n0 = cycle delta
-      Array<char> v;           // attack velocity of note n.
-      Array<unsigned short> i; // duration between note attacks (ioi)
-      Array<unsigned short> d; // duration of note n
-      int active;              // 0=unused, 1=currently running algorithm
-      int dir;                 // 1=normal, -1=inversion
+      int max;                  // maximum number of notes in sequence
+      int pos;                  // current position to play next note.
+      int current;              // current note being played
+      vector<char> n;           // note sequence; n0 = cycle delta
+      vector<char> v;           // attack velocity of note n.
+      vector<unsigned short> i; // duration between note attacks (ioi)
+      vector<unsigned short> d; // duration of note n
+      int active;               // 0=unused, 1=currently running algorithm
+      int dir;                  // 1=normal, -1=inversion
 
       TumbleParameters(void) {
          clear();
       }
 
+      // Copy constructor:
       TumbleParameters(TumbleParameters& b) {
          TumbleParameters& a = *this;
-         a = b;      
+         a = b;
       }
 
+      // Move constructor:
+      TumbleParameters(TumbleParameters&&) noexcept = default;
+
+      // Move assignment constructor:
+      TumbleParameters& operator=(TumbleParameters&&) noexcept = default;
+
       void clear(void) {
-         n.setSize(0);
-         v.setSize(0);
-         i.setSize(0);
-         d.setSize(0);
-         max = 0;
-         pos = 0;
-         active = 0;
+         n.clear();
+         v.clear();
+         i.clear();
+         d.clear();
+         max     = 0;
+         pos     = 0;
+         active  = 0;
          current = 0;
-         dir = 1;
+         dir     = 1;
       }
 
       TumbleParameters& operator=(TumbleParameters& b) {
@@ -65,7 +73,7 @@ class TumbleParameters {
          a.dir     = b.dir;
          return a;
       }
-         
+
 };
 
 
@@ -80,19 +88,19 @@ int anticipation = 125;   // anticipation of first note in tumble for
                           // use with the Yamaha Disklavier which has
                           // a slight delay in playing notes from the computer.
                           // Value is in milliseconds.
-double tolerance = 0.90;  // allowable trigger rhythm tolerance. *// 0.90
-SigCollection<TumbleParameters> tparam;  // data storage for tumble functions
+double tolerance = 0.90;  // allowable trigger rhythm tolerance.
+vector<TumbleParameters> tparam;  // data storage for tumble functions
 
 
 // function declarations:
 void    processNote         (smf::MidiEvent message, int seqLength, int direction);
 int     startAlgorithm      (TumbleParameters& p);
-int     storeParameters     (SigCollection<TumbleParameters>& params,
+int     storeParameters     (vector<TumbleParameters>& params,
                              TumbleParameters& p);
-void    randomizeDirections (SigCollection<TumbleParameters>& p);
-void    reverseDirections   (SigCollection<TumbleParameters>& p);
-void    forwardDirections   (SigCollection<TumbleParameters>& p);
-void    invertDirections    (SigCollection<TumbleParameters>& p);
+void    randomizeDirections (vector<TumbleParameters>& p);
+void    reverseDirections   (vector<TumbleParameters>& p);
+void    forwardDirections   (vector<TumbleParameters>& p);
+void    invertDirections    (vector<TumbleParameters>& p);
 void    sillyKeyboard       (int key, int chan = 0);
 
 template<class type>
@@ -136,7 +144,7 @@ static void TumbleNoteFunction(FunctionEvent& p, EventBuffer& midiOutput) {
    p.setOnTime(p.getOnTime() + param.i[param.pos]);
    param.current = newnote;
    param.pos++;
-   if (param.pos > param.n.getSize()) {
+   if (param.pos > (int)param.n.size()) {
       param.pos = 0;
    }
 }
@@ -160,18 +168,17 @@ void description(void) {
    psl("      Notes:           s   d      g    h   j   ");
    psl("                     z   x   c   v   b   n   m  ");
    printboxbottom();
-} 
-
-
-void initialization(void) { 
-   eventBuffer.setPollPeriod(10);  // look in the algorithm buffer every 10 ms.
-   tparam.setSize(PARAMSIZE);      // 256 simultaneous algorithms at once.
-   tparam.allowGrowth(0);
 }
 
 
-void finishup(void) { 
-   for (int i=0; i<tparam.getSize(); i++) {
+void initialization(void) {
+   eventBuffer.setPollPeriod(10); // look in the algorithm buffer every 10 ms.
+   tparam.resize(PARAMSIZE);      // 256 simultaneous algorithms at once.
+}
+
+
+void finishup(void) {
+   for (int i=0; i<(int)tparam.size(); i++) {
       tparam[i].active = 0;
    }
 }
@@ -210,25 +217,25 @@ void mainloopalgorithms(void) {
 //
 
 void processNote(smf::MidiEvent message, int seqLength, int direction) {
-   static Array<char>         notes;
-   static Array<char>         velocities;
-   static Array<int>          durations;
-   static Array<int>          iois;
-   static Array<int>          ontimes;
+   static vector<char>        notes;
+   static vector<char>        velocities;
+   static vector<int>         durations;
+   static vector<int>         iois;
+   static vector<int>         ontimes;
    static CircularBuffer<int> attacktimes;
    static int                 init = 0;
    static TumbleParameters    temparam;
    char vel;
 
    if (!init) {
+      attacktimes.setSize(0);
       attacktimes.setSize(256);
-      attacktimes.reset();
-      notes.setSize(0);
-      velocities.setSize(0);
-      durations.setSize(0);
-      iois.setSize(0);
-      ontimes.setSize(128);
-      ontimes.zero();
+      notes.clear();
+      velocities.clear();
+      durations.clear();
+      iois.clear();
+      ontimes.resize(128);
+      std::fill(ontimes.begin(), ontimes.end(), 0);
       init = 1;
    }
 
@@ -240,27 +247,27 @@ void processNote(smf::MidiEvent message, int seqLength, int direction) {
       attacktimes.insert(message.tick);
 
       // check to see if the ioi is in the correct range
-      if (notes.getSize() == 0) {
+      if (notes.size() == 0) {
          // no notes yet, so don't know the first ioi
       } else {
          deltatime = attacktimes[0] - attacktimes[1];
-         iois.append(deltatime);
+         iois.push_back(deltatime);
       }
-      if (iois.getSize() > 1) {
+      if (iois.size() > 1) {
          ioi0 = iois[0];
-         ioix = iois[iois.getSize()-1];
+         ioix = iois[(int)iois.size()-1];
          if ((ioix < ioi0 * tolerance) || (ioix > ioi0 / tolerance)) {
             goto resettrigger;
          }
       }
 
       // at this point the note can be added to the sequence
-      if (notes.getSize() + 1 >= seqLength) {
+      if ((int)notes.size() + 1 >= seqLength) {
          // time to trigger an algorithm
-         if (durations.getSize() < notes.getSize()) {
+         if (durations.size() < notes.size()) {
             // if the last note has not yet been turned off, approximate dur.
-            deltatime = iois[iois.getSize()-1];
-            durations.append(deltatime);
+            deltatime = iois[(int)iois.size()-1];
+            durations.push_back(deltatime);
          }
 
          int i;
@@ -275,22 +282,22 @@ void processNote(smf::MidiEvent message, int seqLength, int direction) {
          temparam.pos     = 1;
          temparam.max     = seqLength;
          temparam.active  = 1;
-         
+
          startAlgorithm(temparam);
          goto resettrigger;
       } else {
          // add the note info to the algorithm pile
          note = message.getP1();
-         notes.append(note);
+         notes.push_back(note);
          vel = message.getP2();
-         velocities.append(vel);
+         velocities.push_back(vel);
          attacktimes[message.getP1()] = message.tick;
       }
    } else if (message.isNoteOff()) {
-      if (notes.getSize() > 0) {
-         if (notes[notes.getSize()-1] == message.getP1()) {
+      if (notes.size() > 0) {
+         if (notes[(int)notes.size()-1] == message.getP1()) {
          deltatime = message.tick - ontimes[message.getP1()];
-         durations.append(deltatime);
+         durations.push_back(deltatime);
       } else {
          cout << "A funny error ocurred" << endl;
       }
@@ -300,17 +307,17 @@ void processNote(smf::MidiEvent message, int seqLength, int direction) {
 
 resettrigger:
    attacktimes.setSize(0);
-   notes.setSize(0);
-   velocities.setSize(0);
-   durations.setSize(0);
-   iois.setSize(0);
+   notes.clear();
+   velocities.clear();
+   durations.clear();
+   iois.clear();
 
    if (message.isNoteOn()) {
       note = message.getP1();
-      notes.append(note);
+      notes.push_back(note);
       ontimes[message.getP1()] = message.tick;
       vel = message.getP2();
-      velocities.append(vel);
+      velocities.push_back(vel);
    }
 }
 
@@ -347,7 +354,7 @@ int startAlgorithm(TumbleParameters& p) {
    // display the basic algorithm info
    cout << "Tumble: Time: " << t_time << "\tStart = " << (int)p.current
         << "\tPattern = . ";
-   for (int i=1; i<p.n.getSize(); i++) {
+   for (int i=1; i<(int)p.n.size(); i++) {
       cout << (int)p.n[i] << " ";
    }
    cout << "(" << (int)p.n[0] << ")";
@@ -364,7 +371,7 @@ int startAlgorithm(TumbleParameters& p) {
 // storeParameters --
 //
 
-int storeParameters(SigCollection<TumbleParameters>& params, 
+int storeParameters(vector<TumbleParameters>& params,
       TumbleParameters& p) {
    int start = rand() % PARAMSIZE;
    int position = start + 1;
@@ -389,7 +396,7 @@ int storeParameters(SigCollection<TumbleParameters>& params,
 
 /*-------------------- triggered algorithms -----------------------------*/
 
-void keyboardchar(int key) { 
+void keyboardchar(int key) {
    switch (key) {
       case 'p':
          cout << "current list in eventBuffer: " << endl;
@@ -442,8 +449,8 @@ void keyboardchar(int key) {
 //      fashion.
 //
 
-void randomizeDirections(SigCollection<TumbleParameters>& p) {
-   for (int i=0; i<p.getSize(); i++) {
+void randomizeDirections(vector<TumbleParameters>& p) {
+   for (int i=0; i<(int)p.size(); i++) {
       if (p[i].active) {
          if (rand() % 2) {
             p[i].dir = 1;
@@ -462,8 +469,8 @@ void randomizeDirections(SigCollection<TumbleParameters>& p) {
 //     current states.
 //
 
-void reverseDirections(SigCollection<TumbleParameters>& p) {
-   for (int i=0; i<p.getSize(); i++) {
+void reverseDirections(vector<TumbleParameters>& p) {
+   for (int i=0; i<(int)p.size(); i++) {
       if (p[i].active) {
          p[i].dir = -p[i].dir;
       }
@@ -474,11 +481,11 @@ void reverseDirections(SigCollection<TumbleParameters>& p) {
 
 //////////////////////////////
 //
-// forwardDirections -- go to the original direction of algorithms 
+// forwardDirections -- go to the original direction of algorithms
 //
 
-void forwardDirections(SigCollection<TumbleParameters>& p) {
-   for (int i=0; i<p.getSize(); i++) {
+void forwardDirections(vector<TumbleParameters>& p) {
+   for (int i=0; i<(int)p.size(); i++) {
       if (p[i].active) {
          p[i].dir = 1;
       }
@@ -493,8 +500,8 @@ void forwardDirections(SigCollection<TumbleParameters>& p) {
 //     natural states.
 //
 
-void invertDirections(SigCollection<TumbleParameters>& p) {
-   for (int i=0; i<p.getSize(); i++) {
+void invertDirections(vector<TumbleParameters>& p) {
+   for (int i=0; i<(int)p.size(); i++) {
       if (p[i].active) {
          p[i].dir = -1;
       }

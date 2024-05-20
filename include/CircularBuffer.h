@@ -29,8 +29,7 @@ class CircularBuffer {
    public:
                     CircularBuffer     (void);
                     CircularBuffer     (int maxElements);
-                    CircularBuffer     (const CircularBuffer<type>& 
-                                           anotherBuffer);
+                    CircularBuffer     (const CircularBuffer<type>& anotherBuffer);
                    ~CircularBuffer     ();
 
       int           capacity           (void) const;

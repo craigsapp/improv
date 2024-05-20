@@ -18,9 +18,10 @@
 
 #include "MidiInPort_alsa.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <pthread.h>
 #include <unistd.h>
+#include <vector>
 
 // use the following header for versions of ALSA older than 0.9:
 // #include <sys/asoundlib.h>
@@ -47,11 +48,11 @@ SigTimer  MidiInPort_alsa::midiTimer;
 int*      MidiInPort_alsa::pauseQ                         = NULL;
 int*      MidiInPort_alsa::trace                          = NULL;
 ostream*  MidiInPort_alsa::tracedisplay                   = &cout;
-Array<pthread_t> MidiInPort_alsa::midiInThread;    
+vector<pthread_t> MidiInPort_alsa::midiInThread;    
 int*      MidiInPort_alsa::sysexWriteBuffer               = NULL;
-Array<uchar>** MidiInPort_alsa::sysexBuffers              = NULL;
+vector<uchar>** MidiInPort_alsa::sysexBuffers             = NULL;
 
-Array<int> MidiInPort_alsa::threadinitport;
+vector<int> MidiInPort_alsa::threadinitport;
 
 
 //////////////////////////////
@@ -118,10 +119,10 @@ void MidiInPort_alsa::clearSysex(int buffer) {
       return;
    }
    
-   sysexBuffers[getPort()][buffer].setSize(0);
-   if (sysexBuffers[getPort()][buffer].getAllocSize() != 32) {
+   sysexBuffers[getPort()][buffer].clear();
+   if (sysexBuffers[getPort()][buffer].capacity() != 32) {
       // shrink the storage buffer's size if necessary
-      sysexBuffers[getPort()][buffer].setAllocSize(32);
+      sysexBuffers[getPort()][buffer].reserve(32);
    }
 }
 
@@ -190,7 +191,7 @@ void MidiInPort_alsa::extract(smf::MidiEvent& event) {
 int MidiInPort_alsa::getBufferSize(void) {
    if (getPort() == -1)   return 0;
 
-   return midiBuffer[getPort()]->getSize();
+   return (int)midiBuffer[getPort()]->getSize();
 }
 
 
@@ -290,10 +291,10 @@ uchar* MidiInPort_alsa::getSysex(int buffer) {
       return NULL;
    }
 
-   if (sysexBuffers[getPort()][buffer].getSize() < 2) {
+   if ((int)sysexBuffers[getPort()][buffer].size() < 2) {
       return NULL;
    } else {
-      return sysexBuffers[getPort()][buffer].getBase();
+      return sysexBuffers[getPort()][buffer].data();
    }
 }
 
@@ -310,7 +311,7 @@ int MidiInPort_alsa::getSysexSize(int buffer) {
    if (getPort() == -1) {
       return 0;
    } else {
-      return sysexBuffers[getPort()][buffer & 0x7f].getSize();
+      return (int)sysexBuffers[getPort()][buffer & 0x7f].size();
    }
 }
 
@@ -375,8 +376,8 @@ int MidiInPort_alsa::installSysexPrivate(int port, uchar* anArray, int aSize) {
    }
 
    // copy contents of sysex message into the chosen buffer
-   sysexBuffers[port][bufferNumber].setSize(aSize);
-   uchar* dataptr = sysexBuffers[port][bufferNumber].getBase();
+   sysexBuffers[port][bufferNumber].resize(aSize);
+   uchar* dataptr = sysexBuffers[port][bufferNumber].data();
    uchar* indataptr = anArray;
    for (int i=0; i<aSize; i++) { 
       *dataptr = *indataptr;
@@ -654,11 +655,11 @@ void MidiInPort_alsa::initialize(void) {
          cout << "Error: memory leak on sysex buffers initialization" << endl;
          exit(1);
       }
-      sysexBuffers = new Array<uchar>*[numDevices];
+      sysexBuffers = new vector<uchar>*[numDevices];
    
       int flag;
-      midiInThread.setSize(getNumPorts());
-      threadinitport.setSize(getNumPorts());
+      midiInThread.resize(getNumPorts());
+      threadinitport.resize(getNumPorts());
       // initialize the static arrays
       for (int i=0; i<getNumPorts(); i++) {
          portObjectCount[i] = 0;
@@ -668,12 +669,10 @@ void MidiInPort_alsa::initialize(void) {
          midiBuffer[i]->setSize(DEFAULT_INPUT_BUFFER_SIZE);
 
          sysexWriteBuffer[i] = 0;
-         sysexBuffers[i] = new Array<uchar>[128];
+         sysexBuffers[i] = new vector<uchar>[128];
          for (int n=0; n<128; n++) {
-            sysexBuffers[i][n].allowGrowth(0);      // shouldn't need to grow
-            sysexBuffers[i][n].setAllocSize(32);
-            sysexBuffers[i][n].setSize(0);
-            sysexBuffers[i][n].setGrowth(32);       // in case it will ever grow
+            sysexBuffers[i][n].reserve(32);
+            sysexBuffers[i][n].clear();
          }
     
          threadinitport[i] = i;
@@ -769,10 +768,10 @@ void *interpretMidiInputStreamPrivateALSA(void * arg) {
    uchar packet[1];              // bytes for sequencer driver
    smf::MidiEvent* message = NULL;  // holder for current MIDI message
    int newSigTime = 0;           // for millisecond timer
-   // int lastSigTime = -1;         // for millisecond timer
+   // int lastSigTime = -1;      // for millisecond timer
    int zeroSigTime = -1;         // for timing incoming events
    int device = -1;              // for sorting out the bytes by input device
-   Array<uchar>* sysexIn;        // MIDI Input sysex temporary storage
+   vector<uchar>* sysexIn;       // MIDI Input sysex temporary storage
 
    // Note on the use of argsExpected and argsLeft for sysexs:
    // If argsExpected is -1, then a sysex message is coming in.
@@ -787,12 +786,10 @@ void *interpretMidiInputStreamPrivateALSA(void * arg) {
    argsExpected = new int[MidiInPort_alsa::numDevices];
    argsLeft     = new int[MidiInPort_alsa::numDevices];
 
-   sysexIn = new Array<uchar>[MidiInPort_alsa::numDevices];
+   sysexIn = new vector<uchar>[MidiInPort_alsa::numDevices];
    for (int j=0; j<MidiInPort_alsa::numDevices; j++) {
-      sysexIn[j].allowGrowth();
-      sysexIn[j].setSize(32);
-      sysexIn[j].setSize(0);
-      sysexIn[j].setGrowth(512);
+      sysexIn[j].clear();
+      sysexIn[j].reserve(32);
    }
 
    // interpret MIDI bytes as they come into the computer
@@ -857,18 +854,18 @@ top_of_loop:
                if (packet[0] == 0xf0) {
                   argsExpected[device] = -1;
                   argsLeft[device] = -1;
-                  if (sysexIn[device].getSize() != 0) {
+                  if (sysexIn[device].size() != 0) {
                      // ignore the command for now.  It is most
                      // likely an active sensing message.
                      goto top_of_loop;
                   } else {
                      uchar datum = 0xf0;
-                     sysexIn[device].append(datum);
+                     sysexIn[device].push_back(datum);
                   }
                } if (packet[0] == 0xf7) {
                   argsLeft[device] = 0;         // indicates sysex is done
                   uchar datum = 0xf7;
-                  sysexIn[device].append(datum);
+                  sysexIn[device].push_back(datum);
                } else if (argsExpected[device] != -1) {
                   // this is a system message that may or may
                   // not be coming while a sysex is coming in
@@ -933,7 +930,7 @@ top_of_loop:
             
          if (argsExpected[device] < 0) {
             // continue processing a sysex message
-            sysexIn[device].append(packet[0]);
+            sysexIn[device].push_back(packet[0]);
          } else {
             // handle a message other than a sysex message
             if (argsLeft[device] == argsExpected[device]) {
@@ -978,13 +975,13 @@ top_of_loop:
                   // location:
                   int sysexlocation = 
                      MidiInPort_alsa::installSysexPrivate(device,
-                        sysexIn[device].getBase(),
-                        sysexIn[device].getSize());
+                        sysexIn[device].data(),
+                        sysexIn[device].size());
 
                   message[device].setP0(0xf0);
                   message[device].setP1(sysexlocation);
 
-                  sysexIn[device].setSize(0); // empty the sysex storage
+                  sysexIn[device].clear(); // empty the sysex storage
                   argsExpected[device] = 0;   // no run status for sysex
                   argsLeft[device] = 0;       // turn off sysex input flag
                }

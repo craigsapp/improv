@@ -26,9 +26,7 @@
 //
 
 LineDisplay::LineDisplay(void) { 
-   outstream = &cout;        // output stream location
-   line = new char[70 + 2];      
-   line[81] = '\0';
+   outstream = &cout;    // output stream location
    linelength = 70;      // max length of a display line
    column = 1;           // current column of display (offset 1)
    displayColumn = 1;    // max display column used (offset 1)
@@ -44,8 +42,6 @@ LineDisplay::LineDisplay(int len, ostream& out) {
       cout << "Error: cannot have a non-positive line length" << endl;
       exit(1);
    }
-   line = new char[len + 2];      
-   line[len + 1] = '\0';
    linelength = len;     // max length of a display line
    column = 1;           // current column of display (offset 1)
    displayColumn = 1;    // max display column used (offset 1)
@@ -62,10 +58,6 @@ LineDisplay::LineDisplay(int len, ostream& out) {
 
 LineDisplay::~LineDisplay() { 
    newline();
-   if (line != NULL) {
-      delete [] line;
-   }
-   line = NULL;
 };
 
 
@@ -77,8 +69,8 @@ LineDisplay::~LineDisplay() {
 //    default value centerColumn = -1;
 //
 
-void LineDisplay::centerline(const char* aLine, int centerColumn) { 
-   int length = strlen(aLine);
+void LineDisplay::centerline(const string& aLine, int centerColumn) { 
+   int length = (int)aLine.length();
    if (centerColumn < 0) {
       centerColumn = linelength / 2;
    }
@@ -108,8 +100,8 @@ void LineDisplay::centerline(const char* aLine, int centerColumn) {
 //    default value: flushQ = 1.
 //
 
-void LineDisplay::display(const char* aString, int flushQ) { 
-   int length = strlen(aString);
+void LineDisplay::display(const string& aString, int flushQ) { 
+   int length = (int)aString.length();
    int i, j;
    for (i=0; i<length; i++) {
       switch (aString[i]) {
@@ -132,18 +124,10 @@ void LineDisplay::display(char aChar, int flushQ) {
    if (getColumn() <= linelength) {
       *outstream << aChar;
       if (aChar == '\n') {
-         for (int j=0; j<column; j++) {
-            line[j] = '\0';
-         }
-         column = 1;
+         line.clear();
+         column = 0;
       } else {
-         if (getColumn() == 0) {
-            line[getColumn()] = aChar;
-            line[getColumn()+1] = '\0';
-         } else {
-            line[getColumn()-1] = aChar;
-            line[getColumn()] = '\0';
-         }
+         line.push_back(aChar);
          increaseColumn();
       }
       if (flushQ) {
@@ -233,7 +217,7 @@ void LineDisplay::newline(int count, int flushQ) {
    if (flushQ) {
       outstream->flush();
    }
-   strcpy(line, "");
+   line.clear();
 }
 
 
@@ -244,8 +228,7 @@ void LineDisplay::newline(int count, int flushQ) {
 //     on the display.
 //
 
-const char* LineDisplay::getLine(void) const { 
-   line[displayColumn] = '\0';
+string LineDisplay::getLine(void) const { 
    return line;
 }
 
@@ -292,8 +275,8 @@ int LineDisplay::getMode(void) const {
 //     default value: flushQ = 1
 //
 
-void LineDisplay::leftjustify(const char* aLine, int flushQ) {
-   int length = strlen(aLine);
+void LineDisplay::leftjustify(const string& aLine, int flushQ) {
+   int length = (int)aLine.length();
    int start = linelength - length + 1;
    if (start < 1) {
       start = 1;
@@ -334,7 +317,7 @@ void LineDisplay::moveto(int col) {
    count = col - column;
    for (int j=0; j<count; j++) {
       if (column < displayColumn) {
-         display(line[column]);
+         display(line.at(column));
       } else {
          display(' ');
       }
@@ -388,9 +371,9 @@ int LineDisplay::setColumn(int col, char fillCharacter) {
 // LineDisplay::setLine -- 
 //
 
-void LineDisplay::setLine(const char* aString) { 
+void LineDisplay::setLine(const string& aString) { 
    eraseline();
-   strcpy(line, "");
+   line.clear();
    display(aString);
 }
 

@@ -24,6 +24,7 @@
    #include <iostream.h>
 #endif
 
+#include <string>
 
 class LineDisplay {
    public:
@@ -32,23 +33,23 @@ class LineDisplay {
                   LineDisplay      (int len, ostream& out = cout);
                  ~LineDisplay      ();
 
-      void        centerline       (const char* aLine, int centerColumn = -1);
-      void        center           (const char* aLine, int centerColumn = -1);
-      void        display          (const char* aString, int flushQ = 1);
+      void        centerline       (const string& aLine, int centerColumn = -1);
+      void        center           (const string& aLine, int centerColumn = -1);
+      void        display          (const string& aString, int flushQ = 1);
       void        display          (char aChar, int flushQ = 1);
       void        eraseline        (void);
       void        flush            (void);
       void        backspace        (int number = 1, int flushQ = 1);
       void        back             (int flushQ = 1);
       void        newline          (int count = 1, int flushQ = 1);
-      const char* getLine          (void) const;
+      string      getLine          (void) const;
       int         getNumColumns    (void) const;
       int         getColumn        (void) const;
       int         getMode          (void) const;
-      void        leftjustify      (const char* aLine, int flushQ = 1);
+      void        leftjustify      (const string& aLine, int flushQ = 1);
       void        moveto           (int col);
       int         setColumn        (int col, char fillCharacter = ' ');
-      void        setLine          (const char* aString);
+      void        setLine          (const string& aString);
       void        setModeTrim      (void);
       void        setModeWrap      (void);
       void        setTabSize       (int size);
@@ -60,7 +61,7 @@ class LineDisplay {
       int column;               // current column of display (offset 1)
       int linelength;           // max length of a display line
       int displayColumn;        // max length of a display line
-      char* line;               // copy of current line
+      string line;              // copy of current line
       ostream* outstream;       // output stream location
 
    private:

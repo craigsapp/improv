@@ -740,7 +740,7 @@ void Sequencer_alsa::searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, int card,
          strcpy(rawmidi_info[index].name, name);
          rawmidi_info[index].input = in;
          rawmidi_info[index].output = out;
-      } else
+      } else {
          rawmidi_info.resize(rawmidi_info.size()+1);
          index = rawmidi_info.size()-1;
          rawmidi_info[index].card = card;
@@ -749,6 +749,7 @@ void Sequencer_alsa::searchForMidiSubdevicesOnDevice(snd_ctl_t* ctl, int card,
          sprintf(rawmidi_info[index].name, "Virtual MIDI %d", index);
          rawmidi_info[index].input = in;
          rawmidi_info[index].output = out;
+      }
    } else {
       sub = 0;
       for (;;) {

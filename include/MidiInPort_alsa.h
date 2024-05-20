@@ -19,11 +19,11 @@
 #ifdef ALSA
 
 #include "CircularBuffer.h"
-#include "Array.h"
 #include "Sequencer_alsa.h"
 #include "SigTimer.h"
 #include "MidiEvent.h"
 
+#include <vector>
 #include <pthread.h>
 
 typedef unsigned char uchar;
@@ -64,7 +64,7 @@ class MidiInPort_alsa : public Sequencer_alsa {
       void            toggleTrace                (void);
       void            unpause                    (void);
 
-      static Array<int> threadinitport;
+      static vector<int> threadinitport;
 
    protected:
       int    port;     // the port to which this object belongs
@@ -84,9 +84,9 @@ class MidiInPort_alsa : public Sequencer_alsa {
                                             // not being used right now.
       static int*       pauseQ;             // for adding items to Buffer or not
       static SigTimer   midiTimer;          // for timing MIDI input
-      static Array<pthread_t> midiInThread; // for MIDI input thread function
+      static vector<pthread_t> midiInThread; // for MIDI input thread function
       static int*       sysexWriteBuffer;   // for MIDI sysex write location
-      static Array<uchar>** sysexBuffers;   // for MIDI sysex storage
+      static vector<uchar>** sysexBuffers;   // for MIDI sysex storage
 
    private:
       void            deinitialize               (void); 

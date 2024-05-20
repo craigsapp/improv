@@ -162,7 +162,7 @@ void SigCollection<type>::grow(long growamt) {
       exit(1);
    }
  
-   type *temp = new type[this->getAllocSize()];
+   type *temp = new type[this->allocSize + 1];
    for (int i=0; i<size; i++) {
       temp[i] = this->array[i];
    }

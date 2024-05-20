@@ -197,18 +197,7 @@ int checkKeyboard(void) {
    // case '@': break;
    // case 'A': break;
    // case 'B': break;
-      case 'C':                         // change CPU speed variable
-         {
-         int aSpeed;
-         cout << "Current speed is listed as: " 
-              << (double)mainTimer.getCpuSpeed()/1000000.0 << " MHz.\n";
-         cout << "Enter the CPU speed of the computer in MHz: ";
-         echoKeysOn();
-         cin  >> aSpeed;
-         echoKeysOff();
-         mainTimer.setCpuSpeed(aSpeed * 1000000);
-         }
-         break;
+   // case 'C': break;
       case 'D':                         // print description
          description(); // user defined function
          break;

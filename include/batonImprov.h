@@ -349,19 +349,8 @@ int checkKeyboard(void) {
          echoKeysOff();
          baton.unpause();
          break;
-      case 'G':                         // change CPU speed variable
-         {
-         int aSpeed;
-         cout << "Current speed is listed as: " 
-              << mainTimer.getCpuSpeed()/1000000.0 << " MHz.\n";
-         cout << "Enter the CPU speed of the computer in MHz: ";
-         echoKeysOn();
-         cin  >> aSpeed;
-         echoKeysOff();
-         mainTimer.setCpuSpeed(aSpeed * 1000000);
-         }
-         break;
-   // case 'H': break;
+      // case 'G': break;
+      // case 'H': break;
       case 'I':                         // set input port for Radio Drum
          cout << "radio drum MIDI input is currently set to device: " 
               << baton.getInputPort() << endl;

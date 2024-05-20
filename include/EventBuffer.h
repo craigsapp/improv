@@ -43,7 +43,7 @@ class EventBuffer : public MidiOutput {
       int       countEvents        (void) const;
       int       getBufferSize      (void) const;
       int       getFreeCount       (void) const;
-      int       getPollPeriod      (void) const; 
+      int       getPollPeriod      (void); 
       int       insert             (const Event* anEvent);
       int       insert             (const Event& anEvent);
       void      off                (void);

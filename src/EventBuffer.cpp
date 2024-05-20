@@ -198,7 +198,7 @@ int EventBuffer::getFreeCount(void) const {
 // EventBuffer::getPollPeriod -- 
 //
 
-int EventBuffer::getPollPeriod(void) const {
+int EventBuffer::getPollPeriod(void) {
    return (int)pollTimer.getPeriod();
 }
 

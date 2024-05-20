@@ -234,7 +234,6 @@ void checkOptions(Options& opts) {     // options are:
    opts.define("s|seconds=b");         // for displaying time info in seconds
    opts.define("k|keyboard=b");        // for handling computer keyboard
    opts.define("A|no-active-sensing=b");// for displaying active sensing 0xfe
-   opts.define("cpu=d:0.0");           // for setting the CPU speed
    opts.define("author=b");
    opts.define("version=b");
    opts.define("example=b");
@@ -255,11 +254,6 @@ void checkOptions(Options& opts) {     // options are:
    } else if (opts.getBoolean("example")) {
       example();
       exit(0);
-   }
-
-
-   if (opts.getBoolean("cpu")) {
-      sigtimer.setCpuSpeed((int64bits)(opts.getDouble("cpu") * 1000000.0));
    }
 
    if (opts.getBoolean("list")) {

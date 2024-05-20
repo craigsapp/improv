@@ -26,9 +26,6 @@
 #include <stdio.h>
 #include <sys/timeb.h>
 
-void measureCPU(void);
-void findClockBoundary(int64bits& cycles, time_t& seconds, int& millisec);
-
 
 /*----------------- beginning of improvization algorithms ---------------*/
 
@@ -142,7 +139,7 @@ void keyboardchar(int key) {
       case '7': beatsperbar = 7; cout << "Beats per bar = 7" << endl; break;
       case '8': beatsperbar = 8; cout << "Beats per bar = 8" << endl; break;
       case '9': beatsperbar = 9; cout << "Beats per bar = 9" << endl; break;
-      case '0': measureCPU(); break;
+      case '0': break;
       default:
          cout << "=" << measureno << "\t=" << measureno << "\t=" << measureno << "\n";
          outputfile << "=" << measureno << "\t=" << measureno 
@@ -163,104 +160,7 @@ void keyboardchar(int key) {
 }
 
 
-
-//////////////////////////////
-//
-// measureCPU -- measure the CPU speed of the computer more accurately.
-//
-// reference: http://msdn.microsoft.com/library/en-us/vclib/html/_crt_time.asp
-//
-
-void measureCPU(void) {
-
-   static int init = -1;
-   static int64bits startcycles;
-   static time_t startseconds;
-   static int startmilliseconds;
-
-   time_t currentseconds;
-   int currentmilliseconds;
-//    struct timeb tstruct;
-   int64bits currentcycles;
-   int64bits totalms;
-
-   int64bits cyclediff;
-   double cpuspeed;
-   double maxcpuspeed;
-   double drift;
-
-   if (init <= 0) {
-      init = 1;
-      // time(&startseconds);   // second since 1/1/70
-      // ftime(&tstruct);
-      // startmilliseconds = tstruct.millitm;
-      // startcycles = SigTimer::clockCycles();
-      findClockBoundary(startcycles, startseconds, startmilliseconds);
-   } else {
-      //time(&currentseconds);
-      //ftime(&tstruct);
-      //currentmilliseconds = tstruct.millitm;
-      //currentcycles = SigTimer::clockCycles();
-      findClockBoundary(currentcycles, currentseconds, currentmilliseconds);
-  
-      totalms = (currentseconds - startseconds) * 1000;
-      totalms = totalms - startmilliseconds;
-      totalms = totalms + currentmilliseconds;
-      
-      // the totalms value is accurate to within +/- 20 milliseconds
-      // so calculate the cpu speed and the possible error in the
-      // timing measurement
-
-      cyclediff = currentcycles - startcycles;
-
-      cpuspeed = cyclediff / totalms * 1000.0;
-      maxcpuspeed = cyclediff / (totalms - 20) * 1000.0;
-      drift = 1.0 / (maxcpuspeed - cpuspeed);
-      drift = 1000.0 * drift / totalms * 3600000.0;
-      drift = maxcpuspeed - cpuspeed;
-      drift = drift / cpuspeed * 3600000.0;
-
-      maxcpuspeed = maxcpuspeed / 1000.0 / 1000.0;
-      cpuspeed = cpuspeed / 1000.0 / 1000.0;
-
-      
-
-       cout << "Measured CPU speed: " << setprecision(9) << cpuspeed 
-            << " MHz +/- " << setprecision(9) << maxcpuspeed - cpuspeed 
-            << " MHz, drift +/- " << drift << " ms/hr" << endl;      
-   }
-
-}
-
-
-
-void findClockBoundary(int64bits& cycles, time_t& seconds, int& millisec) {
-   time_t startseconds;
-   int    startmilliseconds;
-   struct timeb tstruct;
-
-   time(&startseconds);
-   ftime(&tstruct);
-   startmilliseconds = tstruct.millitm;
-   seconds = startseconds;
-   millisec = startmilliseconds;
-
-   while (millisec == startmilliseconds) {
-      ftime(&tstruct);
-      millisec = tstruct.millitm;
-   }   
-   
-   cycles = SigTimer::clockCycles();
-   time(&seconds);
-   
-   cout << "Millidif = " << millisec << " - " << startmilliseconds
-        << " = " << millisec - startmilliseconds << endl;
-
-
-}
-
-
 /*------------------ end improvization algorithms -----------------------*/
 
 
-// md5sum: 6cd3870b213a449079f2c812850a71b1 backbeat.cpp [20090615]
+
